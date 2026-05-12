@@ -1,0 +1,15 @@
+generated: 2026-05-03
+last_updated: 2026-05-03
+project: bmad-test
+project_key: NOKEY
+tracking_system: file-system
+story_location: "{project-root}/_bmad-output/implementation-artifacts/stories"
+
+workflow_status:
+  create-ux-design: "{project-root}/_bmad-output/planning-artifacts/ux-design-specification.md"
+
+completed_flows:
+  - create-ux-design
+
+notes:
+  - No other completed project flows were found in the workspace.
