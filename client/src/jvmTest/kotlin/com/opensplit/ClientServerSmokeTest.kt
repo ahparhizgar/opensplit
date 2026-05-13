@@ -1,15 +1,17 @@
 package com.opensplit
 
+import com.opensplit.ClientGreeting
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ClientServerSmokeTest {
     @Test
     fun clientAndSharedStarterStringsMatch() {
-        val platformGreeting = ClientGreeting.subtitle("Java 21")
+        val javaVersion = System.getProperty("java.version")
+        val platformGreeting = ClientGreeting.subtitle("Java $javaVersion")
         val sharedGreeting = Greeting().greet()
 
-        assertEquals("Hello, Java 21!", platformGreeting)
-        assertEquals("Hello, Java ${System.getProperty("java.version")}!", sharedGreeting)
+        assertEquals("Hello, Java $javaVersion!", platformGreeting)
+        assertEquals("Hello, Java $javaVersion!", sharedGreeting)
     }
 }

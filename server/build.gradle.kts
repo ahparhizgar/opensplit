@@ -8,8 +8,8 @@ group = "com.opensplit"
 version = "1.0.0"
 application {
     mainClass.set("com.opensplit.ApplicationKt")
-    
-    val isDevelopment: Boolean = project.ext.has("development")
+
+    val isDevelopment: Boolean = project.providers.gradleProperty("development").isPresent
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
