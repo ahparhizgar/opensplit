@@ -1,4 +1,5 @@
-import org.gradle.api.initialization.resolve.RepositoriesMode
+rootProject.name = "opensplit"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
@@ -7,28 +8,41 @@ pluginManagement {
             maven("https://mvnhub.ir")
             maven("https://maven.myket.ir")
         } else {
-            google()
-            gradlePluginPortal()
+            google {
+                mavenContent {
+                    includeGroupAndSubgroups("androidx")
+                    includeGroupAndSubgroups("com.android")
+                    includeGroupAndSubgroups("com.google")
+                }
+            }
             mavenCentral()
+            gradlePluginPortal()
         }
     }
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         val isLocal = true
         if (isLocal) {
             maven("https://mvnhub.ir")
             maven("https://maven.myket.ir")
         } else {
-            google()
+            google {
+                mavenContent {
+                    includeGroupAndSubgroups("androidx")
+                    includeGroupAndSubgroups("com.android")
+                    includeGroupAndSubgroups("com.google")
+                }
+            }
             mavenCentral()
         }
     }
 }
 
-rootProject.name = "opensplit"
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
 
 include(":client")
 include(":server")
