@@ -1,9 +1,14 @@
 package com.opensplit.features.auth
 
 import com.opensplit.dto.auth.AuthSessionState
+import com.opensplit.db.Users
 import kotlinx.serialization.Serializable
 import java.security.MessageDigest
 import java.util.UUID
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 @Serializable
 data class AuthSession(
@@ -19,28 +24,38 @@ data class RegisteredUser(
 )
 
 class AuthService {
-    private val usersByEmail = linkedMapOf<String, RegisteredUser>()
 
     fun signUp(email: String, password: String): AuthSessionState {
-        require(!usersByEmail.containsKey(email)) { "Email already exists" }
-        val user = RegisteredUser(
-            userId = UUID.randomUUID().toString(),
-            email = email,
-            passwordHash = hashPassword(password),
-        )
-        usersByEmail[email] = user
+        val existing = transaction { Users.select { Users.email eq email }.limit(1).firstOrNull() }
+        require(existing == null) { "Email already exists" }
+        val userId = UUID.randomUUID().toString()
+        val passwordHash = hashPassword(password)
+        transaction {
+            Users.insert {
+                it[Users.id] = userId
+                it[Users.email] = email
+                it[Users.passwordHash] = passwordHash
+            }
+        }
+        val user = RegisteredUser(userId = userId, email = email, passwordHash = passwordHash)
         return user.toSessionState()
     }
 
     fun signIn(email: String, password: String): AuthSessionState {
-        val user = usersByEmail[email] ?: throw IllegalArgumentException("Invalid credentials")
-        if (user.passwordHash != hashPassword(password)) {
-            throw IllegalArgumentException("Invalid credentials")
-        }
+        val row = transaction {
+            Users.select { Users.email eq email }.limit(1).firstOrNull()
+        } ?: throw IllegalArgumentException("Invalid credentials")
+        val storedHash = row[Users.passwordHash]
+        if (storedHash != hashPassword(password)) throw IllegalArgumentException("Invalid credentials")
+        val user = RegisteredUser(
+            userId = row[Users.id],
+            email = row[Users.email],
+            passwordHash = storedHash,
+        )
         return user.toSessionState()
     }
 
-    fun hasUser(email: String): Boolean = usersByEmail.containsKey(email)
+    fun hasUser(email: String): Boolean = transaction { Users.select { Users.email eq email }.any() }
 
     private fun RegisteredUser.toSessionState(): AuthSessionState = AuthSessionState(
         userId = userId,
