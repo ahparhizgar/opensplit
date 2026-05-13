@@ -7,13 +7,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.opensplit.features.auth.AuthController
+import com.opensplit.features.auth.createAuthGateway
 import com.opensplit.features.auth.AuthRootScreen
 
 @Composable
 @Preview
 fun App() {
     MaterialTheme {
-        val controller = remember { AuthController() }
+        val controller = remember { AuthController(createAuthGateway()) }
         AuthRootScreen(
             controller = controller,
             modifier = Modifier.fillMaxSize(),

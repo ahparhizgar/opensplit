@@ -16,12 +16,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 @Composable
 fun AuthRootScreen(
@@ -43,9 +43,10 @@ fun AuthRootScreen(
 @Composable
 fun AuthEntryScreen(controller: AuthController) {
     val state = controller.state
+    val scope = rememberCoroutineScope()
     val title = if (state.mode == AuthMode.SignUp) "Create account" else "Sign in"
-    val primaryAction = if (state.mode == AuthMode.SignUp) "Create account" else "Sign in"
-    val toggleLabel = if (state.mode == AuthMode.SignUp) "Have an account? Sign in" else "Need an account? Sign up"
+    val primaryAction = authSubmitLabel(state.mode)
+    val toggleLabel = authToggleLabel(state.mode)
 
     Column(
         modifier = Modifier
@@ -92,10 +93,11 @@ fun AuthEntryScreen(controller: AuthController) {
         }
         Spacer(modifier = Modifier.height(20.dp))
         Button(
-            onClick = controller::submit,
+            onClick = { scope.launch { controller.submit() } },
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("auth-submit"),
+            enabled = !state.isSubmitting,
         ) {
             Text(primaryAction)
         }

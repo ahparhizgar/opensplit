@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.validation.auth.AuthValidation
-import com.opensplit.validation.auth.ValidationResult
 
 enum class AuthMode {
     SignIn,
@@ -19,9 +18,12 @@ data class AuthUiState(
     val fieldErrors: Map<String, String> = emptyMap(),
     val generalError: String? = null,
     val session: AuthSessionState? = null,
+    val isSubmitting: Boolean = false,
 )
 
-class AuthController {
+class AuthController(
+    private val gateway: AuthGateway = createAuthGateway(),
+) {
     var state by mutableStateOf(AuthUiState())
         private set
 
@@ -34,41 +36,45 @@ class AuthController {
     }
 
     fun updateEmail(email: String) {
-        state = state.copy(
-            email = email,
-            fieldErrors = state.fieldErrors - "email",
-            generalError = null,
-        )
+        state = state.copy(email = email, fieldErrors = state.fieldErrors - "email", generalError = null)
     }
 
     fun updatePassword(password: String) {
-        state = state.copy(
-            password = password,
-            fieldErrors = state.fieldErrors - "password",
-            generalError = null,
-        )
+        state = state.copy(password = password, fieldErrors = state.fieldErrors - "password", generalError = null)
     }
 
-    fun submit() {
+    suspend fun submit() {
         val validation = when (state.mode) {
             AuthMode.SignIn -> AuthValidation.validateSignIn(state.email, state.password)
             AuthMode.SignUp -> AuthValidation.validateSignUp(state.email, state.password)
         }
 
         if (!validation.isValid) {
-            state = state.copy(fieldErrors = validation.errors, generalError = null, session = null)
+            state = state.copy(fieldErrors = validation.errors, generalError = null, session = null, isSubmitting = false)
             return
         }
 
-        state = state.copy(
-            fieldErrors = emptyMap(),
-            generalError = null,
-            session = AuthSessionState(
-                userId = "local-${state.email.lowercase().replace("@", "-")}",
-                email = state.email,
-                householdId = null,
-            ),
-        )
+        state = state.copy(fieldErrors = emptyMap(), generalError = null, isSubmitting = true)
+
+        try {
+            val result = when (state.mode) {
+                AuthMode.SignIn -> gateway.signIn(state.email, state.password)
+                AuthMode.SignUp -> gateway.signUp(state.email, state.password)
+            }
+            state = state.copy(
+                session = result.session,
+                fieldErrors = emptyMap(),
+                generalError = null,
+                isSubmitting = false,
+            )
+        } catch (error: AuthRemoteException) {
+            state = state.copy(
+                fieldErrors = error.fieldErrors,
+                generalError = error.generalError,
+                session = null,
+                isSubmitting = false,
+            )
+        }
     }
 }
 

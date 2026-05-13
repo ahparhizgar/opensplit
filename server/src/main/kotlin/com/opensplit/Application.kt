@@ -33,6 +33,10 @@ fun Application.module() {
             cookie.path = "/"
         }
     }
+
+    // Initialize database (reads JDBC_DATABASE_URL / DATABASE_URL or falls back to in-memory H2)
+    com.opensplit.db.DatabaseFactory.init()
+
     authRoutes()
     healthRoute()
 }

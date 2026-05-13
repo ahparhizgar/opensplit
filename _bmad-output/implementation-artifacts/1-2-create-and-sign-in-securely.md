@@ -142,6 +142,8 @@ gpt-5.4-mini
 - No `project-context.md` file was present in the workspace, so the story was built from planning artifacts and current source files.
 - Current codebase still contains starter placeholders in `client`, `server`, and `shared`; auth should be added as the first real feature slice.
 - Implemented shared auth DTOs and validation, server auth routes with session handling, and a client auth shell/controller.
+- Added a real client-side Ktor auth gateway with HTTP sign-up/sign-in calls.
+- Added platform-specific Ktor HTTP client factories and a JVM network integration test.
 - Added shared validation tests, server auth route tests, and client auth state tests.
 - Verified the full regression suite with `./gradlew test`.
 
@@ -152,6 +154,8 @@ gpt-5.4-mini
 - Anchored the implementation to the existing KMP starter, the pinned Ktor 3.4.3 stack, and the feature-first architecture.
 - Added `client/features/auth`, `server/features/auth`, `shared/dto/auth`, and `shared/validation/auth`.
 - Added session-backed sign-up, sign-in, and household-context server endpoints.
+- Added client-side real HTTP auth calls with Ktor and platform client factories.
+- Added a JVM integration test covering the auth gateway network path.
 - Verified implementation with `./gradlew :shared:jvmTest :client:jvmTest :server:test` and `./gradlew test`.
 
 ### File List
@@ -159,9 +163,17 @@ gpt-5.4-mini
 - `_bmad-output/implementation-artifacts/1-2-create-and-sign-in-securely.md`
 - `client/src/commonMain/kotlin/com/opensplit/App.kt`
 - `client/src/commonMain/kotlin/com/opensplit/features/auth/AuthController.kt`
+- `client/src/commonMain/kotlin/com/opensplit/features/auth/AuthGateway.kt`
+- `client/src/commonMain/kotlin/com/opensplit/features/auth/AuthUiLabels.kt`
 - `client/src/commonMain/kotlin/com/opensplit/features/auth/AuthUi.kt`
 - `client/src/commonTest/kotlin/com/opensplit/AppUiTest.kt`
 - `client/src/commonTest/kotlin/com/opensplit/ComposeAppCommonTest.kt`
+- `client/src/jvmMain/kotlin/com/opensplit/features/auth/AuthHttpClient.jvm.kt`
+- `client/src/androidMain/kotlin/com/opensplit/features/auth/AuthHttpClient.android.kt`
+- `client/src/iosMain/kotlin/com/opensplit/features/auth/AuthHttpClient.ios.kt`
+- `client/src/jsMain/kotlin/com/opensplit/features/auth/AuthHttpClient.js.kt`
+- `client/src/wasmJsMain/kotlin/com/opensplit/features/auth/AuthHttpClient.wasm.kt`
+- `client/src/jvmTest/kotlin/com/opensplit/features/auth/AuthGatewayIntegrationTest.kt`
 - `gradle/libs.versions.toml`
 - `server/build.gradle.kts`
 - `server/src/main/kotlin/com/opensplit/Application.kt`
@@ -183,6 +195,7 @@ gpt-5.4-mini
 - 2026-05-13: Added JVM client and server tests covering starter behavior and the Ktor health endpoint.
 - 2026-05-13: Implemented secure auth flow, shared DTOs/validation, and session-backed server endpoints.
 - 2026-05-13: Added auth validation, server route, and client state tests; full regression suite passed.
+- 2026-05-13: Added a real client auth gateway with platform HTTP client factories and a JVM network integration test.
 
 ### Status
 
