@@ -1,21 +1,35 @@
 package com.opensplit
 
-import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.runComposeUiTest
+import com.opensplit.features.auth.AuthController
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class AppUiTest {
-    @OptIn(ExperimentalTestApi::class)
     @Test
-    fun appLaunchesAndRespondsToClick() = runComposeUiTest {
-        setContent { App() }
+    fun authControllerRoutesToHouseholdContextAfterValidSubmission() {
+        val controller = AuthController()
 
-        onNodeWithText("Click me!").assertIsDisplayed()
-        onNodeWithText("Click me!").performClick()
-        onNodeWithTag("app-greeting").assertIsDisplayed()
+        controller.updateEmail("amir@example.com")
+        controller.updatePassword("password123")
+        controller.submit()
+
+        assertNotNull(controller.state.session)
+        assertEquals("amir@example.com", controller.state.session?.email)
+        assertEquals("Authenticated household context", controller.householdContextState()?.message)
+    }
+
+    @Test
+    fun authControllerShowsValidationErrorsForInvalidSubmission() {
+        val controller = AuthController()
+
+        controller.updateEmail("bad-email")
+        controller.updatePassword("short")
+        controller.submit()
+
+        assertNull(controller.state.session)
+        assertEquals("Enter a valid email address", controller.state.fieldErrors["email"])
+        assertEquals("Password must be at least 8 characters", controller.state.fieldErrors["password"])
     }
 }
