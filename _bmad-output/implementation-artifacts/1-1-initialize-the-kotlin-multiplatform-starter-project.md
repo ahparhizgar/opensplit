@@ -67,6 +67,10 @@ gpt-5.4-mini
 - Added root Gradle files, `client`, `server`, and `shared` module directories, and starter shared/client/server source files.
 - Validation could not be executed locally because `gradle` and `kotlinc` are not installed in the workspace.
 - Validation was completed with `./gradlew test` and `./gradlew build` after confirming the wrapper was present.
+- Added JVM client unit tests and a client smoke test, plus server unit and Ktor endpoint coverage.
+- Verified the client and server test suites with `./gradlew :client:jvmTest :server:test`.
+- Added a JVM app-launch seam and a Compose app runner test for the client desktop entry point.
+- Verified the client JVM test suite again with `./gradlew :client:jvmTest`.
 
 ### Completion Notes List
 
@@ -90,14 +94,24 @@ gpt-5.4-mini
 - `gradle/libs.versions.toml`
 - `client/build.gradle.kts`
 - `client/src/commonMain/kotlin/app/ClientApp.kt`
+- `client/src/commonMain/kotlin/com/opensplit/App.kt`
+- `client/src/commonMain/kotlin/com/opensplit/ClientGreeting.kt`
+- `client/src/jvmMain/kotlin/com/opensplit/ComposeAppRunner.kt`
+- `client/src/jvmMain/kotlin/com/opensplit/main.kt`
+- `client/src/jvmTest/kotlin/com/opensplit/ClientGreetingTest.kt`
+- `client/src/jvmTest/kotlin/com/opensplit/ClientServerSmokeTest.kt`
+- `client/src/jvmTest/kotlin/com/opensplit/ComposeAppRunnerTest.kt`
 - `client/src/commonMain/kotlin/core/ClientState.kt`
 - `client/src/commonMain/kotlin/features/StarterFeature.kt`
 - `client/src/commonMain/kotlin/navigation/AppNavigation.kt`
 - `server/build.gradle.kts`
 - `server/src/main/kotlin/app/ServerMain.kt`
 - `server/src/main/kotlin/core/ServerState.kt`
+- `server/src/main/kotlin/com/opensplit/core/ServerMessages.kt`
 - `server/src/main/kotlin/features/StarterFeature.kt`
 - `server/src/main/kotlin/routes/HealthRoute.kt`
+- `server/src/test/kotlin/com/opensplit/ApplicationTest.kt`
+- `server/src/test/kotlin/com/opensplit/core/ServerMessagesTest.kt`
 - `shared/build.gradle.kts`
 - `shared/src/commonMain/kotlin/dto/StarterModule.kt`
 - `shared/src/commonMain/kotlin/domain/StarterStructure.kt`
@@ -111,8 +125,4 @@ gpt-5.4-mini
 - 2026-05-13: Verified the starter scaffold with the Gradle wrapper and marked the project ready for review.
 - 2026-05-13: Converted the server module to a minimal Ktor JVM backend with health routing.
 - 2026-05-13: Moved plugin and server dependency versions into `gradle/libs.versions.toml`.
-
-### Change Log
-
-- 2026-05-13: Added the initial KMP-style client/server/shared starter scaffold and shared module verification test.
-- 2026-05-13: Verified the starter scaffold with the Gradle wrapper and marked the project ready for review.
+- 2026-05-13: Added JVM client and server tests covering starter behavior and the Ktor health endpoint.
