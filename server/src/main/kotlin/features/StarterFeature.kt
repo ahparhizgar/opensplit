@@ -1,3 +1,0 @@
-package features
-
-object StarterFeature

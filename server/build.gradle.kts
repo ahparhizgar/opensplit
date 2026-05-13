@@ -1,16 +1,23 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlinJvm)
+    alias(libs.plugins.ktor)
     application
 }
 
-dependencies {
-    implementation(project(":shared"))
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.netty)
-    implementation(libs.logback.classic)
-    testImplementation(kotlin("test"))
+group = "com.opensplit"
+version = "1.0.0"
+application {
+    mainClass.set("com.opensplit.ApplicationKt")
+    
+    val isDevelopment: Boolean = project.ext.has("development")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
-application {
-    mainClass.set("app.ServerMainKt")
+dependencies {
+    implementation(projects.shared)
+    implementation(libs.logback)
+    implementation(libs.ktor.serverCore)
+    implementation(libs.ktor.serverNetty)
+    testImplementation(libs.ktor.serverTestHost)
+    testImplementation(libs.kotlin.testJunit)
 }
