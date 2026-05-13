@@ -29,7 +29,7 @@ source: _bmad-output/planning-artifacts/ux-design-specification.md
 
 Purpose: make the household status obvious at a glance and give fast access to the two core actions.
 
-## 2. Add Expense Sheet
+## 2. Add Expense
 
 ```text
 --------------------------------------------------
