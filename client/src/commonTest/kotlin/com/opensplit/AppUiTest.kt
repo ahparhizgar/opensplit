@@ -1,21 +1,61 @@
 package com.opensplit
 
-import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.runComposeUiTest
+import com.opensplit.features.auth.AuthController
+import com.opensplit.features.auth.AuthGateway
+import com.opensplit.features.auth.AuthSubmissionResult
+import com.opensplit.dto.auth.AuthSessionState
+import com.opensplit.dto.auth.HouseholdContextState
+import com.opensplit.features.auth.householdContextState
+import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+
+private class FakeAuthGateway : AuthGateway {
+    var signUpCalls = 0
+
+    override suspend fun signUp(email: String, password: String): AuthSubmissionResult {
+        signUpCalls++
+        return AuthSubmissionResult(
+            session = AuthSessionState(userId = "user-1", email = email, accessToken = "token-user-1-$email"),
+            householdContext = HouseholdContextState(
+                authenticated = true,
+                email = email,
+                message = "Authenticated household context",
+            ),
+        )
+    }
+
+    override suspend fun signIn(email: String, password: String): AuthSubmissionResult = signUp(email, password)
+}
 
 class AppUiTest {
-    @OptIn(ExperimentalTestApi::class)
     @Test
-    fun appLaunchesAndRespondsToClick() = runComposeUiTest {
-        setContent { App() }
+    fun authControllerRoutesToHouseholdContextAfterValidSubmission() {
+        val gateway = FakeAuthGateway()
+        val controller = AuthController(gateway)
 
-        onNodeWithText("Click me!").assertIsDisplayed()
-        onNodeWithText("Click me!").performClick()
-        onNodeWithTag("app-greeting").assertIsDisplayed()
+        controller.updateEmail("amir@example.com")
+        controller.updatePassword("password123")
+        runBlocking { controller.submit() }
+
+        assertNotNull(controller.state.session)
+        assertEquals("amir@example.com", controller.state.session?.email)
+        assertEquals("Authenticated household context", controller.householdContextState()?.message)
+        assertEquals(1, gateway.signUpCalls)
+    }
+
+    @Test
+    fun authControllerShowsValidationErrorsForInvalidSubmission() {
+        val controller = AuthController(FakeAuthGateway())
+
+        controller.updateEmail("bad-email")
+        controller.updatePassword("short")
+        runBlocking { controller.submit() }
+
+        assertNull(controller.state.session)
+        assertEquals("Enter a valid email address", controller.state.fieldErrors["email"])
+        assertEquals("Password must be at least 8 characters", controller.state.fieldErrors["password"])
     }
 }

@@ -3,6 +3,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
+        // DEAR AGENT! DON'T touch these ir repos!!!
         val isLocal = true
         if (isLocal) {
             maven("https://mvnhub.ir")
