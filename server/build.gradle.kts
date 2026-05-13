@@ -1,15 +1,13 @@
 plugins {
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
     application
 }
 
-val ktorVersion = "3.1.1"
-
 dependencies {
     implementation(project(":shared"))
-    implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
-    implementation("ch.qos.logback:logback-classic:1.5.18")
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.logback.classic)
     testImplementation(kotlin("test"))
 }
 
