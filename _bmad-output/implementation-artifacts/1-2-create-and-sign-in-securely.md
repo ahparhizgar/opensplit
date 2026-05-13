@@ -14,7 +14,7 @@ so that I can access my households and expenses on mobile or web.
 2. Given a new user signs up, then only the minimum access information is required.
 3. Given a returning user is on the sign-in screen, when they submit valid credentials, then the user is authenticated and routed to their household context.
 4. Given the user enters invalid credentials or incomplete data, when they submit the form, then inline validation or an error message is shown.
-5. Given the user submits invalid data, then no session is created.
+5. Given the user submits invalid data, then no token is created.
 
 ## Tasks / Subtasks
 
@@ -27,10 +27,10 @@ so that I can access my households and expenses on mobile or web.
   - [x] Add request/response models for sign-up, sign-in, and auth session state in `shared`.
   - [x] Reuse shared validation rules for email and password shape so client and server stay aligned.
   - [x] Keep the shared contract camelCase and JSON-friendly.
-- [x] Implement server auth endpoints and session handling. (AC: 1, 3, 5)
+- [x] Implement server auth endpoints and JWT handling. (AC: 1, 3, 5)
   - [x] Add auth routes and service logic for account creation and sign-in.
-  - [x] Create and persist secure sessions on successful auth.
-  - [x] Reject invalid credentials without creating a session.
+  - [x] Create and return secure JWTs on successful auth.
+  - [x] Reject invalid credentials without creating a token.
 - [x] Add verification coverage. (AC: 1, 2, 3, 4, 5)
   - [x] Cover shared validation and auth DTO behavior.
   - [x] Cover server auth route success and failure cases.
@@ -47,8 +47,8 @@ so that I can access my households and expenses on mobile or web.
 ### Technical Requirements
 
 - Use the pinned project stack already in the repo: Kotlin 2.3.21, Compose Multiplatform 1.10.3, Ktor 3.4.3.
-- Use the server-side Ktor auth/session facilities already supported by the chosen stack; do not upgrade libraries inside this story.
-- Keep credentials and session secrets out of UI state and logs.
+- Use bearer-token auth on the server; do not introduce cookie/session state inside this story.
+- Keep credentials and token secrets out of UI state and logs.
 - Preserve household-scoped authorization assumptions from the architecture: auth establishes identity, later stories enforce household membership.
 - Validation must happen both client-side for immediate feedback and server-side for trust.
 
@@ -61,7 +61,7 @@ so that I can access my households and expenses on mobile or web.
   - `shared/validation`
 - Keep client responsibilities to UI, local presentation state, and routing.
 - Keep shared responsibilities to DTOs, validation, and cross-platform contract types.
-- Keep server responsibilities to auth routes, session handling, and persistence.
+- Keep server responsibilities to auth routes, token handling, and persistence.
 - Use REST-style request/response shapes and camelCase JSON fields.
 - Preserve immutable, explicit state flow.
 
@@ -69,7 +69,7 @@ so that I can access my households and expenses on mobile or web.
 
 - Compose Multiplatform for the auth screens and app shell.
 - Ktor server routing for auth endpoints.
-- Ktor authentication/session support for secure sign-in state.
+- Bearer-token auth for secure sign-in state.
 - Shared Kotlin validation for consistent client/server checks.
 
 ### File Structure Requirements
@@ -84,9 +84,9 @@ so that I can access my households and expenses on mobile or web.
 
 ### Testing Requirements
 
-- Verify valid sign-up creates an account and establishes a session.
+- Verify valid sign-up creates an account and returns a JWT access token.
 - Verify valid sign-in authenticates and routes to the protected post-auth shell.
-- Verify invalid credentials and incomplete input show inline validation or an error and do not create a session.
+- Verify invalid credentials and incomplete input show inline validation or an error and do not create a token.
 - Verify shared validation rejects malformed email/password input consistently on both sides.
 - Use the existing Ktor test host pattern for server coverage.
 
@@ -104,7 +104,7 @@ so that I can access my households and expenses on mobile or web.
 ### Latest Technical Information
 
 - Ktor 3.4.3 is the pinned server version in this repo and is also the latest release surfaced during research.
-- The Ktor project documents auth and sessions as first-class server plugins in the 3.4.x line; use those plugin conventions instead of ad hoc session plumbing.
+- The Ktor project documents auth as first-class server support in the 3.4.x line; use bearer-token validation instead of session plumbing.
 - If docs and examples differ across versions, trust the repo-pinned Ktor 3.4.3 dependency and update only within the story’s scope.
 
 ### Project Structure Notes
@@ -141,8 +141,8 @@ gpt-5.4-mini
 - Workflow customization resolved successfully; no prepend/append hooks were configured.
 - No `project-context.md` file was present in the workspace, so the story was built from planning artifacts and current source files.
 - Current codebase still contains starter placeholders in `client`, `server`, and `shared`; auth should be added as the first real feature slice.
-- Implemented shared auth DTOs and validation, server auth routes with session handling, and a client auth shell/controller.
-- Added a real client-side Ktor auth gateway with HTTP sign-up/sign-in calls.
+- Implemented shared auth DTOs and validation, server auth routes with JWT handling, and a client auth shell/controller.
+- Added a real client-side Ktor auth gateway with HTTP sign-up/sign-in calls and bearer-token fetches.
 - Added platform-specific Ktor HTTP client factories and a JVM network integration test.
 - Added shared validation tests, server auth route tests, and client auth state tests.
 - Verified the full regression suite with `./gradlew test`.
@@ -153,7 +153,7 @@ gpt-5.4-mini
 - Scoped the story to auth only and explicitly deferred household creation/joining to Story 1.3.
 - Anchored the implementation to the existing KMP starter, the pinned Ktor 3.4.3 stack, and the feature-first architecture.
 - Added `client/features/auth`, `server/features/auth`, `shared/dto/auth`, and `shared/validation/auth`.
-- Added session-backed sign-up, sign-in, and household-context server endpoints.
+- Added JWT-backed sign-up, sign-in, and household-context server endpoints.
 - Added client-side real HTTP auth calls with Ktor and platform client factories.
 - Added a JVM integration test covering the auth gateway network path.
 - Verified implementation with `./gradlew :shared:jvmTest :client:jvmTest :server:test` and `./gradlew test`.
@@ -193,7 +193,7 @@ gpt-5.4-mini
 - 2026-05-13: Converted the server module to a minimal Ktor JVM backend with health routing.
 - 2026-05-13: Moved plugin and server dependency versions into `gradle/libs.versions.toml`.
 - 2026-05-13: Added JVM client and server tests covering starter behavior and the Ktor health endpoint.
-- 2026-05-13: Implemented secure auth flow, shared DTOs/validation, and session-backed server endpoints.
+- 2026-05-13: Implemented secure auth flow, shared DTOs/validation, and JWT-backed server endpoints.
 - 2026-05-13: Added auth validation, server route, and client state tests; full regression suite passed.
 - 2026-05-13: Added a real client auth gateway with platform HTTP client factories and a JVM network integration test.
 

@@ -21,7 +21,9 @@ dependencies {
     implementation(libs.ktor.serverNetty)
     implementation(libs.ktor.serverContentNegotiation)
     implementation(libs.ktor.serializationKotlinxJson)
-    implementation(libs.ktor.serverSessions)
+    implementation(libs.ktor.serverAuth)
+    implementation(libs.ktor.serverAuthJwt)
+    implementation(libs.ktor.jwt)
 
     // Database: Exposed + HikariCP + PostgreSQL driver
     implementation("org.jetbrains.exposed:exposed-core:0.41.1")

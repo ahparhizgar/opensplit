@@ -7,6 +7,8 @@ import com.opensplit.dto.auth.SignInRequest
 import com.opensplit.dto.auth.SignUpRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.header
+import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -57,12 +59,9 @@ class KtorAuthGateway(
         }
 
         val session = response.body<AuthSessionState>()
-        val householdContext = HouseholdContextState(
-            authenticated = true,
-            email = session.email,
-            householdId = session.householdId,
-            message = "Authenticated household context",
-        )
+        val householdContext = client.get("$baseUrl/household-context") {
+            header("Authorization", "Bearer ${session.accessToken}")
+        }.body<HouseholdContextState>()
         return AuthSubmissionResult(session = session, householdContext = householdContext)
     }
 }

@@ -19,6 +19,7 @@ data class AuthSessionState(
     val userId: String,
     val email: String,
     val householdId: String? = null,
+    val accessToken: String,
 )
 
 @Serializable

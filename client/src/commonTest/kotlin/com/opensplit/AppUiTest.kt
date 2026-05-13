@@ -18,7 +18,7 @@ private class FakeAuthGateway : AuthGateway {
     override suspend fun signUp(email: String, password: String): AuthSubmissionResult {
         signUpCalls++
         return AuthSubmissionResult(
-            session = AuthSessionState(userId = "user-1", email = email),
+            session = AuthSessionState(userId = "user-1", email = email, accessToken = "token-user-1-$email"),
             householdContext = HouseholdContextState(
                 authenticated = true,
                 email = email,

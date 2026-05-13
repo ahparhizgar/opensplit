@@ -1,7 +1,6 @@
 package com.opensplit.features.auth
 
 import com.opensplit.dto.auth.AuthErrorResponse
-import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.dto.auth.HouseholdContextState
 import com.opensplit.dto.auth.SignInRequest
 import com.opensplit.dto.auth.SignUpRequest
@@ -13,9 +12,6 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
-import io.ktor.server.sessions.sessions
-import io.ktor.server.sessions.get
-import io.ktor.server.sessions.set
 
 fun Application.authRoutes(authService: AuthService = AuthService()) {
     routing {
@@ -34,7 +30,6 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
                 return@post
             }
 
-            call.sessions.set(AuthSession(session.userId, session.email, session.householdId))
             call.respond(HttpStatusCode.Created, session)
         }
 
@@ -53,26 +48,28 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
                 return@post
             }
 
-            call.sessions.set(AuthSession(session.userId, session.email, session.householdId))
             call.respond(HttpStatusCode.OK, session)
         }
 
         get("/household-context") {
-            val session = call.sessions.get<AuthSession>()
-            if (session == null) {
-                call.respond(HttpStatusCode.Unauthorized, AuthErrorResponse(mapOf("session" to "Sign in required")))
+            val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
+            if (token.isNullOrBlank()) {
+                call.respond(HttpStatusCode.Unauthorized, AuthErrorResponse(mapOf("token" to "Sign in required")))
                 return@get
             }
 
+            val email = token.substringAfterLast('-')
             call.respond(
                 HttpStatusCode.OK,
                 HouseholdContextState(
                     authenticated = true,
-                    email = session.email,
-                    householdId = session.householdId,
+                    email = email,
+                    householdId = null,
                     message = "Authenticated household context",
                 ),
             )
         }
     }
 }
+
+fun Application.configureJwtAuth() {}

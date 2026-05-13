@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 
 private class FakeGateway : AuthGateway {
     override suspend fun signUp(email: String, password: String): AuthSubmissionResult = AuthSubmissionResult(
-        session = AuthSessionState(userId = "user-2", email = email),
+        session = AuthSessionState(userId = "user-2", email = email, accessToken = "token-user-2-$email"),
         householdContext = HouseholdContextState(authenticated = true, email = email, message = "Authenticated household context"),
     )
 
