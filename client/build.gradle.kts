@@ -59,6 +59,11 @@ kotlin {
             implementation(libs.ktor.clientCore)
             implementation(libs.ktor.clientContentNegotiation)
             implementation(libs.ktor.serializationKotlinxJson)
+            api(libs.decompose)
+            api(libs.lifecycle)
+            implementation(libs.decompose.compose)
+            implementation(libs.apiCallError)
+            implementation(libs.apiCallError.ktor)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
