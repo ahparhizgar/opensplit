@@ -1,6 +1,6 @@
 # Story 1.1: Initialize the Kotlin Multiplatform starter project
 
-Status: review
+Status: done
 
 ## Story
 
@@ -126,3 +126,13 @@ gpt-5.4-mini
 - 2026-05-13: Converted the server module to a minimal Ktor JVM backend with health routing.
 - 2026-05-13: Moved plugin and server dependency versions into `gradle/libs.versions.toml`.
 - 2026-05-13: Added JVM client and server tests covering starter behavior and the Ktor health endpoint.
+
+### Review Findings
+
+- [x] [Review][Patch] Duplicate `jvm()` target in shared module [shared/build.gradle.kts:10,27] — Gradle registers the same Kotlin target twice and fails configuration.
+- [x] [Review][Patch] Repository resolution is locked to internal mirrors [settings.gradle.kts:6-9,26-29,43-45] — fresh clones and CI without those mirrors will not resolve plugins or dependencies.
+- [x] [Review][Patch] Web entrypoint and resources are not wired into the build [client/src/webMain/kotlin/com/opensplit/main.kt:1-10; client/src/webMain/resources/index.html:1-19; client/build.gradle.kts:29-40] — the files are effectively ignored because no web source set is declared.
+- [x] [Review][Patch] JVM tests hardcode Java 21 [client/src/jvmTest/kotlin/com/opensplit/ClientGreetingTest.kt:9-14; client/src/jvmTest/kotlin/com/opensplit/ClientServerSmokeTest.kt:9-13] — these assertions are brittle across JDK versions.
+- [x] [Review][Patch] Ktor development flag lookup does not match normal Gradle properties [server/build.gradle.kts:12-13] — `project.ext.has("development")` will not pick up the standard `-Pdevelopment` path.
+- [x] [Review][Patch] Committed generated IDE and build report artifacts [ .idea/caches/deviceStreaming.xml; .idea/gradle.xml; .idea/runConfigurations.xml; build/reports/problems/problems-report.html; build/reports/configuration-cache/** ] — these files are environment-specific and will churn across machines.
+- [x] [Review][Patch] Starter code is placed in a flat root package instead of the planned `app`/`features`/`core`/`navigation` layout [client/src/commonMain/kotlin/com/opensplit/App.kt:1-51; client/src/commonMain/kotlin/com/opensplit/ClientGreeting.kt:1-7; shared/src/commonMain/kotlin/domain/StarterStructure.kt:1-7; shared/src/commonMain/kotlin/validation/ModuleLayoutValidator.kt:1-6] — this creates immediate follow-up refactoring against the story’s expected structure.

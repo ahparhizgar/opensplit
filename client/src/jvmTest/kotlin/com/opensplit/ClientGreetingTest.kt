@@ -1,5 +1,6 @@
 package com.opensplit
 
+import com.opensplit.ClientGreeting
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -11,6 +12,7 @@ class ClientGreetingTest {
 
     @Test
     fun formatsPlatformSubtitle() {
-        assertEquals("Hello, Java 21!", ClientGreeting.subtitle("Java 21"))
+        val javaVersion = System.getProperty("java.version")
+        assertEquals("Hello, Java $javaVersion!", ClientGreeting.subtitle("Java $javaVersion"))
     }
 }

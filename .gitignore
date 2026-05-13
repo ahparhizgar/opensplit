@@ -1,5 +1,6 @@
 .agents
 .gradle/
+/build/
 bin/
 
 # Local configuration (sdk path, etc)
