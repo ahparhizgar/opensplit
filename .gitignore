@@ -1,1 +1,40 @@
 .agents
+.gradle/
+bin/
+
+# Local configuration (sdk path, etc)
+local.properties
+
+# Log/OS
+*.log
+
+# Android Studio
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+output.json
+
+# IntelliJ
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# Keystore
+debugkeystore/
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
+# Android Profiling
+*.hprof
+
+# Mac OS
+*/.Ds_store
+.Ds_store
+
+# Kotlin
+.kotlin/
+
+# Screenshots
+screenshots/
