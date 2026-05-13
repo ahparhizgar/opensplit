@@ -78,6 +78,8 @@ gpt-5.4-mini
 - Verified the scaffold with `./gradlew test` and `./gradlew build`; both completed successfully.
 - Converted the `server` module to a minimal Ktor JVM application with an embedded Netty entry point and `/health` route.
 - Verified the server module with `./gradlew :server:build`.
+- Added `gradle/libs.versions.toml` and switched the root and server build scripts to version-catalog aliases.
+- Re-verified the server module after the catalog migration with `./gradlew :server:build`.
 
 ### File List
 
@@ -85,6 +87,7 @@ gpt-5.4-mini
 - `build.gradle.kts`
 - `settings.gradle.kts`
 - `gradle.properties`
+- `gradle/libs.versions.toml`
 - `client/build.gradle.kts`
 - `client/src/commonMain/kotlin/app/ClientApp.kt`
 - `client/src/commonMain/kotlin/core/ClientState.kt`
@@ -107,6 +110,7 @@ gpt-5.4-mini
 - 2026-05-13: Added the initial KMP-style client/server/shared starter scaffold and shared module verification test.
 - 2026-05-13: Verified the starter scaffold with the Gradle wrapper and marked the project ready for review.
 - 2026-05-13: Converted the server module to a minimal Ktor JVM backend with health routing.
+- 2026-05-13: Moved plugin and server dependency versions into `gradle/libs.versions.toml`.
 
 ### Change Log
 

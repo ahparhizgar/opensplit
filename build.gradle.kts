@@ -1,5 +1,4 @@
 plugins {
-    kotlin("multiplatform") version "2.1.10" apply false
-    kotlin("jvm") version "2.1.10" apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
 }
-
