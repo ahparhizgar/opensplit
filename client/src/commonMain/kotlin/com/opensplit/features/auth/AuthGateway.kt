@@ -45,24 +45,32 @@ class KtorAuthGateway(
     )
 
     private suspend fun submit(path: String, request: Any): AuthSubmissionResult {
-        val response = client.post("$baseUrl$path") {
-            contentType(ContentType.Application.Json)
-            setBody(request)
-        }
+        return try {
+            val response = client.post("$baseUrl$path") {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
 
-        if (response.status != HttpStatusCode.OK && response.status != HttpStatusCode.Created) {
-            val error = runCatching { response.body<AuthErrorResponse>() }.getOrNull()
-            throw AuthRemoteException(
-                fieldErrors = error?.errors ?: emptyMap(),
-                generalError = error?.errors?.values?.firstOrNull() ?: "Authentication failed",
-            )
-        }
+            if (response.status != HttpStatusCode.OK && response.status != HttpStatusCode.Created) {
+                val error = runCatching { response.body<AuthErrorResponse>() }.getOrNull()
+                throw AuthRemoteException(
+                    fieldErrors = error?.errors ?: emptyMap(),
+                    generalError = error?.errors?.values?.firstOrNull() ?: "Authentication failed",
+                )
+            }
 
-        val session = response.body<AuthSessionState>()
-        val householdContext = client.get("$baseUrl/household-context") {
-            header("Authorization", "Bearer ${session.accessToken}")
-        }.body<HouseholdContextState>()
-        return AuthSubmissionResult(session = session, householdContext = householdContext)
+            val session = response.body<AuthSessionState>()
+            val householdContext = client.get("$baseUrl/household-context") {
+                header("Authorization", "Bearer ${session.accessToken}")
+            }.body<HouseholdContextState>()
+            AuthSubmissionResult(session = session, householdContext = householdContext)
+        } catch (e: AuthRemoteException) {
+            throw e
+        } catch (e: Throwable) {
+            // Transport-level error (network, timeouts, etc.). Convert to AuthRemoteException so
+            // higher layers can display a user-friendly message.
+            throw AuthRemoteException(generalError = e.message ?: "Network error")
+        }
     }
 }
 

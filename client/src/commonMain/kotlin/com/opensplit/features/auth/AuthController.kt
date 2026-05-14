@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.validation.auth.AuthValidation
+import com.ahparhizgar.apicallerror.ApiCallError
 
 enum class AuthMode {
     SignIn,
@@ -71,6 +72,15 @@ class AuthController(
             state = state.copy(
                 fieldErrors = error.fieldErrors,
                 generalError = error.generalError,
+                session = null,
+                isSubmitting = false,
+            )
+        } catch (error: ApiCallError) {
+            // Convert ApiCallError to user-facing message when possible
+            val message = error.message ?: "Request failed"
+            state = state.copy(
+                fieldErrors = emptyMap(),
+                generalError = message,
                 session = null,
                 isSubmitting = false,
             )
