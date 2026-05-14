@@ -2,7 +2,9 @@ package com.opensplit
 
 import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.dto.auth.HouseholdContextState
-import com.opensplit.features.auth.AuthController
+import com.opensplit.features.auth.DefaultAuthComponent
+import com.opensplit.component.DefaultCContext
+import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.opensplit.features.auth.AuthGateway
 import com.opensplit.features.auth.AuthMode
 import com.opensplit.features.auth.AuthSubmissionResult
@@ -24,22 +26,26 @@ private class FakeGateway : AuthGateway {
 class ComposeAppCommonTest {
     @Test
     fun authControllerUsesSharedValidationAndRoutesOnSuccess() {
-        val controller = AuthController(FakeGateway())
+        val lifecycle = LifecycleRegistry()
+        val cctx = DefaultCContext(lifecycle = lifecycle)
+        val component = DefaultAuthComponent.Factory(FakeGateway()).create(cctx)
 
-        controller.useSignUp()
-        controller.updateEmail("bad-email")
-        controller.updatePassword("short")
-        runBlocking { controller.submit() }
+        component.useSignUp()
+        component.updateEmail("bad-email")
+        component.updatePassword("short")
+        runBlocking { component.submit() }
 
-        assertTrue(controller.state.fieldErrors.isNotEmpty())
-        assertEquals(AuthMode.SignUp, controller.state.mode)
-        assertFalse(controller.state.session != null)
+        val state1 = component.uiState.value
+        assertTrue(state1.fieldErrors.isNotEmpty())
+        assertEquals(AuthMode.SignUp, state1.mode)
+        assertFalse(state1.session != null)
 
-        controller.updateEmail("valid@example.com")
-        controller.updatePassword("password123")
-        runBlocking { controller.submit() }
+        component.updateEmail("valid@example.com")
+        component.updatePassword("password123")
+        runBlocking { component.submit() }
 
-        assertTrue(controller.state.fieldErrors.isEmpty())
-        assertEquals("valid@example.com", controller.state.session?.email)
+        val state2 = component.uiState.value
+        assertTrue(state2.fieldErrors.isEmpty())
+        assertEquals("valid@example.com", state2.session?.email)
     }
 }
