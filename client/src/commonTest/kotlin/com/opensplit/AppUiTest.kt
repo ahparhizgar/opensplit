@@ -1,11 +1,12 @@
 package com.opensplit
 
-import com.opensplit.features.auth.AuthController
+import com.opensplit.features.auth.DefaultAuthComponent
+import com.opensplit.component.DefaultCContext
+import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.opensplit.features.auth.AuthGateway
 import com.opensplit.features.auth.AuthSubmissionResult
 import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.dto.auth.HouseholdContextState
-import com.opensplit.features.auth.householdContextState
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -34,28 +35,33 @@ class AppUiTest {
     @Test
     fun authControllerRoutesToHouseholdContextAfterValidSubmission() {
         val gateway = FakeAuthGateway()
-        val controller = AuthController(gateway)
+        val lifecycle = LifecycleRegistry()
+        val cctx = DefaultCContext(lifecycle = lifecycle)
+        val component = DefaultAuthComponent.Factory(gateway).create(cctx)
 
-        controller.updateEmail("amir@example.com")
-        controller.updatePassword("password123")
-        runBlocking { controller.submit() }
+        component.updateEmail("amir@example.com")
+        component.updatePassword("password123")
+        runBlocking { component.submit() }
 
-        assertNotNull(controller.state.session)
-        assertEquals("amir@example.com", controller.state.session?.email)
-        assertEquals("Authenticated household context", controller.householdContextState()?.message)
+        val state = component.uiState.value
+        assertNotNull(state.session)
+        assertEquals("amir@example.com", state.session?.email)
         assertEquals(1, gateway.signUpCalls)
     }
 
     @Test
     fun authControllerShowsValidationErrorsForInvalidSubmission() {
-        val controller = AuthController(FakeAuthGateway())
+        val lifecycle = LifecycleRegistry()
+        val cctx = DefaultCContext(lifecycle = lifecycle)
+        val component = DefaultAuthComponent.Factory(FakeAuthGateway()).create(cctx)
 
-        controller.updateEmail("bad-email")
-        controller.updatePassword("short")
-        runBlocking { controller.submit() }
+        component.updateEmail("bad-email")
+        component.updatePassword("short")
+        runBlocking { component.submit() }
 
-        assertNull(controller.state.session)
-        assertEquals("Enter a valid email address", controller.state.fieldErrors["email"])
-        assertEquals("Password must be at least 8 characters", controller.state.fieldErrors["password"])
+        val state = component.uiState.value
+        assertNull(state.session)
+        assertEquals("Enter a valid email address", state.fieldErrors["email"])
+        assertEquals("Password must be at least 8 characters", state.fieldErrors["password"])
     }
 }

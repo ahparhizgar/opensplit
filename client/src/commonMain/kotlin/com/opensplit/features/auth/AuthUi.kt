@@ -17,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -25,24 +27,36 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AuthRootScreen(
-    controller: AuthController,
+    component: AuthComponent,
     modifier: Modifier = Modifier,
 ) {
-    val state = controller.state
+    val state by component.uiState.collectAsState()
+    val session = state.session
     MaterialTheme {
         Surface(modifier = modifier.fillMaxSize()) {
-            if (state.session == null) {
-                AuthEntryScreen(controller = controller)
+            if (session == null) {
+                AuthEntryScreen(component = component)
             } else {
-                HouseholdContextShell(state = controller.householdContextState()!!)
+                HouseholdContextShell(
+                    state = HouseholdContextState(
+                        message = "Authenticated household context",
+                        email = session.email,
+                        householdId = session.householdId,
+                    )
+                )
             }
         }
     }
 }
 
+data class HouseholdContextState(
+    val message: String,
+    val email: String,
+    val householdId: String? = null,
+)
 @Composable
-fun AuthEntryScreen(controller: AuthController) {
-    val state = controller.state
+fun AuthEntryScreen(component: AuthComponent) {
+    val state by component.uiState.collectAsState(initial = com.opensplit.features.auth.AuthViewState())
     val scope = rememberCoroutineScope()
     val title = if (state.mode == AuthMode.SignUp) "Create account" else "Sign in"
     val primaryAction = authSubmitLabel(state.mode)
@@ -62,7 +76,7 @@ fun AuthEntryScreen(controller: AuthController) {
         Spacer(modifier = Modifier.height(24.dp))
         OutlinedTextField(
             value = state.email,
-            onValueChange = controller::updateEmail,
+            onValueChange = component::updateEmail,
             label = { Text("Email") },
             isError = state.fieldErrors.containsKey("email"),
             modifier = Modifier
@@ -76,7 +90,7 @@ fun AuthEntryScreen(controller: AuthController) {
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             value = state.password,
-            onValueChange = controller::updatePassword,
+            onValueChange = component::updatePassword,
             label = { Text("Password") },
             isError = state.fieldErrors.containsKey("password"),
             modifier = Modifier
@@ -93,7 +107,7 @@ fun AuthEntryScreen(controller: AuthController) {
         }
         Spacer(modifier = Modifier.height(20.dp))
         Button(
-            onClick = { scope.launch { controller.submit() } },
+            onClick = { scope.launch { component.submit() } },
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("auth-submit"),
@@ -104,9 +118,9 @@ fun AuthEntryScreen(controller: AuthController) {
         TextButton(
             onClick = {
                 if (state.mode == AuthMode.SignUp) {
-                    controller.useSignIn()
+                    component.useSignIn()
                 } else {
-                    controller.useSignUp()
+                    component.useSignUp()
                 }
             },
             modifier = Modifier.testTag("auth-toggle-mode"),
