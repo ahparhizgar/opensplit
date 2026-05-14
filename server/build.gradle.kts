@@ -1,16 +1,16 @@
-import java.net.URL
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import java.net.URL
 
 plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ktor)
-//    id("com.github.johnrengelman.shadow") version "8.1.1"
     application
 }
 
 group = "com.opensplit"
 version = "1.0.0"
+
 application {
     mainClass.set("com.opensplit.ApplicationKt")
 
@@ -52,20 +52,40 @@ tasks.withType(ShadowJar::class.java) {
     }
 }
 
-// Docker / compose helper tasks to make it easy to start the DB+server from Gradle
+// Allow overriding via -PdockerCmd=/path/to/docker when running Gradle
+val dockerExecutable: String = (project.findProperty("dockerCmd") as String?)
+    ?: "/usr/local/bin/docker"
 
+// Docker / compose helper tasks to make it easy to start the DB+server from Gradle
 tasks.register<Exec>("dockerComposeUp") {
     group = "docker"
-    description = "Builds and starts docker-compose (db + server) using repository root docker-compose.yml"
+    description =
+        "Builds and starts docker-compose (db + server) using repository root docker-compose.yml"
     dependsOn("shadowJar")
     // use the repository-level docker-compose file
-    commandLine("docker", "compose", "-f", project.rootDir.resolve("docker-compose.yml").toString(), "up", "-d", "--build")
+    // use resolved docker executable (helps when Gradle daemon PATH doesn't include docker)
+    commandLine(
+        dockerExecutable,
+        "compose",
+        "-f",
+        project.rootDir.resolve("docker-compose.yml").toString(),
+        "up",
+        "-d",
+        "--build"
+    )
 }
 
 tasks.register<Exec>("dockerComposeDown") {
     group = "docker"
-    description = "Stops and removes docker-compose services defined in repository root docker-compose.yml"
-    commandLine("docker", "compose", "-f", project.rootDir.resolve("docker-compose.yml").toString(), "down")
+    description =
+        "Stops and removes docker-compose services defined in repository root docker-compose.yml"
+    commandLine(
+        dockerExecutable,
+        "compose",
+        "-f",
+        project.rootDir.resolve("docker-compose.yml").toString(),
+        "down"
+    )
 }
 
 // Waits for the Ktor health endpoint to respond 200
@@ -105,14 +125,7 @@ tasks.register("waitForHealth") {
 // Top-level task: start everything and wait until server is ready so clients can connect
 tasks.register("startBackend") {
     group = "application"
-    description = "Starts Postgres + server via docker-compose and waits until the server /health is ready"
+    description =
+        "Starts Postgres + server via docker-compose and waits until the server /health is ready"
     dependsOn("waitForHealth")
 }
-
-// Produce a convenience task name to build the fat jar locally
-//tasks.register("buildFatJar") {
-//    group = "build"
-//    description = "Builds the fat (shadow) jar for the server"
-//    dependsOn("shadowJar")
-//}
-
