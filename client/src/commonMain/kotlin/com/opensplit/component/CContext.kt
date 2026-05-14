@@ -81,6 +81,7 @@ fun ApiCallShower.apiCallScopeShower(): CoroutineScope {
     val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         when (throwable) {
             is ApiCallError -> {
+                // If this context can show API call errors, display it to the user
                 showApiCallError(throwable)
             }
 
@@ -93,7 +94,15 @@ fun ApiCallShower.apiCallScopeShower(): CoroutineScope {
 fun CContext.apiCallScope(): CoroutineScope {
     val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         when (throwable) {
-            is ApiCallError -> {// todo
+            is ApiCallError -> {
+                // If the current CContext also implements ApiCallShower, delegate
+                // to the UI-friendly error presenter. Otherwise, log a message so
+                // that non-UI contexts don't silently swallow errors.
+                if (this is ApiCallShower) {
+                    this.showApiCallError(throwable)
+                } else {
+                    println("ApiCallError occurred: ${throwable.message ?: throwable}")
+                }
             }
 
             else -> throw throwable
