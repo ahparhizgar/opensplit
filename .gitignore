@@ -1,40 +1,19 @@
-.gradle/
-/build/
-bin/
-
-# Local configuration (sdk path, etc)
+*.iml
+.kotlin
+.gradle
+**/build/
+xcuserdata
+!src/**/build/
 local.properties
-
-# Log/OS
-*.log
-
-# Android Studio
-captures/
-.externalNativeBuild/
-.cxx/
-*.apk
-output.json
-
-# IntelliJ
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
-
-# Keystore
-debugkeystore/
-
-# Google Services (e.g. APIs or Firebase)
-google-services.json
-
-# Android Profiling
-*.hprof
-
-# Mac OS
-*/.Ds_store
-.Ds_store
-
-# Kotlin
-.kotlin/
-
-# Screenshots
-screenshots/
+.idea
+.DS_Store
+captures
+.externalNativeBuild
+.cxx
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+node_modules/

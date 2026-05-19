@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ktor)
-    application
 }
 
 group = "com.opensplit"
@@ -19,7 +18,7 @@ application {
 }
 
 dependencies {
-    implementation(projects.shared)
+    api(projects.core)
     implementation(libs.logback)
     implementation(libs.ktor.serverCore)
     implementation(libs.ktor.serverNetty)
