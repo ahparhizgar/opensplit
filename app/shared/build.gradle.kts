@@ -70,6 +70,7 @@ kotlin {
             implementation(libs.decompose.compose)
             implementation(libs.apiCallError)
             implementation(libs.apiCallError.ktor)
+            implementation(libs.koin.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
