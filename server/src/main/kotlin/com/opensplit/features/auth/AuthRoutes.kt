@@ -5,6 +5,7 @@ import com.opensplit.dto.auth.HouseholdContextState
 import com.opensplit.dto.auth.SignInRequest
 import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.validation.auth.AuthValidation
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.request.receive
@@ -30,6 +31,8 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
                 return@post
             }
 
+            // set cookie expected by tests
+            call.response.headers.append(HttpHeaders.SetCookie, "opensplit-auth-session=${session.accessToken}; Path=/; HttpOnly")
             call.respond(HttpStatusCode.Created, session)
         }
 
@@ -48,11 +51,17 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
                 return@post
             }
 
+            // set cookie expected by tests
+            call.response.headers.append(HttpHeaders.SetCookie, "opensplit-auth-session=${session.accessToken}; Path=/; HttpOnly")
             call.respond(HttpStatusCode.OK, session)
         }
 
         get("/household-context") {
-            val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
+            var token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
+            if (token.isNullOrBlank()) {
+                val cookieHeader = call.request.headers[HttpHeaders.Cookie]
+                token = cookieHeader?.split(';')?.map { it.trim() }?.firstOrNull { it.startsWith("opensplit-auth-session=") }?.substringAfter("=")
+            }
             if (token.isNullOrBlank()) {
                 call.respond(HttpStatusCode.Unauthorized, AuthErrorResponse(mapOf("token" to "Sign in required")))
                 return@get

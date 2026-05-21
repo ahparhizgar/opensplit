@@ -9,6 +9,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import com.opensplit.routes.healthRoute
+import com.opensplit.routes.householdRoutes
 import com.opensplit.features.auth.authRoutes
 import com.opensplit.features.auth.configureJwtAuth
 
@@ -30,5 +31,6 @@ fun Application.module() {
 
     configureJwtAuth()
     authRoutes()
+    householdRoutes()
     healthRoute()
 }
