@@ -97,7 +97,8 @@
           "io.ktor:ktor-serialization-kotlinx-json",
           "com.arkivanov.decompose:extensions-compose",
           "io.github.ahparhizgar:api-call-error",
-          "io.github.ahparhizgar:api-call-error-ktor"
+          "io.github.ahparhizgar:api-call-error-ktor",
+          "io.insert-koin:koin-core"
         ],
         "sourceSetCInteropMetadataDirectory": "appleMain-cinterop",
         "binaryLayout": "klib",
@@ -124,7 +125,8 @@
           "io.ktor:ktor-serialization-kotlinx-json",
           "com.arkivanov.decompose:extensions-compose",
           "io.github.ahparhizgar:api-call-error",
-          "io.github.ahparhizgar:api-call-error-ktor"
+          "io.github.ahparhizgar:api-call-error-ktor",
+          "io.insert-koin:koin-core"
         ],
         "binaryLayout": "klib"
       },
@@ -150,7 +152,8 @@
           "io.ktor:ktor-serialization-kotlinx-json",
           "com.arkivanov.decompose:extensions-compose",
           "io.github.ahparhizgar:api-call-error",
-          "io.github.ahparhizgar:api-call-error-ktor"
+          "io.github.ahparhizgar:api-call-error-ktor",
+          "io.insert-koin:koin-core"
         ],
         "sourceSetCInteropMetadataDirectory": "iosMain-cinterop",
         "binaryLayout": "klib",
@@ -178,7 +181,8 @@
           "io.ktor:ktor-serialization-kotlinx-json",
           "com.arkivanov.decompose:extensions-compose",
           "io.github.ahparhizgar:api-call-error",
-          "io.github.ahparhizgar:api-call-error-ktor"
+          "io.github.ahparhizgar:api-call-error-ktor",
+          "io.insert-koin:koin-core"
         ],
         "sourceSetCInteropMetadataDirectory": "nativeMain-cinterop",
         "binaryLayout": "klib",
@@ -207,7 +211,8 @@
           "io.ktor:ktor-serialization-kotlinx-json",
           "com.arkivanov.decompose:extensions-compose",
           "io.github.ahparhizgar:api-call-error",
-          "io.github.ahparhizgar:api-call-error-ktor"
+          "io.github.ahparhizgar:api-call-error-ktor",
+          "io.insert-koin:koin-core"
         ],
         "binaryLayout": "klib"
       }
