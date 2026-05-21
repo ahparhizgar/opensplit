@@ -26,14 +26,14 @@ interface CContext : GenericComponentContext<CContext> {
 }
 
 interface StackNavigationOwner {
-    val navigation: StackNavigation<Any>?
+    val navigation: StackNavigation<Any>
 }
 
 val CContext.navigation
     get() = stackNavigationOwner.navigation
 
-class CallBackNavigationOwner() : StackNavigationOwner {
-    override var navigation: StackNavigation<Any>? = null
+class CallBackNavigationOwner : StackNavigationOwner {
+    override var navigation: StackNavigation<Any> = StackNavigation()
 }
 
 class DefaultCContext(

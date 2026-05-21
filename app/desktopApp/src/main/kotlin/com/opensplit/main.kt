@@ -6,8 +6,9 @@ import androidx.compose.ui.window.rememberWindowState
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.opensplit.component.DefaultCContext
-import com.opensplit.features.auth.DefaultAuthComponent
+import com.opensplit.root.RootComponent
 import org.koin.core.context.GlobalContext.startKoin
+import org.koin.core.parameter.parametersOf
 import javax.swing.SwingUtilities
 
 fun main() {
@@ -19,9 +20,7 @@ fun main() {
         }.koin
 
     val root = runOnUiThread {
-        koin.get<DefaultAuthComponent.Factory>().create(
-            context = DefaultCContext(lifecycle = lifecycle),
-        )
+        koin.get<RootComponent>(parameters = { parametersOf(DefaultCContext(lifecycle = lifecycle)) })
     }
     application {
         val windowState = rememberWindowState()

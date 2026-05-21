@@ -5,18 +5,25 @@ import com.opensplit.datastore.createDataStore
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthGateway
 import com.opensplit.features.auth.DefaultAuthComponent
-import com.opensplit.features.auth.NoOpTokenStorage
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.auth.createAuthGateway
+import com.opensplit.root.ComponentProvider
+import com.opensplit.root.DefaultRootComponent
+import com.opensplit.root.KoinComponentProvider
+import com.opensplit.root.RootComponent
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
 fun appModule() = module {
+    factory {
+        KoinComponentProvider(this)
+    }.bind<ComponentProvider>()
     factoryOf(::DataStoreTokenStorage)
     single { createDataStore() }
     factory { createAuthGateway() }.bind<AuthGateway>()
     singleOf(::DataStoreTokenStorage).bind<TokenStorage>()
-    factoryOf(DefaultAuthComponent::Factory).bind<AuthComponent.Factory>()
+    factoryOf(::DefaultRootComponent).bind<RootComponent>()
+    factoryOf(::DefaultAuthComponent).bind<AuthComponent>()
 }
