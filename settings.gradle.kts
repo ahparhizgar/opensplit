@@ -24,6 +24,15 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories {
         val isLocal = System.getenv("IS_LOCAL")?.toBoolean() ?: false
+        exclusiveContent {
+            forRepository {
+                mavenCentral()
+            }
+
+            filter {
+                includeGroup("com.squareup.okio")
+            }
+        }
         if (isLocal) {
             maven("https://mvnhub.ir")
             maven("https://maven.myket.ir")

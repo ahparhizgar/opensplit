@@ -12,7 +12,7 @@ plugins {
 
 kotlin {
     listOf(
-        iosArm64(),
+//        iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
@@ -23,9 +23,9 @@ kotlin {
 
     jvm()
 
-    js {
-        browser()
-    }
+//    js {
+//        browser()
+//    }
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
@@ -73,12 +73,16 @@ kotlin {
             implementation(libs.apiCallError)
             implementation(libs.apiCallError.ktor)
             implementation(libs.koin.core)
+            implementation(libs.androidx.datastore.core)
+            implementation(libs.androidx.datastore.preferences.core)
+            implementation(libs.androidx.datastore.core.okio)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.compose.test)
             implementation(libs.kotest.framework)
             implementation(libs.kotest.assertion)
+            implementation(libs.koin.test)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -94,9 +98,12 @@ kotlin {
             implementation(libs.ktor.serverTestHost)
             implementation(libs.kotest.junit)
         }
-        jsMain.dependencies {
-            implementation(libs.wrappers.browser)
+        wasmJsMain.dependencies {
+//            implementation("androidx.datastore:datastore-core-okio:1.2.1")
         }
+//        jsMain.dependencies {
+//            implementation(libs.wrappers.browser)
+//        }
     }
 }
 

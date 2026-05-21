@@ -25,6 +25,7 @@ koinCompose = "1.1.5"
 apiCallError = "0.1.0"
 kotest = "6.1.11"
 ksp = "2.3.8"
+datastorePreferences = "1.3.0-alpha09"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -68,11 +69,16 @@ decompose-compose = { module = "com.arkivanov.decompose:extensions-compose", ver
 decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
 lifecycle = { module = "com.arkivanov.essenty:lifecycle", version.ref = "lifecycle" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koinCompose" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 kotest-framework = { group = "io.kotest", name = "kotest-framework-engine", version.ref = "kotest" }
 kotest-junit = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
 kotest-assertion = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastorePreferences" }
+androidx-datastore-core = { module = "androidx.datastore:datastore-core", version.ref = "datastorePreferences" }
+androidx-datastore-core-okio = { module = "androidx.datastore:datastore-core-okio", version.ref = "datastorePreferences" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

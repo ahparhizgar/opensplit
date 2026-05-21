@@ -38,6 +38,7 @@ interface AuthComponent {
 class DefaultAuthComponent(
     context: CContext,
     private val gateway: AuthGateway,
+    private val tokenStorage: TokenStorage,
 ) : AuthComponent, CContext by context {
     private val _uiState = MutableStateFlow(AuthViewState())
     override val uiState: StateFlow<AuthViewState> = _uiState
@@ -79,7 +80,14 @@ class DefaultAuthComponent(
             val result = when (current.mode) {
                 AuthMode.SignIn -> gateway.signIn(current.email, current.password)
                 AuthMode.SignUp -> gateway.signUp(current.email, current.password)
-                else -> gateway.signIn(current.email, current.password)
+            }
+            // Persist access token (best-effort). Swallow errors so persistence
+            // problems don't prevent successful authentication from being reported.
+            try {
+                result.session.accessToken.let { token ->
+                    tokenStorage.saveAccessToken(token)
+                }
+            } catch (_: Throwable) {
             }
             _uiState.update {
                 it.copy(
@@ -101,8 +109,11 @@ class DefaultAuthComponent(
         }
     }
 
-    class Factory(private val gateway: AuthGateway) : AuthComponent.Factory {
-        override fun create(context: CContext): AuthComponent = DefaultAuthComponent(context = context, gateway = gateway)
+    class Factory(
+        private val gateway: AuthGateway,
+        private val tokenStorage: TokenStorage,
+    ) : AuthComponent.Factory {
+        override fun create(context: CContext): AuthComponent = DefaultAuthComponent(context = context, gateway = gateway, tokenStorage = tokenStorage)
     }
 }
 
