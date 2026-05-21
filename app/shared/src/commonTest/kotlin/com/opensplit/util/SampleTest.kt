@@ -1,6 +1,7 @@
 package com.opensplit.util
 
 import io.kotest.core.names.TestName
+import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.core.spec.style.TestXMethod
 import io.kotest.core.spec.style.scopes.BehaviorSpecWhenContainerScope
@@ -67,26 +68,26 @@ suspend fun ContainerScope.When(
     }
 
 class SampleTestWrong : BehaviorSpec({
-    given("a view model") {
+    Given("a view model") {
         var myVar = 1
-        `when`("first when") {
+        When("first when") {
             myVar = 2
-            then("first then 2") {
+            Then("first then 2") {
                 myVar shouldBe 2
             }
         }
 
-        `when`("second when") {
+        When("second when") {
             myVar += 1
-            then("!second then") {
-                myVar shouldBe 2
+            Then("second then") {
+                myVar shouldBe 3 // not 2
                 println(logs)
             }
         }
     }
 })
 
-fun <T> BehaviorSpec.testValue(initializer: () -> T): ReadWriteProperty<Any?, T> {
+fun <T> Spec.testValue(initializer: () -> T): ReadWriteProperty<Any?, T> {
     var isInitialized = false
     var backingValue: T? = null
     beforeEach {

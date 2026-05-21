@@ -14,9 +14,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class HouseholdRoutesTest {
+class HouseholdScenarios {
     @Test
-    fun createAndJoinHouseholdFlow() = testOpenSplit {
+    fun createAndJoinHousehold() = testOpenSplit {
         val signUp = client.post("/users") {
             setBody(SignUpRequest("member2@example.com", "password123"))
         }
