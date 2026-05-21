@@ -1,6 +1,6 @@
 # Story 1.2: Create and sign in securely
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -199,4 +199,4 @@ gpt-5.4-mini
 
 ### Status
 
-- review
+- done
