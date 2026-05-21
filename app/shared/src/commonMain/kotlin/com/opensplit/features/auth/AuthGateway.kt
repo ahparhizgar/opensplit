@@ -1,6 +1,6 @@
 package com.opensplit.features.auth
 
-import com.opensplit.dto.auth.AuthErrorResponse
+import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.dto.auth.HouseholdContextState
 import com.opensplit.dto.auth.SignInRequest
@@ -52,7 +52,7 @@ class KtorAuthGateway(
             }
 
             if (response.status != HttpStatusCode.OK && response.status != HttpStatusCode.Created) {
-                val error = runCatching { response.body<AuthErrorResponse>() }.getOrNull()
+                val error = runCatching { response.body<ErrorResponse>() }.getOrNull()
                 throw AuthRemoteException(
                     fieldErrors = error?.errors ?: emptyMap(),
                     generalError = error?.errors?.values?.firstOrNull() ?: "Authentication failed",
