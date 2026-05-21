@@ -24,6 +24,7 @@ koin = "4.2.1"
 koinCompose = "1.1.5"
 apiCallError = "0.1.0"
 kotest = "6.1.11"
+ksp = "2.3.8"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -82,3 +83,5 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotest = { id = "io.kotest" , version.ref = "kotest" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp"}

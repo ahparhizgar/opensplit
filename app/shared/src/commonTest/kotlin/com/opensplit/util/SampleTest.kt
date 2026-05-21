@@ -45,7 +45,7 @@ class SampleTest : BehaviorSpec({
 
 suspend fun ContainerScope.When(
     name: String,
-    action: BehaviorSpecWhenContainerScope.() -> Unit,
+    action: suspend BehaviorSpecWhenContainerScope.() -> Unit,
     test: suspend BehaviorSpecWhenContainerScope.() -> Unit
 ) =
     registerContainer(

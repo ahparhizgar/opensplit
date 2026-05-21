@@ -1,58 +1,74 @@
 package com.opensplit
 
-import com.arkivanov.essenty.lifecycle.LifecycleRegistry
-import com.opensplit.component.DefaultCContext
+import com.opensplit.component.createDefaultComponentContext
 import com.opensplit.features.auth.AuthMode
 import com.opensplit.features.auth.DefaultAuthComponent
-import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import com.opensplit.util.When
+import com.opensplit.util.createComponentContext
+import com.opensplit.util.testValue
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 
-class AuthComponentTest {
-    @Test
-    fun authControllerUsesSharedValidationAndRoutesOnSuccess() = runTest {
-        val lifecycle = LifecycleRegistry()
-        val cctx = DefaultCContext(lifecycle = lifecycle)
-        val component = DefaultAuthComponent.Factory(FakeAuthGateway()).create(cctx)
-
-        component.useSignUp()
-        component.updateEmail("bad-email")
-        component.updatePassword("short")
-        component.submit()
-
-        component.uiState.value.let { state ->
-            assertTrue(state.fieldErrors.isNotEmpty())
-            assertEquals(AuthMode.SignUp, state.mode)
-            assertFalse(state.session != null)
+class AuthComponentTest : BehaviorSpec({
+    Given("an Auth component") {
+        var gateway by testValue { FakeAuthGateway() }
+        var component by testValue {
+            DefaultAuthComponent.Factory(gateway)
+                .create(createDefaultComponentContext(createComponentContext()))
         }
 
-        component.updateEmail("valid@example.com")
-        component.updatePassword("password123")
-        component.submit()
+        When(
+            "using sign up with invalid then valid input",
+            {
+                component.useSignUp()
+                component.updateEmail("bad-email")
+                component.updatePassword("short")
+                component.submit()
+            }
+        ) {
+            Then("uses shared validation and routes on success") {
+                component.uiState.value.let { state ->
+                    state.fieldErrors.isNotEmpty().shouldBeTrue()
+                    state.mode shouldBe AuthMode.SignUp
+                    state.session shouldBe null
+                }
+            }
 
-        component.uiState.value.let { state ->
-            assertTrue(state.fieldErrors.isEmpty())
-            assertEquals("valid@example.com", state.session?.email)
+            When(
+                "providing valid credentials",
+                {
+                    component.updateEmail("valid@example.com")
+                    component.updatePassword("password123")
+                    component.submit()
+                }
+            ) {
+                Then("routes to authenticated session") {
+                    component.uiState.value.let { state ->
+                        state.fieldErrors.isEmpty().shouldBeTrue()
+                        val session = state.session.shouldNotBeNull()
+                        session.email shouldBe "valid@example.com"
+                    }
+                }
+            }
+        }
+
+        When(
+            "submitting valid credentials",
+            {
+                component.updateEmail("amir@example.com")
+                component.updatePassword("password123")
+                component.submit()
+            }
+        ) {
+            Then("routes to household context after valid submission") {
+                component.uiState.value.let { state ->
+                    val session = state.session.shouldNotBeNull()
+                    session.email shouldBe "amir@example.com"
+                    gateway.signUpCalls shouldBe 1
+                }
+            }
         }
     }
-
-    @Test
-    fun authControllerRoutesToHouseholdContextAfterValidSubmission() = runTest {
-        val gateway = FakeAuthGateway()
-        val lifecycle = LifecycleRegistry()
-        val cctx = DefaultCContext(lifecycle = lifecycle)
-        val component = DefaultAuthComponent.Factory(gateway).create(cctx)
-
-        component.updateEmail("amir@example.com")
-        component.updatePassword("password123")
-        component.submit()
-
-        val state = component.uiState.value
-        assertNotNull(state.session)
-        assertEquals("amir@example.com", state.session.email)
-        assertEquals(1, gateway.signUpCalls)
-    }
-}
+})
