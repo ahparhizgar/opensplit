@@ -40,6 +40,9 @@ dependencies {
 
     testImplementation(libs.ktor.serverTestHost)
     testImplementation(libs.kotlin.testJunit)
+    // Client-side content negotiation for tests so test HttpClient can install JSON serialization
+    testImplementation(libs.ktor.clientContentNegotiation)
+    testImplementation(libs.ktor.serializationKotlinxJson)
 }
 
 // Configure shadow fat JAR
