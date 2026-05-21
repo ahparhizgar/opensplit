@@ -15,7 +15,7 @@ import io.ktor.server.routing.routing
 
 fun Application.authRoutes(authService: AuthService = AuthService()) {
     routing {
-        post("/auth/sign-up") {
+        post("/users") {
             val request = call.receive<SignUpRequest>()
             val validation = AuthValidation.validateSignUp(request.email, request.password)
             if (!validation.isValid) {
@@ -42,7 +42,7 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
             call.respond(HttpStatusCode.Created, session)
         }
 
-        post("/auth/sign-in") {
+        post("/tokens") {
             val request = call.receive<SignInRequest>()
             val validation = AuthValidation.validateSignIn(request.email, request.password)
             if (!validation.isValid) {

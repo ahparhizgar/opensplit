@@ -35,12 +35,12 @@ class KtorAuthGateway(
     private val baseUrl: String,
 ) : AuthGateway {
     override suspend fun signUp(email: String, password: String): AuthSubmissionResult = submit(
-        path = "/auth/sign-up",
+        path = "/users",
         request = SignUpRequest(email = email, password = password),
     )
 
     override suspend fun signIn(email: String, password: String): AuthSubmissionResult = submit(
-        path = "/auth/sign-in",
+        path = "/tokens",
         request = SignInRequest(email = email, password = password),
     )
 

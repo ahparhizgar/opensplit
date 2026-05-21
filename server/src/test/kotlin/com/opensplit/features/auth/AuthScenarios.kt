@@ -17,7 +17,7 @@ import kotlin.test.assertTrue
 class AuthScenarios {
     @Test
     fun signInRejectsInvalidData() = testOpenSplit {
-        val response = client.post("/auth/sign-in") {
+        val response = client.post("/tokens") {
             setBody(SignInRequest("bad", "short"))
         }
 
@@ -28,13 +28,13 @@ class AuthScenarios {
 
     @Test
     fun cannotSignUpUsingTheSameEmail() = testOpenSplit {
-        val signUp = client.post("/auth/sign-up") {
+        val signUp = client.post("/users") {
             setBody(SignUpRequest("new@example.com", "password123"))
         }
 
         assertEquals(HttpStatusCode.Created, signUp.status)
 
-        val secondSignUp = client.post("/auth/sign-up") {
+        val secondSignUp = client.post("/users") {
             setBody(SignUpRequest("new@example.com", "newPassword123"))
         }
 
@@ -43,13 +43,13 @@ class AuthScenarios {
 
     @Test
     fun cannotSignInUsingWrongPassword() = testOpenSplit {
-        val signUp = client.post("/auth/sign-up") {
+        val signUp = client.post("/users") {
             setBody(SignUpRequest("wrong-pass@example.com", "password123"))
         }
 
         assertEquals(HttpStatusCode.Created, signUp.status)
 
-        val signIn = client.post("/auth/sign-in") {
+        val signIn = client.post("/tokens") {
             setBody(SignInRequest("wrong-pass@example.com", "incorrect"))
         }
 
@@ -63,13 +63,13 @@ class AuthScenarios {
         val email = "fresh@example.com"
         val password = "password123"
 
-        val signUp = client.post("/auth/sign-up") {
+        val signUp = client.post("/users") {
             setBody(SignUpRequest(email, password))
         }
 
         assertEquals(HttpStatusCode.Created, signUp.status)
 
-        val signIn = client.post("/auth/sign-in") {
+        val signIn = client.post("/tokens") {
             setBody(SignInRequest(email, password))
         }
 
