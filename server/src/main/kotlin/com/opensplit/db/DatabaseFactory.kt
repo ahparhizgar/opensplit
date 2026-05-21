@@ -26,7 +26,7 @@ object DatabaseFactory {
         Database.connect(ds)
         transaction {
             addLogger(StdOutSqlLogger)
-            SchemaUtils.create(Users)
+            SchemaUtils.create(Users, Households, Memberships)
         }
     }
 }

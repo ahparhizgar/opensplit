@@ -34,7 +34,7 @@ class AuthRoutesTest {
         }
 
         assertEquals(HttpStatusCode.Created, response.status)
-        val session = json.decodeFromString(AuthSessionState.serializer(), response.bodyAsText())
+        val session = json.decodeFromString<com.opensplit.dto.auth.AuthSessionState>(response.bodyAsText())
         assertEquals("new@example.com", session.email)
         assertNotNull(response.headers[HttpHeaders.SetCookie])
     }
@@ -49,7 +49,7 @@ class AuthRoutesTest {
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
-        val error = json.decodeFromString(AuthErrorResponse.serializer(), response.bodyAsText())
+        val error = json.decodeFromString<com.opensplit.dto.auth.AuthErrorResponse>(response.bodyAsText())
         assertNotNull(error.errors["email"])
         assertEquals(null, response.headers[HttpHeaders.SetCookie])
     }
@@ -70,7 +70,7 @@ class AuthRoutesTest {
 
         val signIn = client.post("/auth/sign-in") {
             contentType(ContentType.Application.Json)
-            setBody(json.encodeToString(SignInRequest.serializer(), SignInRequest("member@example.com", "password123")))
+            setBody(json.encodeToString(SignInRequest("member@example.com", "password123")))
         }
         assertEquals(HttpStatusCode.OK, signIn.status)
 
@@ -80,7 +80,7 @@ class AuthRoutesTest {
         }
         assertEquals(HttpStatusCode.OK, householdResponse.status)
 
-        val context = json.decodeFromString(HouseholdContextState.serializer(), householdResponse.bodyAsText())
+        val context = json.decodeFromString<com.opensplit.dto.auth.HouseholdContextState>(householdResponse.bodyAsText())
 
         assertEquals(true, context.authenticated)
         assertEquals("member@example.com", context.email)
