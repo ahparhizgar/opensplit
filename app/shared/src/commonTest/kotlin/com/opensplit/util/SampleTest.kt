@@ -23,7 +23,7 @@ class SampleTest : BehaviorSpec({
             }
             When("adding 3 more") {
                 beforeEach {
-                    myVar + 3
+                    myVar += 3
                 }
                 Then("should be 3") {
                     myVar shouldBe 5
@@ -33,7 +33,7 @@ class SampleTest : BehaviorSpec({
 
         When("adding one") {
             beforeEach {
-                myVar + 1
+                myVar += 1
             }
             Then("should be 2") {
                 myVar shouldBe 2
