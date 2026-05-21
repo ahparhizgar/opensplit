@@ -1,6 +1,6 @@
 # Story 1.1: Initialize the Kotlin Multiplatform starter project
 
-Status: done
+Status: review
 
 ## Story
 
