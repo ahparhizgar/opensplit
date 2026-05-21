@@ -23,7 +23,19 @@ fun Application.householdRoutes() {
     routing {
         post("/households") {
             val req = call.receive<CreateHouseholdRequest>()
-            val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
+
+            // basic validation
+            if (req.name.isBlank()) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "name must not be empty"))
+                return@post
+            }
+            if (req.name.length > 255) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "name is too long"))
+                return@post
+            }
+
+            val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ") ?: call.request.cookies["opensplit-auth-session"]
+            val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
             val email = token?.substringAfterLast('-')
             val userId = if (email != null) transaction { Users.select { Users.email eq email }.limit(1).firstOrNull()?.get(Users.id) } else null
 
@@ -33,7 +45,7 @@ fun Application.householdRoutes() {
             }
 
             val householdId = UUID.randomUUID().toString()
-            val inviteCode = UUID.randomUUID().toString().take(8)
+            val inviteCode = UUID.randomUUID().toString().replace("-", "").take(12)
 
             transaction {
                 Households.insert {
@@ -54,7 +66,8 @@ fun Application.householdRoutes() {
 
         post("/households/join") {
             val req = call.receive<JoinHouseholdRequest>()
-            val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
+            val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ") ?: call.request.cookies["opensplit-auth-session"]
+            val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
             val email = token?.substringAfterLast('-')
             val userId = if (email != null) transaction { Users.select { Users.email eq email }.limit(1).firstOrNull()?.get(Users.id) } else null
 
