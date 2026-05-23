@@ -3,6 +3,7 @@ package com.opensplit
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.arkivanov.decompose.DecomposeSettings
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.opensplit.component.DefaultCContext
@@ -22,6 +23,7 @@ fun main() {
     val root = runOnUiThread {
         koin.get<RootComponent>(parameters = { parametersOf(DefaultCContext(lifecycle = lifecycle)) })
     }
+    DecomposeSettings.settings = DecomposeSettings(duplicateConfigurationsEnabled = true)
     application {
         val windowState = rememberWindowState()
         LifecycleController(lifecycle, windowState)

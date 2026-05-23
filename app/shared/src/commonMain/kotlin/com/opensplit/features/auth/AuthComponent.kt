@@ -1,15 +1,16 @@
 package com.opensplit.features.auth
 
+import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.router.stack.pushNew
 import com.opensplit.component.CContext
 import com.opensplit.component.navigation
-import com.opensplit.root.ComponentProvider
 import com.opensplit.root.Destination
 import com.opensplit.root.DestinationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
+import kotlin.reflect.KClass
 
 
 @Serializable
@@ -40,12 +41,7 @@ interface AuthComponent : Destination {
     data class Config(
         val mode: AuthMode,
     ) : DestinationConfig {
-        override fun createComponent(
-            componentProvider: ComponentProvider,
-            cContext: CContext
-        ): Any {
-            return componentProvider(AuthComponent::class, cContext, this)
-        }
+        override val componentClass: KClass<out Any> = AuthComponent::class
     }
 }
 
@@ -66,6 +62,7 @@ class DefaultAuthComponent(
     // caller coroutine so callers/tests can await completion.
 
     override fun useSignIn() {
+        navigation.push(AuthComponent.Config(AuthMode.SignIn))
         _uiState.update {
             it.copy(
                 mode = AuthMode.SignIn,
@@ -76,7 +73,6 @@ class DefaultAuthComponent(
     }
 
     override fun useSignUp() {
-        navigation.pushNew(AuthComponent.Config(AuthMode.SignUp))
         _uiState.update {
             it.copy(
                 mode = AuthMode.SignUp,
