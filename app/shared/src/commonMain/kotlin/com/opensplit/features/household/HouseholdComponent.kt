@@ -1,144 +1,74 @@
 package com.opensplit.features.household
 
-import com.arkivanov.decompose.router.stack.pushNew
 import com.opensplit.component.CContext
+import com.opensplit.component.componentScope
 import com.opensplit.root.Destination
 import com.opensplit.root.DestinationConfig
-import com.opensplit.validation.household.HouseholdValidation
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
-@Serializable
-enum class HouseholdMode {
-    Create,
-    Join,
-}
-
-data class HouseholdViewState(
-    val mode: HouseholdMode = HouseholdMode.Create,
-    val householdName: String = "",
-    val inviteCode: String = "",
-    val fieldErrors: Map<String, String> = emptyMap(),
-    val generalError: String? = null,
-    val isSubmitting: Boolean = false,
-    val householdId: String? = null,
-)
+enum class HouseholdTab { Create, Join }
 
 interface HouseholdComponent : Destination {
-    val uiState: StateFlow<HouseholdViewState>
+    val activeTab: StateFlow<HouseholdTab>
+    val createComponent: CreateHouseholdComponent
+    val joinComponent: JoinHouseholdComponent
+    val householdId: StateFlow<String?>
     fun useCreate()
     fun useJoin()
-    fun updateHouseholdName(name: String)
-    fun updateInviteCode(code: String)
-    suspend fun submit()
 
     @Serializable
-    data class Config(
-        val mode: HouseholdMode = HouseholdMode.Create,
-    ) : DestinationConfig {
+    class Config : DestinationConfig {
         override val componentClass: KClass<out Any> = HouseholdComponent::class
     }
 }
 
 class DefaultHouseholdComponent(
     context: CContext,
-    config: HouseholdComponent.Config,
-    private val gateway: HouseholdGateway,
+    gateway: HouseholdGateway,
 ) : HouseholdComponent, CContext by context {
 
-    private val _uiState = MutableStateFlow(HouseholdViewState(mode = config.mode))
-    override val uiState: StateFlow<HouseholdViewState> = _uiState
+    private val scope = componentScope()
+
+    override val createComponent: CreateHouseholdComponent = DefaultCreateHouseholdComponent(context, gateway)
+    override val joinComponent: JoinHouseholdComponent = DefaultJoinHouseholdComponent(context, gateway)
+
+    private val _activeTab = MutableStateFlow(HouseholdTab.Create)
+    override val activeTab: StateFlow<HouseholdTab> = _activeTab
+
+    override val householdId: StateFlow<String?> = combine(
+        createComponent.uiState.map { it.householdId },
+        joinComponent.uiState.map { it.householdId },
+    ) { createId, joinId -> createId ?: joinId }.stateIn(
+        scope = scope,
+        started = SharingStarted.Eagerly,
+        initialValue = null,
+    )
 
     override fun useCreate() {
-        _uiState.update {
-            it.copy(mode = HouseholdMode.Create, fieldErrors = emptyMap(), generalError = null)
-        }
+        _activeTab.value = HouseholdTab.Create
     }
 
     override fun useJoin() {
-        _uiState.update {
-            it.copy(mode = HouseholdMode.Join, fieldErrors = emptyMap(), generalError = null)
-        }
-    }
-
-    override fun updateHouseholdName(name: String) {
-        _uiState.update {
-            it.copy(
-                householdName = name,
-                fieldErrors = it.fieldErrors - "name",
-                generalError = null,
-            )
-        }
-    }
-
-    override fun updateInviteCode(code: String) {
-        _uiState.update {
-            it.copy(
-                inviteCode = code,
-                fieldErrors = it.fieldErrors - "inviteCode",
-                generalError = null,
-            )
-        }
-    }
-
-    override suspend fun submit() {
-        val current = _uiState.value
-
-        val validation = when (current.mode) {
-            HouseholdMode.Create -> HouseholdValidation.validateCreateHousehold(current.householdName)
-            HouseholdMode.Join -> HouseholdValidation.validateJoinHousehold(current.inviteCode)
-        }
-
-        if (!validation.isValid) {
-            _uiState.update {
-                it.copy(fieldErrors = validation.errors, generalError = null, isSubmitting = false)
-            }
-            return
-        }
-
-        _uiState.update {
-            it.copy(fieldErrors = emptyMap(), generalError = null, isSubmitting = true)
-        }
-
-        try {
-            val householdId = when (current.mode) {
-                HouseholdMode.Create -> {
-                    val result = gateway.createHousehold(current.householdName)
-                    result.id
-                }
-                HouseholdMode.Join -> {
-                    val result = gateway.joinHousehold(current.inviteCode)
-                    result.householdId
-                }
-            }
-            _uiState.update {
-                it.copy(householdId = householdId, isSubmitting = false)
-            }
-        } catch (e: HouseholdRemoteException) {
-            _uiState.update {
-                it.copy(
-                    fieldErrors = e.fieldErrors,
-                    generalError = e.generalError,
-                    isSubmitting = false,
-                )
-            }
-        }
+        _activeTab.value = HouseholdTab.Join
     }
 }
 
 class FakeHouseholdComponent(
-    uiState: HouseholdViewState = HouseholdViewState(
-        householdId = "household-1",
-    )
+    householdId: String? = "household-1",
 ) : HouseholdComponent {
-    private val _uiState = MutableStateFlow(uiState)
-    override val uiState: StateFlow<HouseholdViewState> = _uiState
+    override val createComponent: CreateHouseholdComponent = FakeCreateHouseholdComponent()
+    override val joinComponent: JoinHouseholdComponent = FakeJoinHouseholdComponent()
+    private val _activeTab = MutableStateFlow(HouseholdTab.Create)
+    override val activeTab: StateFlow<HouseholdTab> = _activeTab
+    override val householdId: StateFlow<String?> = MutableStateFlow(householdId)
     override fun useCreate() {}
     override fun useJoin() {}
-    override fun updateHouseholdName(name: String) {}
-    override fun updateInviteCode(code: String) {}
-    override suspend fun submit() {}
 }
+

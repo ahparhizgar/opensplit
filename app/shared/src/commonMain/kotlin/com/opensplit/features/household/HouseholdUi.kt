@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,21 +30,19 @@ fun HouseholdRootScreen(
     component: HouseholdComponent,
     modifier: Modifier = Modifier,
 ) {
-    val state by component.uiState.collectAsState()
-    MaterialTheme {
-        Surface(modifier = modifier.fillMaxSize()) {
-            if (state.householdId == null) {
-                HouseholdSetupScreen(component = component)
-            } else {
-                HouseholdActiveScreen(householdId = state.householdId!!)
-            }
+    val householdId by component.householdId.collectAsState()
+    Surface(modifier = modifier.fillMaxSize()) {
+        if (householdId == null) {
+            HouseholdSetupScreen(component = component)
+        } else {
+            HouseholdActiveScreen(householdId = householdId!!)
         }
     }
 }
 
 @Composable
 fun HouseholdSetupScreen(component: HouseholdComponent) {
-    val state by component.uiState.collectAsState()
+    val activeTab by component.activeTab.collectAsState()
     val scope = rememberCoroutineScope()
 
     Column(
@@ -73,7 +70,7 @@ fun HouseholdSetupScreen(component: HouseholdComponent) {
             ) {
                 Text(
                     text = "Create",
-                    color = if (state.mode == HouseholdMode.Create)
+                    color = if (activeTab == HouseholdTab.Create)
                         MaterialTheme.colorScheme.primary
                     else
                         MaterialTheme.colorScheme.onSurface,
@@ -87,7 +84,7 @@ fun HouseholdSetupScreen(component: HouseholdComponent) {
             ) {
                 Text(
                     text = "Join",
-                    color = if (state.mode == HouseholdMode.Join)
+                    color = if (activeTab == HouseholdTab.Join)
                         MaterialTheme.colorScheme.primary
                     else
                         MaterialTheme.colorScheme.onSurface,
@@ -97,47 +94,67 @@ fun HouseholdSetupScreen(component: HouseholdComponent) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        when (state.mode) {
-            HouseholdMode.Create -> CreateHouseholdForm(
-                state = state,
-                onNameChange = component::updateHouseholdName,
-            )
-            HouseholdMode.Join -> JoinHouseholdForm(
-                state = state,
-                onCodeChange = component::updateInviteCode,
-            )
-        }
-
-        state.generalError?.let {
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.testTag("household-general-error"),
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        val label = if (state.mode == HouseholdMode.Create) "Create household" else "Join household"
-        Button(
-            onClick = { scope.launch { component.submit() } },
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("household-submit"),
-            enabled = !state.isSubmitting,
-        ) {
-            Text(label)
+        when (activeTab) {
+            HouseholdTab.Create -> {
+                val state by component.createComponent.uiState.collectAsState()
+                CreateHouseholdForm(
+                    state = state,
+                    onNameChange = component.createComponent::updateHouseholdName,
+                )
+                state.generalError?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.testTag("household-general-error"),
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                Button(
+                    onClick = { scope.launch { component.createComponent.submit() } },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("household-submit"),
+                    enabled = !state.isSubmitting,
+                ) {
+                    Text("Create household")
+                }
+            }
+            HouseholdTab.Join -> {
+                val state by component.joinComponent.uiState.collectAsState()
+                JoinHouseholdForm(
+                    state = state,
+                    onCodeChange = component.joinComponent::updateInviteCode,
+                )
+                state.generalError?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.testTag("household-general-error"),
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                Button(
+                    onClick = { scope.launch { component.joinComponent.submit() } },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("household-submit"),
+                    enabled = !state.isSubmitting,
+                ) {
+                    Text("Join household")
+                }
+            }
         }
     }
 }
 
 @Composable
 private fun CreateHouseholdForm(
-    state: HouseholdViewState,
+    state: CreateHouseholdViewState,
     onNameChange: (String) -> Unit,
 ) {
-    OutlinedTextField(
+    androidx.compose.material3.OutlinedTextField(
         value = state.householdName,
         onValueChange = onNameChange,
         label = { Text("Household name") },
@@ -158,10 +175,10 @@ private fun CreateHouseholdForm(
 
 @Composable
 private fun JoinHouseholdForm(
-    state: HouseholdViewState,
+    state: JoinHouseholdViewState,
     onCodeChange: (String) -> Unit,
 ) {
-    OutlinedTextField(
+    androidx.compose.material3.OutlinedTextField(
         value = state.inviteCode,
         onValueChange = onCodeChange,
         label = { Text("Invite code") },
@@ -202,3 +219,4 @@ fun HouseholdActiveScreen(householdId: String) {
         )
     }
 }
+

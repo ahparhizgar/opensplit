@@ -160,7 +160,7 @@ class DefaultAuthComponent(
                 )
             }
             navigation.pushNew(HouseholdComponent.Config())
-        } catch (e: AuthRemoteException) {
+        } catch (e: com.opensplit.remote.RemoteException) {
             _uiState.update {
                 it.copy(
                     fieldErrors = e.fieldErrors,

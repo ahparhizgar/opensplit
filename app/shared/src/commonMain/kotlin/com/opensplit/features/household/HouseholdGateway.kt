@@ -5,11 +5,14 @@ import com.opensplit.dto.household.CreateHouseholdRequest
 import com.opensplit.dto.household.CreateHouseholdResponse
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.dto.household.JoinHouseholdResponse
-import com.opensplit.features.auth.BearerAuthPlugin
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.auth.createAuthHttpClient
+import com.opensplit.remote.RemoteException
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BearerTokens
+import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
@@ -17,20 +20,26 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
-data class HouseholdRemoteException(
-    val fieldErrors: Map<String, String> = emptyMap(),
-    val generalError: String? = null,
-) : RuntimeException(generalError ?: "Household request failed")
-
 interface HouseholdGateway {
     suspend fun createHousehold(name: String): CreateHouseholdResponse
     suspend fun joinHousehold(inviteCode: String): JoinHouseholdResponse
 }
 
 class KtorHouseholdGateway(
-    private val client: HttpClient,
-    private val baseUrl: String,
+    private val tokenStorage: TokenStorage,
 ) : HouseholdGateway {
+
+    private val baseUrl = "http://127.0.0.1:8080"
+
+    private val client: HttpClient = createAuthHttpClient().config {
+        install(Auth) {
+            bearer {
+                loadTokens {
+                    BearerTokens(tokenStorage.getAccessToken() ?: "", "")
+                }
+            }
+        }
+    }
 
     override suspend fun createHousehold(name: String): CreateHouseholdResponse {
         val response = client.post("$baseUrl/households") {
@@ -51,7 +60,7 @@ class KtorHouseholdGateway(
     private suspend inline fun <reified T> parseResponse(response: HttpResponse): T {
         if (response.status != HttpStatusCode.OK && response.status != HttpStatusCode.Created) {
             val error = runCatching { response.body<ErrorResponse>() }.getOrNull()
-            throw HouseholdRemoteException(
+            throw RemoteException(
                 fieldErrors = error?.errors ?: emptyMap(),
                 generalError = error?.errors?.values?.firstOrNull() ?: "Request failed",
             )
@@ -59,15 +68,7 @@ class KtorHouseholdGateway(
         return try {
             response.body()
         } catch (e: Throwable) {
-            throw HouseholdRemoteException(generalError = e.message ?: "Network error")
+            throw RemoteException(generalError = e.message ?: "Network error")
         }
     }
 }
-
-fun createHouseholdGateway(tokenStorage: TokenStorage): HouseholdGateway =
-    KtorHouseholdGateway(
-        client = createAuthHttpClient().config {
-            install(BearerAuthPlugin) { this.tokenStorage = tokenStorage }
-        },
-        baseUrl = "http://127.0.0.1:8080",
-    )
