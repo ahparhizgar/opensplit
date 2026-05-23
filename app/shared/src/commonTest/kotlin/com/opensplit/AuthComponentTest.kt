@@ -1,7 +1,7 @@
 package com.opensplit
 
 import com.opensplit.component.createDefaultComponentContext
-import com.opensplit.features.auth.AuthGateway
+import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthMode
 import com.opensplit.features.auth.DefaultAuthComponent
 import com.opensplit.util.MainDispatcherExtension
@@ -10,17 +10,12 @@ import com.opensplit.util.createComponentContext
 import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.maps.beEmpty
-import io.kotest.matchers.maps.shouldBeEmpty
-import io.kotest.matchers.maps.shouldNotBeEmpty
-import io.kotest.matchers.nulls.beNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
-import org.koin.core.Koin
-import org.koin.dsl.koinApplication
+import org.koin.core.parameter.parametersOf
 
 class AuthComponentTest : BehaviorSpec({
     Given("an Auth component") {
@@ -28,8 +23,12 @@ class AuthComponentTest : BehaviorSpec({
         val koin by integrationKoin()
 
         var component by testValue {
-            koin.get<DefaultAuthComponent.Factory>()
-                .create(createDefaultComponentContext(createComponentContext()))
+            koin.get<DefaultAuthComponent> {
+                parametersOf(
+                    createDefaultComponentContext(createComponentContext()),
+                    AuthComponent.Config(AuthMode.SignUp)
+                )
+            }
         }
 
         When(
