@@ -30,10 +30,10 @@ So that I can start sharing expenses with the right group.
   - [x] Add persistence model and migrations for household and membership (server).
   - [x] Add unit tests for server-side household creation and join logic.
 
-- [ ] Implement client UI for create-household and join-household flows. (AC: 1,2,3)
-  - [ ] Add Create Household screen and Join Household screen with form validation.
-  - [ ] Wire navigation so new household becomes active context after creation/join.
-  - [ ] Add client-side unit/integration tests for form validation and navigation.
+- [x] Implement client UI for create-household and join-household flows. (AC: 1,2,3)
+  - [x] Add Create Household screen and Join Household screen with form validation.
+  - [x] Wire navigation so new household becomes active context after creation/join.
+  - [x] Add client-side unit/integration tests for form validation and navigation.
 
 - [ ] Enforce household access rules and membership handling. (AC: 1,2)
   - [ ] Ensure proper authorization checks on server routes (authenticated user must be owner/member).

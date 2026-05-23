@@ -7,6 +7,10 @@ import com.opensplit.features.auth.AuthGateway
 import com.opensplit.features.auth.DefaultAuthComponent
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.auth.createAuthGateway
+import com.opensplit.features.household.DefaultHouseholdComponent
+import com.opensplit.features.household.HouseholdComponent
+import com.opensplit.features.household.HouseholdGateway
+import com.opensplit.features.household.createHouseholdGateway
 import com.opensplit.root.ComponentProvider
 import com.opensplit.root.DefaultRootComponent
 import com.opensplit.root.KoinComponentProvider
@@ -23,7 +27,9 @@ fun appModule() = module {
     factoryOf(::DataStoreTokenStorage)
     single { createDataStore() }
     factory { createAuthGateway() }.bind<AuthGateway>()
+    factory { createHouseholdGateway() }.bind<HouseholdGateway>()
     singleOf(::DataStoreTokenStorage).bind<TokenStorage>()
     factoryOf(::DefaultRootComponent).bind<RootComponent>()
     factoryOf(::DefaultAuthComponent).bind<AuthComponent>()
+    factoryOf(::DefaultHouseholdComponent).bind<HouseholdComponent>()
 }

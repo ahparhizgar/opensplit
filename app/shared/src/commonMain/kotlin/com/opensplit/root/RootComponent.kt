@@ -11,6 +11,8 @@ import com.opensplit.component.CallBackNavigationOwner
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthMode
 import com.opensplit.features.auth.FakeAuthComponent
+import com.opensplit.features.household.FakeHouseholdComponent
+import com.opensplit.features.household.HouseholdComponent
 import kotlinx.serialization.Serializable
 import org.koin.core.parameter.parametersOf
 import org.koin.core.scope.Scope
@@ -54,9 +56,8 @@ class FakeRootComponent : RootComponent {
         MutableValue(
             ChildStack(
                 active = Child.Created(
-                    AuthComponent.Config(
-                        AuthMode.SignUp
-                    ), FakeAuthComponent()
+                    HouseholdComponent.Config(accessToken = "preview-token"),
+                    FakeHouseholdComponent()
                 ), backStack = emptyList()
             )
         )
