@@ -30,30 +30,13 @@ fun AuthRootScreen(
     component: AuthComponent,
     modifier: Modifier = Modifier,
 ) {
-    val state by component.uiState.collectAsState()
-    val session = state.session
     MaterialTheme {
         Surface(modifier = modifier.fillMaxSize()) {
-            if (session == null) {
-                AuthEntryScreen(component = component)
-            } else {
-                HouseholdContextShell(
-                    state = HouseholdContextState(
-                        message = "Authenticated household context",
-                        email = session.email,
-                        householdId = session.householdId,
-                    )
-                )
-            }
+            AuthEntryScreen(component = component)
         }
     }
 }
 
-data class HouseholdContextState(
-    val message: String,
-    val email: String,
-    val householdId: String? = null,
-)
 @Composable
 fun AuthEntryScreen(component: AuthComponent) {
     val state by component.uiState.collectAsState(initial = com.opensplit.features.auth.AuthViewState())
@@ -127,23 +110,5 @@ fun AuthEntryScreen(component: AuthComponent) {
         ) {
             Text(toggleLabel)
         }
-    }
-}
-
-@Composable
-fun HouseholdContextShell(state: HouseholdContextState) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeContentPadding()
-            .padding(24.dp)
-            .testTag("household-shell"),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(text = state.message, style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(text = "Signed in as ${state.email}")
-        Text(text = "No household setup is part of this story.")
     }
 }

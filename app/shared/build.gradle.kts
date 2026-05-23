@@ -65,6 +65,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             implementation(libs.ktor.clientCore)
+            implementation(libs.ktor.clientAuth)
             implementation(libs.ktor.clientContentNegotiation)
             implementation(libs.ktor.serializationKotlinxJson)
             api(libs.decompose)

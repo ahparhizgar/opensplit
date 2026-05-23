@@ -5,6 +5,7 @@ import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.dto.auth.HouseholdContextState
 import com.opensplit.dto.auth.SignInRequest
 import com.opensplit.dto.auth.SignUpRequest
+import com.opensplit.remote.RemoteException
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.header
@@ -19,11 +20,6 @@ data class AuthSubmissionResult(
     val session: AuthSessionState,
     val householdContext: HouseholdContextState,
 )
-
-data class AuthRemoteException(
-    val fieldErrors: Map<String, String> = emptyMap(),
-    val generalError: String? = null,
-) : RuntimeException(generalError ?: "Authentication request failed")
 
 interface AuthGateway {
     suspend fun signUp(email: String, password: String): AuthSubmissionResult
@@ -53,7 +49,7 @@ class KtorAuthGateway(
 
             if (response.status != HttpStatusCode.OK && response.status != HttpStatusCode.Created) {
                 val error = runCatching { response.body<ErrorResponse>() }.getOrNull()
-                throw AuthRemoteException(
+                throw RemoteException(
                     fieldErrors = error?.errors ?: emptyMap(),
                     generalError = error?.errors?.values?.firstOrNull() ?: "Authentication failed",
                 )
@@ -64,12 +60,12 @@ class KtorAuthGateway(
                 header("Authorization", "Bearer ${session.accessToken}")
             }.body<HouseholdContextState>()
             AuthSubmissionResult(session = session, householdContext = householdContext)
-        } catch (e: AuthRemoteException) {
+        } catch (e: RemoteException) {
             throw e
         } catch (e: Throwable) {
-            // Transport-level error (network, timeouts, etc.). Convert to AuthRemoteException so
+            // Transport-level error (network, timeouts, etc.). Convert to RemoteException so
             // higher layers can display a user-friendly message.
-            throw AuthRemoteException(generalError = e.message ?: "Network error")
+            throw RemoteException(generalError = e.message ?: "Network error")
         }
     }
 }
