@@ -26,7 +26,7 @@ class HouseholdComponentTest : BehaviorSpec({
             koin.get<DefaultHouseholdComponent> {
                 parametersOf(
                     createDefaultComponentContext(createComponentContext()),
-                    HouseholdComponent.Config(accessToken = "test-token", mode = HouseholdMode.Create)
+                    HouseholdComponent.Config(mode = HouseholdMode.Create)
                 )
             }
         }
@@ -104,7 +104,7 @@ class HouseholdComponentTest : BehaviorSpec({
             koin.get<DefaultHouseholdComponent> {
                 parametersOf(
                     createDefaultComponentContext(createComponentContext()),
-                    HouseholdComponent.Config(accessToken = "test-token", mode = HouseholdMode.Join)
+                    HouseholdComponent.Config(mode = HouseholdMode.Join)
                 )
             }
         }
@@ -160,7 +160,7 @@ class HouseholdComponentTest : BehaviorSpec({
             koin.get<DefaultHouseholdComponent> {
                 parametersOf(
                     createDefaultComponentContext(createComponentContext()),
-                    HouseholdComponent.Config(accessToken = "test-token", mode = HouseholdMode.Create)
+                    HouseholdComponent.Config(mode = HouseholdMode.Create)
                 )
             }
         }
@@ -172,17 +172,15 @@ class HouseholdComponentTest : BehaviorSpec({
                 // Override with a failing gateway by testing the component directly with a failing gateway
                 val failingComponent = DefaultHouseholdComponent(
                     context = createDefaultComponentContext(createComponentContext()),
-                    config = HouseholdComponent.Config(accessToken = "test-token"),
+                    config = HouseholdComponent.Config(),
                     gateway = object : com.opensplit.features.household.HouseholdGateway {
                         override suspend fun createHousehold(
                             name: String,
-                            accessToken: String,
                         ) = throw com.opensplit.features.household.HouseholdRemoteException(
                             generalError = "Server error"
                         )
                         override suspend fun joinHousehold(
                             inviteCode: String,
-                            accessToken: String,
                         ) = throw com.opensplit.features.household.HouseholdRemoteException(
                             generalError = "Server error"
                         )

@@ -8,7 +8,7 @@ class FakeHouseholdGateway : HouseholdGateway {
     var createCalls = 0
     var joinCalls = 0
 
-    override suspend fun createHousehold(name: String, accessToken: String): CreateHouseholdResponse {
+    override suspend fun createHousehold(name: String): CreateHouseholdResponse {
         createCalls++
         return CreateHouseholdResponse(
             id = "household-1",
@@ -17,7 +17,7 @@ class FakeHouseholdGateway : HouseholdGateway {
         )
     }
 
-    override suspend fun joinHousehold(inviteCode: String, accessToken: String): JoinHouseholdResponse {
+    override suspend fun joinHousehold(inviteCode: String): JoinHouseholdResponse {
         joinCalls++
         return JoinHouseholdResponse(
             householdId = "household-2",

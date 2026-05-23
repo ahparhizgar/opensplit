@@ -5,10 +5,11 @@ import com.opensplit.dto.household.CreateHouseholdRequest
 import com.opensplit.dto.household.CreateHouseholdResponse
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.dto.household.JoinHouseholdResponse
+import com.opensplit.features.auth.BearerAuthPlugin
+import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.auth.createAuthHttpClient
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
@@ -22,8 +23,8 @@ data class HouseholdRemoteException(
 ) : RuntimeException(generalError ?: "Household request failed")
 
 interface HouseholdGateway {
-    suspend fun createHousehold(name: String, accessToken: String): CreateHouseholdResponse
-    suspend fun joinHousehold(inviteCode: String, accessToken: String): JoinHouseholdResponse
+    suspend fun createHousehold(name: String): CreateHouseholdResponse
+    suspend fun joinHousehold(inviteCode: String): JoinHouseholdResponse
 }
 
 class KtorHouseholdGateway(
@@ -31,19 +32,17 @@ class KtorHouseholdGateway(
     private val baseUrl: String,
 ) : HouseholdGateway {
 
-    override suspend fun createHousehold(name: String, accessToken: String): CreateHouseholdResponse {
+    override suspend fun createHousehold(name: String): CreateHouseholdResponse {
         val response = client.post("$baseUrl/households") {
             contentType(ContentType.Application.Json)
-            header("Authorization", "Bearer $accessToken")
             setBody(CreateHouseholdRequest(name = name))
         }
         return parseResponse(response)
     }
 
-    override suspend fun joinHousehold(inviteCode: String, accessToken: String): JoinHouseholdResponse {
+    override suspend fun joinHousehold(inviteCode: String): JoinHouseholdResponse {
         val response = client.post("$baseUrl/households/join") {
             contentType(ContentType.Application.Json)
-            header("Authorization", "Bearer $accessToken")
             setBody(JoinHouseholdRequest(inviteCodeOrId = inviteCode))
         }
         return parseResponse(response)
@@ -65,5 +64,10 @@ class KtorHouseholdGateway(
     }
 }
 
-fun createHouseholdGateway(): HouseholdGateway =
-    KtorHouseholdGateway(createAuthHttpClient(), "http://127.0.0.1:8080")
+fun createHouseholdGateway(tokenStorage: TokenStorage): HouseholdGateway =
+    KtorHouseholdGateway(
+        client = createAuthHttpClient().config {
+            install(BearerAuthPlugin) { this.tokenStorage = tokenStorage }
+        },
+        baseUrl = "http://127.0.0.1:8080",
+    )

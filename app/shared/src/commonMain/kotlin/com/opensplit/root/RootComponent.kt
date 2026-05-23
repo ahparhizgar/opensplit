@@ -56,7 +56,7 @@ class FakeRootComponent : RootComponent {
         MutableValue(
             ChildStack(
                 active = Child.Created(
-                    HouseholdComponent.Config(accessToken = "preview-token"),
+                    HouseholdComponent.Config(),
                     FakeHouseholdComponent()
                 ), backStack = emptyList()
             )

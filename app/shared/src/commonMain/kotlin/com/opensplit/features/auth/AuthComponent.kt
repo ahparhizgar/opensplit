@@ -159,7 +159,7 @@ class DefaultAuthComponent(
                     isSubmitting = false,
                 )
             }
-            navigation.pushNew(HouseholdComponent.Config(accessToken = result.session.accessToken))
+            navigation.pushNew(HouseholdComponent.Config())
         } catch (e: AuthRemoteException) {
             _uiState.update {
                 it.copy(

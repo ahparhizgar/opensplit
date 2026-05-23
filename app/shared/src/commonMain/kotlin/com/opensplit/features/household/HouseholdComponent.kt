@@ -37,7 +37,6 @@ interface HouseholdComponent : Destination {
 
     @Serializable
     data class Config(
-        val accessToken: String,
         val mode: HouseholdMode = HouseholdMode.Create,
     ) : DestinationConfig {
         override val componentClass: KClass<out Any> = HouseholdComponent::class
@@ -50,7 +49,6 @@ class DefaultHouseholdComponent(
     private val gateway: HouseholdGateway,
 ) : HouseholdComponent, CContext by context {
 
-    private val accessToken = config.accessToken
     private val _uiState = MutableStateFlow(HouseholdViewState(mode = config.mode))
     override val uiState: StateFlow<HouseholdViewState> = _uiState
 
@@ -108,11 +106,11 @@ class DefaultHouseholdComponent(
         try {
             val householdId = when (current.mode) {
                 HouseholdMode.Create -> {
-                    val result = gateway.createHousehold(current.householdName, accessToken)
+                    val result = gateway.createHousehold(current.householdName)
                     result.id
                 }
                 HouseholdMode.Join -> {
-                    val result = gateway.joinHousehold(current.inviteCode, accessToken)
+                    val result = gateway.joinHousehold(current.inviteCode)
                     result.householdId
                 }
             }
