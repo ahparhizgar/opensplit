@@ -1,6 +1,6 @@
 # Story 1.3: Create or join a household
 
-Status: review
+Status: done
 
 ## Story
 
