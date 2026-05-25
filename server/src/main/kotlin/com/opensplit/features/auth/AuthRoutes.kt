@@ -1,5 +1,6 @@
 package com.opensplit.features.auth
 
+import com.opensplit.db.Users
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.auth.HouseholdContextState
 import com.opensplit.dto.auth.SignInRequest
@@ -12,6 +13,9 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Application.authRoutes(authService: AuthService = AuthService()) {
     routing {
@@ -77,7 +81,14 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
                 return@get
             }
 
-            val email = token.substringAfterLast('-')
+            val userId = jwtUserIdRegex.find(token)?.groupValues?.getOrNull(1)
+            val email = if (userId == null) null else transaction {
+                Users.select { Users.id eq userId }.limit(1).firstOrNull()?.get(Users.email)
+            }
+            if (email == null) {
+                call.respond(HttpStatusCode.Unauthorized, ErrorResponse(errors = mapOf("token" to "Sign in required")))
+                return@get
+            }
             call.respond(
                 HttpStatusCode.OK,
                 HouseholdContextState(
@@ -92,3 +103,5 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
 }
 
 fun Application.configureJwtAuth() {}
+
+private val jwtUserIdRegex = Regex("^jwt-([0-9a-fA-F-]{36})-")
