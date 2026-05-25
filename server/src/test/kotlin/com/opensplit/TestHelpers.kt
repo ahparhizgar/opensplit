@@ -1,6 +1,7 @@
 package com.opensplit
 
 import com.opensplit.features.auth.AuthService
+import io.ktor.client.HttpClient
 import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
@@ -23,22 +24,27 @@ fun testOpenSplit(block: suspend ApplicationTestBuilder.() -> Unit) =
             token = auth.accessToken
         }
         startApplication()
-        client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
-
-            install(DefaultRequest) {
-                contentType(ContentType.Application.Json)
-            }
-            install(Auth) {
-                bearer {
-                    cacheTokens = false
-                    loadTokens {
-                        BearerTokens(accessToken = token, refreshToken = null)
-                    }
-                }
-            }
-        }
+        client = createTestClient(token)
         block()
     }
+
+fun ApplicationTestBuilder.createAuthenticatedClient(token: String): HttpClient = createClient {
+    install(ContentNegotiation) {
+        json()
+    }
+
+    install(DefaultRequest) {
+        contentType(ContentType.Application.Json)
+    }
+
+    install(Auth) {
+        bearer {
+            cacheTokens = false
+            loadTokens {
+                BearerTokens(accessToken = token, refreshToken = null)
+            }
+        }
+    }
+}
+
+private fun ApplicationTestBuilder.createTestClient(token: String): HttpClient = createAuthenticatedClient(token)
