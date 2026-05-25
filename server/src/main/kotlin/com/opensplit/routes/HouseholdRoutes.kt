@@ -27,11 +27,17 @@ fun Application.householdRoutes() {
             val req = call.receive<CreateHouseholdRequest>()
 
             if (req.name.isBlank()) {
-                call.respond(HttpStatusCode.BadRequest, ErrorResponse(errors = mapOf("name" to "Name must not be empty")))
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse(generalError = "Invalid household name", errors = mapOf("name" to "Name must not be empty")),
+                )
                 return@post
             }
             if (req.name.length > 255) {
-                call.respond(HttpStatusCode.BadRequest, ErrorResponse(errors = mapOf("name" to "Name is too long")))
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse(generalError = "Invalid household name", errors = mapOf("name" to "Name is too long")),
+                )
                 return@post
             }
 
@@ -40,7 +46,10 @@ fun Application.householdRoutes() {
             val userId = resolveUserIdFromToken(token)
 
             if (userId == null) {
-                call.respond(HttpStatusCode.Unauthorized, ErrorResponse(errors = mapOf("token" to "Authentication required")))
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(generalError = "Authentication required", errors = mapOf("token" to "Authentication required")),
+                )
                 return@post
             }
 
@@ -67,7 +76,10 @@ fun Application.householdRoutes() {
         post("/households/join") {
             val req = call.receive<JoinHouseholdRequest>()
             if (req.inviteCodeOrId.isBlank()) {
-                call.respond(HttpStatusCode.BadRequest, ErrorResponse(errors = mapOf("inviteCodeOrId" to "Invite code is required")))
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse(generalError = "Invite code is required", errors = mapOf("inviteCodeOrId" to "Invite code is required")),
+                )
                 return@post
             }
 
@@ -76,7 +88,10 @@ fun Application.householdRoutes() {
             val userId = resolveUserIdFromToken(token)
 
             if (userId == null) {
-                call.respond(HttpStatusCode.Unauthorized, ErrorResponse(errors = mapOf("token" to "Authentication required")))
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(generalError = "Authentication required", errors = mapOf("token" to "Authentication required")),
+                )
                 return@post
             }
 
@@ -85,7 +100,13 @@ fun Application.householdRoutes() {
             val householdRow = byInvite ?: byId
 
             if (householdRow == null) {
-                call.respond(HttpStatusCode.NotFound, ErrorResponse(errors = mapOf("inviteCodeOrId" to "Invalid invite code or household id")))
+                call.respond(
+                    HttpStatusCode.NotFound,
+                    ErrorResponse(
+                        generalError = "Invalid invite code or household id",
+                        errors = mapOf("inviteCodeOrId" to "Invalid invite code or household id"),
+                    ),
+                )
                 return@post
             }
 
@@ -98,7 +119,13 @@ fun Application.householdRoutes() {
                     Memberships.select { (Memberships.householdId eq hid) and (Memberships.userId eq userId) }.any()
                 }
                 if (ownerId != userId && !isMember) {
-                    call.respond(HttpStatusCode.Forbidden, ErrorResponse(errors = mapOf("permission" to "Missing permission to access this household")))
+                    call.respond(
+                        HttpStatusCode.Forbidden,
+                        ErrorResponse(
+                            generalError = "Missing permission to access this household",
+                            errors = mapOf("permission" to "Missing permission to access this household"),
+                        ),
+                    )
                     return@post
                 }
             }

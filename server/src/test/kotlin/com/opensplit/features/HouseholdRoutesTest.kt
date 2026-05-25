@@ -7,21 +7,13 @@ import com.opensplit.dto.household.CreateHouseholdRequest
 import com.opensplit.dto.household.CreateHouseholdResponse
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.dto.household.JoinHouseholdResponse
+import com.opensplit.createAuthenticatedClient
 import com.opensplit.testOpenSplit
 import io.ktor.client.call.body
-import io.ktor.client.plugins.DefaultRequest
-import io.ktor.client.plugins.auth.Auth
-import io.ktor.client.plugins.auth.providers.BearerTokens
-import io.ktor.client.plugins.auth.providers.bearer
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.testing.ApplicationTestBuilder
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -96,22 +88,5 @@ class HouseholdScenarios {
         val contextResponse = otherClient.get("/household-context")
         assertEquals(HttpStatusCode.OK, contextResponse.status)
         assertEquals(created.id, join.householdId)
-    }
-
-    private fun ApplicationTestBuilder.createAuthenticatedClient(accessToken: String) = createClient {
-        install(ContentNegotiation) {
-            json()
-        }
-        install(DefaultRequest) {
-            contentType(ContentType.Application.Json)
-        }
-        install(Auth) {
-            bearer {
-                cacheTokens = false
-                loadTokens {
-                    BearerTokens(accessToken = accessToken, refreshToken = null)
-                }
-            }
-        }
     }
 }

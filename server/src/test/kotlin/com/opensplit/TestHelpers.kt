@@ -28,7 +28,7 @@ fun testOpenSplit(block: suspend ApplicationTestBuilder.() -> Unit) =
         block()
     }
 
-private fun ApplicationTestBuilder.createTestClient(token: String): HttpClient = createClient {
+fun ApplicationTestBuilder.createAuthenticatedClient(token: String): HttpClient = createClient {
     install(ContentNegotiation) {
         json()
     }
@@ -46,3 +46,5 @@ private fun ApplicationTestBuilder.createTestClient(token: String): HttpClient =
         }
     }
 }
+
+private fun ApplicationTestBuilder.createTestClient(token: String): HttpClient = createAuthenticatedClient(token)

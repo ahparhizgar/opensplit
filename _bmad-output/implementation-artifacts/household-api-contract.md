@@ -1,5 +1,22 @@
 # Household API Contract
 
+## Shared Error Contract
+
+All API error payloads use the shared serializable `ErrorResponse` from:
+
+- `core/src/commonMain/kotlin/com/opensplit/dto/auth/AuthDtos.kt`
+
+Shape:
+
+```json
+{
+  "generalError": "Request failed",
+  "errors": {
+    "fieldName": "Field-specific message"
+  }
+}
+```
+
 ## POST `/households`
 
 Creates a household for the authenticated user and makes that user a member.
@@ -28,6 +45,7 @@ Creates a household for the authenticated user and makes that user a member.
 
 ```json
 {
+  "generalError": "Invalid household name",
   "errors": {
     "name": "Name must not be empty"
   }
@@ -38,6 +56,7 @@ Creates a household for the authenticated user and makes that user a member.
 
 ```json
 {
+  "generalError": "Authentication required",
   "errors": {
     "token": "Authentication required"
   }
@@ -47,6 +66,8 @@ Creates a household for the authenticated user and makes that user a member.
 ## POST `/households/join`
 
 Joins an existing household using an invite code, or accesses by household id if requester is already an owner/member.
+
+REST note: for membership listing, a REST-friendly read endpoint would be `GET /users/{userId}/households` (or `GET /users/me/households` for current user).
 
 ### Request
 
@@ -71,6 +92,7 @@ Joins an existing household using an invite code, or accesses by household id if
 
 ```json
 {
+  "generalError": "Invite code is required",
   "errors": {
     "inviteCodeOrId": "Invite code is required"
   }
@@ -81,6 +103,7 @@ Joins an existing household using an invite code, or accesses by household id if
 
 ```json
 {
+  "generalError": "Authentication required",
   "errors": {
     "token": "Authentication required"
   }
@@ -91,6 +114,7 @@ Joins an existing household using an invite code, or accesses by household id if
 
 ```json
 {
+  "generalError": "Missing permission to access this household",
   "errors": {
     "permission": "Missing permission to access this household"
   }
@@ -101,6 +125,7 @@ Joins an existing household using an invite code, or accesses by household id if
 
 ```json
 {
+  "generalError": "Invalid invite code or household id",
   "errors": {
     "inviteCodeOrId": "Invalid invite code or household id"
   }
