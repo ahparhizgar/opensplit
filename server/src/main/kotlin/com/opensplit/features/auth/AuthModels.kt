@@ -24,7 +24,6 @@ data class RegisteredUser(
 )
 
 class AuthService {
-
     fun signUp(email: String, password: String): AuthSession {
         val existing = transaction { Users.select { Users.email eq email }.limit(1).firstOrNull() }
         require(existing == null) { "Email already exists" }

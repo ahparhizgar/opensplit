@@ -71,6 +71,7 @@ decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decom
 lifecycle = { module = "com.arkivanov.essenty:lifecycle", version.ref = "lifecycle" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
+koin-ktor = { group = "io.insert-koin", name = "koin-ktor", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koinCompose" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 kotest-framework = { group = "io.kotest", name = "kotest-framework-engine", version.ref = "kotest" }
