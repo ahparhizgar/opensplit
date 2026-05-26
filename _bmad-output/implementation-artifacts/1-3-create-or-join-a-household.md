@@ -35,13 +35,13 @@ So that I can start sharing expenses with the right group.
   - [x] Wire navigation so new household becomes active context after creation/join.
   - [x] Add client-side unit/integration tests for form validation and navigation.
 
-- [ ] Enforce household access rules and membership handling. (AC: 1,2)
-  - [ ] Ensure proper authorization checks on server routes (authenticated user must be owner/member).
-  - [ ] Ensure server returns clear error messages for invalid invite codes or missing permissions.
+- [x] Enforce household access rules and membership handling. (AC: 1,2)
+  - [x] Ensure proper authorization checks on server routes (authenticated user must be owner/member).
+  - [x] Ensure server returns clear error messages for invalid invite codes or missing permissions.
 
-- [ ] Add end-to-end smoke test demonstrating full create -> join -> active-context flow.
+- [x] Add end-to-end smoke test demonstrating full create -> join -> active-context flow.
 
-- [ ] Document API contract and add sample requests to the Dev Notes and API docs.
+- [x] Document API contract and add sample requests to the Dev Notes and API docs.
 
 ## Dev Notes
 
@@ -68,6 +68,7 @@ gpt-5.4-mini
 
 - Story created from sprint-status backlog entry `1-3-create-or-join-a-household` and promoted to ready-for-dev.
 - Implementation session: added shared DTOs, DB tables, routes, and server tests; iterated until all server tests passed.
+- Follow-up implementation session: tightened token parsing and membership checks, added clear join errors, added smoke tests, and documented household API contract.
 
 ### Completion Notes List
 
@@ -79,6 +80,9 @@ gpt-5.4-mini
 - Added server-side tests: server/src/test/kotlin/com/opensplit/features/HouseholdRoutesTest.kt
 - Fixed auth routes to set session cookie expected by tests and handle cookie-based auth during testing.
 - All server tests pass locally after fixes.
+- Enforced join-by-id authorization for owners/members only, and returned structured error responses for invalid invite codes and missing permissions.
+- Added end-to-end server smoke coverage for create → join → active context validation with a second user.
+- Added a dedicated household API contract document with request/response samples and error payloads.
 
 ## File List
 
@@ -89,10 +93,12 @@ gpt-5.4-mini
 - server/src/main/kotlin/com/opensplit/Application.kt (modified)
 - server/src/main/kotlin/com/opensplit/db/DatabaseFactory.kt (modified)
 - server/src/test/kotlin/com/opensplit/features/auth/AuthRoutesTest.kt (modified)
+- server/src/main/kotlin/com/opensplit/features/auth/AuthRoutes.kt (modified)
+- _bmad-output/implementation-artifacts/household-api-contract.md (added)
 - core/build.gradle.kts (modified to enable serialization plugin)
 - _bmad-output/implementation-artifacts/1-3-create-or-join-a-household.md (modified)
 
 ## Change Log
 
 - 2026-05-21: Implemented backend household create/join API, added DTOs, DB tables, routes, and server tests. Fixed auth test behavior (Set-Cookie + cookie parsing). All server tests pass. (Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>)
-
+- 2026-05-25: Completed remaining Story 1.3 subtasks by enforcing join authorization, improving household error responses, adding an end-to-end create→join smoke test, and documenting the household API contract.
