@@ -3,7 +3,7 @@ package com.opensplit.features.household
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.root.Destination
-import com.opensplit.root.DestinationConfig
+import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KClass
 
 enum class HouseholdTab { Create, Join }
 
@@ -24,8 +23,10 @@ interface HouseholdComponent : Destination {
     fun useJoin()
 
     @Serializable
-    class Config : DestinationConfig {
-        override val componentClass: KClass<out Any> = HouseholdComponent::class
+    class Config : TopLevelDestinationConfig
+
+    interface Factory {
+        fun create(cContext: CContext, config: Config) : HouseholdComponent
     }
 }
 
@@ -36,8 +37,10 @@ class DefaultHouseholdComponent(
 
     private val scope = componentScope()
 
-    override val createComponent: CreateHouseholdComponent = DefaultCreateHouseholdComponent(context, gateway)
-    override val joinComponent: JoinHouseholdComponent = DefaultJoinHouseholdComponent(context, gateway)
+    override val createComponent: CreateHouseholdComponent =
+        DefaultCreateHouseholdComponent(context, gateway)
+    override val joinComponent: JoinHouseholdComponent =
+        DefaultJoinHouseholdComponent(context, gateway)
 
     private val _activeTab = MutableStateFlow(HouseholdTab.Create)
     override val activeTab: StateFlow<HouseholdTab> = _activeTab
@@ -57,6 +60,18 @@ class DefaultHouseholdComponent(
 
     override fun useJoin() {
         _activeTab.value = HouseholdTab.Join
+    }
+
+    class Factory(
+        private val gateway: HouseholdGateway,
+    ) : HouseholdComponent.Factory {
+        override fun create(
+            cContext: CContext,
+            config: HouseholdComponent.Config
+        ): HouseholdComponent = DefaultHouseholdComponent(
+            context = cContext,
+            gateway = gateway
+        )
     }
 }
 

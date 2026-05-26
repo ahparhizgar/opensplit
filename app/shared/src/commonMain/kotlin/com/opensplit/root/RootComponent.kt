@@ -11,13 +11,17 @@ import com.opensplit.component.CallBackNavigationOwner
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthMode
 import com.opensplit.features.auth.FakeAuthComponent
+import com.opensplit.features.household.HouseholdComponent
 import kotlinx.serialization.Serializable
-import org.koin.core.parameter.parametersOf
 import org.koin.core.scope.Scope
 import kotlin.reflect.KClass
 
 interface RootComponent {
     val childStack: Value<ChildStack<*, Any>>
+
+    interface Factory {
+        fun create(context: CContext): RootComponent
+    }
 }
 
 class DefaultRootComponent(
@@ -25,7 +29,7 @@ class DefaultRootComponent(
     private val componentProvider: ComponentProvider
 ) : RootComponent, CContext by cContext {
 
-    private val navigation = StackNavigation<DestinationConfig>()
+    private val navigation = StackNavigation<TopLevelDestinationConfig>()
 
     init {
         val navOwner = cContext.stackNavigationOwner as CallBackNavigationOwner
@@ -36,16 +40,31 @@ class DefaultRootComponent(
     override val childStack: Value<ChildStack<*, Any>> =
         childStack(
             source = navigation,
-            serializer = null, // DestinationConfig.serializer(),
+            serializer = null,
             initialConfiguration = AuthComponent.Config(AuthMode.SignUp),
             handleBackButton = true,
             childFactory = ::createChild,
         )
 
-    private fun createChild(config: DestinationConfig, cContext: CContext): Any {
-        // Use the provided componentClass to create the component instance.
-        @Suppress("UNCHECKED_CAST")
-        return componentProvider(config.componentClass as KClass<Any>, cContext, config)
+    private fun createChild(config: TopLevelDestinationConfig, cContext: CContext): Any {
+        return when (config) {
+            is AuthComponent.Config ->
+                componentProvider.provide(AuthComponent.Factory::class)
+                    .create(cContext, config)
+
+            is HouseholdComponent.Config ->
+                componentProvider.provide(HouseholdComponent.Factory::class)
+                    .create(cContext, config)
+
+            else -> error("Destination not defined in createChild")
+        }
+    }
+
+    class Factory(
+        private val componentProvider: ComponentProvider,
+    ) : RootComponent.Factory {
+        override fun create(context: CContext): RootComponent =
+            DefaultRootComponent(context, componentProvider)
     }
 }
 
@@ -54,37 +73,25 @@ class FakeRootComponent : RootComponent {
         MutableValue(
             ChildStack(
                 active = Child.Created(
-                    AuthComponent.Config(
-                        AuthMode.SignUp
-                    ), FakeAuthComponent()
-                ), backStack = emptyList()
+                    AuthComponent.Config(AuthMode.SignUp),
+                    FakeAuthComponent()
+                ),
+                backStack = emptyList()
             )
         )
-
 }
 
 interface Destination
 
 @Serializable
-interface DestinationConfig {
-    /** The KClass of the component that should be created for this destination. */
-    val componentClass: KClass<out Any>
-}
+interface TopLevelDestinationConfig
 
 interface ComponentProvider {
-    operator fun <T : Any> invoke(
-        kClass: KClass<T>,
-        cContext: CContext,
-        config: DestinationConfig
-    ): T
+    fun <T : Any> provide(kClass: KClass<T>): T
 }
 
 class KoinComponentProvider(private val scope: Scope) : ComponentProvider {
-    override fun <T : Any> invoke(
-        kClass: KClass<T>,
-        cContext: CContext,
-        config: DestinationConfig
-    ): T {
-        return scope.get(clazz = kClass, parameters = { parametersOf(cContext, config) })
+    override fun <T : Any> provide(kClass: KClass<T>): T {
+        return scope.get(clazz = kClass)
     }
 }

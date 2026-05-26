@@ -9,7 +9,6 @@ import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.opensplit.component.DefaultCContext
 import com.opensplit.root.RootComponent
 import org.koin.core.context.GlobalContext.startKoin
-import org.koin.core.parameter.parametersOf
 import javax.swing.SwingUtilities
 
 fun main() {
@@ -21,7 +20,7 @@ fun main() {
         }.koin
 
     val root = runOnUiThread {
-        koin.get<RootComponent>(parameters = { parametersOf(DefaultCContext(lifecycle = lifecycle)) })
+        koin.get<RootComponent.Factory>().create(DefaultCContext(lifecycle = lifecycle))
     }
     DecomposeSettings.settings = DecomposeSettings(duplicateConfigurationsEnabled = true)
     application {

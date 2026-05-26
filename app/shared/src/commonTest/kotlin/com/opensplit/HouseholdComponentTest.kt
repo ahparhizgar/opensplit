@@ -2,7 +2,8 @@ package com.opensplit
 
 import com.opensplit.component.createDefaultComponentContext
 import com.opensplit.features.household.DefaultCreateHouseholdComponent
-import com.opensplit.features.household.DefaultHouseholdComponent
+import com.opensplit.features.household.HouseholdComponent
+import com.opensplit.features.household.HouseholdGateway
 import com.opensplit.features.household.HouseholdTab
 import com.opensplit.remote.RemoteException
 import com.opensplit.util.MainDispatcherExtension
@@ -16,7 +17,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
-import org.koin.core.parameter.parametersOf
+import org.koin.core.qualifier.named
 
 class HouseholdComponentTest : BehaviorSpec({
     Given("a Household component – Create tab") {
@@ -24,9 +25,10 @@ class HouseholdComponentTest : BehaviorSpec({
         val koin by integrationKoin()
 
         var component by testValue {
-            koin.get<DefaultHouseholdComponent> {
-                parametersOf(createDefaultComponentContext(createComponentContext()))
-            }
+            koin.get<HouseholdComponent.Factory>().create(
+                createDefaultComponentContext(createComponentContext()),
+                HouseholdComponent.Config()
+            )
         }
 
         Then("initial tab is Create and fields are empty") {
@@ -96,9 +98,10 @@ class HouseholdComponentTest : BehaviorSpec({
         val koin by integrationKoin()
 
         var component by testValue {
-            koin.get<DefaultHouseholdComponent> {
-                parametersOf(createDefaultComponentContext(createComponentContext()))
-            }
+            koin.get<HouseholdComponent.Factory>().create(
+                createDefaultComponentContext(createComponentContext()),
+                HouseholdComponent.Config()
+            )
         }
 
         When(
@@ -147,7 +150,7 @@ class HouseholdComponentTest : BehaviorSpec({
         var createComponent by testValue {
             DefaultCreateHouseholdComponent(
                 context = createDefaultComponentContext(createComponentContext()),
-                gateway = object : com.opensplit.features.household.HouseholdGateway {
+                gateway = object : HouseholdGateway {
                     override suspend fun createHousehold(name: String) =
                         throw RemoteException(generalError = "Server error")
 
