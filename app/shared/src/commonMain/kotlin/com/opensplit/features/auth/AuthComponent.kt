@@ -6,12 +6,11 @@ import com.opensplit.component.CContext
 import com.opensplit.component.navigation
 import com.opensplit.features.household.HouseholdComponent
 import com.opensplit.root.Destination
-import com.opensplit.root.DestinationConfig
+import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KClass
 
 
 @Serializable
@@ -41,15 +40,16 @@ interface AuthComponent : Destination {
     @Serializable
     data class Config(
         val mode: AuthMode,
-    ) : DestinationConfig {
-        override val componentClass: KClass<out Any> = AuthComponent::class
+    ) : TopLevelDestinationConfig
+
+    interface Factory {
+        fun create(
+            cContext: CContext,
+            config: Config
+        ): AuthComponent
     }
 }
 
-
-interface ComponentFactory<Config, Component> {
-    fun create(context: CContext, config: Config): Component
-}
 
 class DefaultAuthComponent(
     context: CContext,
@@ -170,6 +170,14 @@ class DefaultAuthComponent(
                 )
             }
         }
+    }
+
+    class Factory(
+        private val gateway: AuthGateway,
+        private val tokenStorage: TokenStorage,
+    ) : AuthComponent.Factory {
+        override fun create(context: CContext, config: AuthComponent.Config): AuthComponent =
+            DefaultAuthComponent(context, config, gateway, tokenStorage)
     }
 }
 

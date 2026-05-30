@@ -28,8 +28,11 @@ fun appModule() = module {
     singleOf(::DataStoreTokenStorage).bind<TokenStorage>()
     factory { createAuthGateway() }.bind<AuthGateway>()
     factoryOf(::KtorHouseholdGateway).bind<HouseholdGateway>()
-    factoryOf(::DefaultRootComponent).bind<RootComponent>()
-    factoryOf(::DefaultAuthComponent).bind<AuthComponent>()
-    factoryOf(::DefaultHouseholdComponent).bind<HouseholdComponent>()
+    factoryOf(DefaultRootComponent::Factory)
+        .bind<RootComponent.Factory>()
+    factoryOf(DefaultAuthComponent::Factory)
+        .bind<AuthComponent.Factory>()
+    factoryOf(DefaultHouseholdComponent::Factory)
+        .bind<HouseholdComponent.Factory>()
 }
 
