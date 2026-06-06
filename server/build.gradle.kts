@@ -37,6 +37,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.6.0")
     // H2 for tests and in-memory fallback
     implementation("com.h2database:h2:2.1.214")
+    implementation(libs.bcrypt)
 
     testImplementation(libs.ktor.serverTestHost)
     testImplementation(libs.kotlin.testJunit)

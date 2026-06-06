@@ -17,3 +17,15 @@ actual fun createAuthHttpClient(): HttpClient = HttpClient(Darwin) {
         )
     }
 }
+
+import platform.Foundation.NSData
+import platform.Foundation.create
+
+actual fun getApiBaseUrl(): String = "http://127.0.0.1:8080"
+
+actual fun platformDecodeBase64(input: String): String {
+    val nsData = NSData.create(base64Encoded = input, options = 0) ?: return ""
+    return nsData.toString()
+}
+
+actual fun currentTimeSeconds(): Long = (platform.Foundation.NSDate().timeIntervalSince1970).toLong()

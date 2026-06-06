@@ -70,6 +70,8 @@ class KtorAuthGateway(
     }
 }
 
-fun createAuthGateway(): AuthGateway = KtorAuthGateway(createAuthHttpClient(), "http://127.0.0.1:8080")
+fun createAuthGateway(): AuthGateway = KtorAuthGateway(createAuthHttpClient(), getApiBaseUrl())
 
 expect fun createAuthHttpClient(): HttpClient
+
+expect fun getApiBaseUrl(): String

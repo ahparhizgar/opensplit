@@ -12,6 +12,7 @@ import com.opensplit.dto.household.HouseholdOverviewResponse
 import com.opensplit.dto.household.HouseholdSummaryResponse
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.dto.household.JoinHouseholdResponse
+import com.opensplit.features.auth.JwtTokenService
 import com.opensplit.dto.household.SwitchHouseholdRequest
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
@@ -277,10 +278,8 @@ fun Application.householdRoutes() {
     }
 }
 
-private val jwtUserIdRegex = Regex("^jwt-([0-9a-fA-F-]{36})-")
-
 private fun resolveUserIdFromToken(token: String?): String? {
-    val userId = token?.let { jwtUserIdRegex.find(it)?.groupValues?.getOrNull(1) } ?: return null
+    val userId = token?.let { JwtTokenService.verify(it) } ?: return null
     return transaction { Users.select { Users.id eq userId }.limit(1).firstOrNull()?.get(Users.id) }
 }
 

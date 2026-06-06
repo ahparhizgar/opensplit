@@ -75,6 +75,7 @@ class RootComponentTest : BehaviorSpec({
 private class TokenStorage(private val token: () -> String?) : com.opensplit.features.auth.TokenStorage {
     override suspend fun saveAccessToken(token: String) {}
     override suspend fun getAccessToken(): String? = token()
+    override suspend fun clearAccessToken() {}
 }
 
 private class FakeAuthComponentFactory : AuthComponent.Factory {

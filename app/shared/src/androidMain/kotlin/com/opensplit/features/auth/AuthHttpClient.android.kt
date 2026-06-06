@@ -17,3 +17,10 @@ actual fun createAuthHttpClient(): HttpClient = HttpClient(OkHttp) {
         )
     }
 }
+
+actual fun getApiBaseUrl(): String = "http://10.0.2.2:8080"
+
+actual fun platformDecodeBase64(input: String): String =
+    java.util.Base64.getDecoder().decode(input).decodeToString()
+
+actual fun currentTimeSeconds(): Long = System.currentTimeMillis() / 1000

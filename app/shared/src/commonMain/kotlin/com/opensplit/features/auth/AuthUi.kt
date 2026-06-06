@@ -23,7 +23,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import com.opensplit.ui.AdaptiveLayoutSizeClass
@@ -193,6 +196,8 @@ private fun AuthFormPanel(
                 .fillMaxWidth()
                 .testTag("auth-password"),
             singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         )
         state.fieldErrors["password"]?.let {
             Text(text = it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("auth-password-error"))

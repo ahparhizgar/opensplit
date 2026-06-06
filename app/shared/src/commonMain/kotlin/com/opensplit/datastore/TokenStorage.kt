@@ -17,6 +17,12 @@ class DataStoreTokenStorage(private val dataStore: DataStore<Preferences>) : Tok
     override suspend fun getAccessToken(): String? =
         dataStore.data.first()[ACCESS_TOKEN]
 
+    override suspend fun clearAccessToken() {
+        dataStore.edit { prefs ->
+            prefs.remove(ACCESS_TOKEN)
+        }
+    }
+
     companion object {
         private val ACCESS_TOKEN = stringPreferencesKey("access_token")
     }

@@ -81,7 +81,7 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
                 return@get
             }
 
-            val userId = jwtUserIdRegex.find(token)?.groupValues?.getOrNull(1)
+            val userId = JwtTokenService.verify(token)
             val email = if (userId == null) null else transaction {
                 Users.select { Users.id eq userId }.limit(1).firstOrNull()?.get(Users.email)
             }
@@ -103,5 +103,3 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
 }
 
 fun Application.configureJwtAuth() {}
-
-private val jwtUserIdRegex = Regex("^jwt-([0-9a-fA-F-]{36})-")

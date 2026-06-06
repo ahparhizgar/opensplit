@@ -18,3 +18,12 @@ actual fun createAuthHttpClient(): HttpClient = HttpClient(Js) {
         )
     }
 }
+
+actual fun getApiBaseUrl(): String = "http://127.0.0.1:8080"
+
+actual fun platformDecodeBase64(input: String): String {
+    val binaryStr = js("atob(input)")
+    return binaryStr as String
+}
+
+actual fun currentTimeSeconds(): Long = (js("Math.floor(Date.now() / 1000)") as Double).toLong()

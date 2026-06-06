@@ -7,6 +7,7 @@ package com.opensplit.features.auth
 interface TokenStorage {
     suspend fun saveAccessToken(token: String)
     suspend fun getAccessToken(): String?
+    suspend fun clearAccessToken()
 }
 
 /**
@@ -15,5 +16,6 @@ interface TokenStorage {
 class NoOpTokenStorage : TokenStorage {
     override suspend fun saveAccessToken(token: String) {}
     override suspend fun getAccessToken(): String? = null
+    override suspend fun clearAccessToken() {}
 }
 
