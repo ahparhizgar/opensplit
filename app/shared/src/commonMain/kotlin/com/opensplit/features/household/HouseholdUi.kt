@@ -371,10 +371,29 @@ fun HouseholdActiveScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             if (!sizeClass.isExpanded) {
-                Text(
-                    text = "Household membership",
-                    style = MaterialTheme.typography.headlineMedium,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Household membership",
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = MaterialTheme.shapes.small,
+                    ) {
+                        Text(
+                            text = "Active: ${activeHousehold?.name ?: householdId}",
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier
+                                .testTag("household-context-mobile")
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        )
+                    }
+                }
             }
 
             if (sizeClass.isExpanded) {

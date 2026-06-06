@@ -100,7 +100,7 @@ kotlin {
             implementation(libs.kotest.junit)
         }
         wasmJsMain.dependencies {
-//            implementation("androidx.datastore:datastore-core-okio:1.2.1")
+            implementation(libs.androidx.datastore.core.okio)
         }
 //        jsMain.dependencies {
 //            implementation(libs.wrappers.browser)
