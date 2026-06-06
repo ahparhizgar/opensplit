@@ -24,3 +24,31 @@ data class JoinHouseholdResponse(
     val householdId: String,
     val joined: Boolean,
 )
+
+@Serializable
+data class SwitchHouseholdRequest(
+    val householdId: String,
+)
+
+@Serializable
+data class HouseholdSummaryResponse(
+    val id: String,
+    val name: String,
+    val memberCount: Int,
+    val isActive: Boolean = false,
+)
+
+@Serializable
+data class HouseholdMemberResponse(
+    val userId: String,
+    val email: String,
+    val isOwner: Boolean = false,
+)
+
+@Serializable
+data class HouseholdOverviewResponse(
+    val activeHouseholdId: String? = null,
+    val households: List<HouseholdSummaryResponse> = emptyList(),
+    val members: List<HouseholdMemberResponse> = emptyList(),
+)
+

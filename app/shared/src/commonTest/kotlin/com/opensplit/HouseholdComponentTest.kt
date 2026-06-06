@@ -2,6 +2,7 @@ package com.opensplit
 
 import com.opensplit.component.createDefaultComponentContext
 import com.opensplit.features.household.DefaultCreateHouseholdComponent
+import com.opensplit.features.household.DefaultHouseholdComponent
 import com.opensplit.features.household.HouseholdComponent
 import com.opensplit.features.household.HouseholdGateway
 import com.opensplit.features.household.HouseholdTab
@@ -17,7 +18,8 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
-import org.koin.core.qualifier.named
+import kotlinx.coroutines.test.runTest
+
 
 class HouseholdComponentTest : BehaviorSpec({
     Given("a Household component – Create tab") {
@@ -156,6 +158,15 @@ class HouseholdComponentTest : BehaviorSpec({
 
                     override suspend fun joinHousehold(inviteCode: String) =
                         throw RemoteException(generalError = "Server error")
+
+                    override suspend fun loadOverview() =
+                        throw RemoteException(generalError = "Server error")
+
+                    override suspend fun switchHousehold(householdId: String) =
+                        throw RemoteException(generalError = "Server error")
+
+                    override suspend fun leaveHousehold(householdId: String) =
+                        throw RemoteException(generalError = "Server error")
                 }
             )
         }
@@ -173,6 +184,55 @@ class HouseholdComponentTest : BehaviorSpec({
                     state.householdId shouldBe null
                     state.isSubmitting shouldBe false
                 }
+            }
+        }
+    }
+
+    Given("a Household component with an overview capable gateway") {
+        extensions(MainDispatcherExtension())
+
+        val gateway = FakeHouseholdGateway()
+
+        var component by testValue {
+            DefaultHouseholdComponent(
+                context = createDefaultComponentContext(createComponentContext()),
+                gateway = gateway,
+            )
+        }
+
+        When("loading household overview") {
+            runTest { component.loadOverview() }
+
+            Then("exposes the active household from the overview") {
+                component.overview.value.activeHouseholdId shouldBe "household-1"
+                component.householdId.value shouldBe "household-1"
+                gateway.loadOverviewCalls shouldBe 1
+            }
+        }
+
+        When("switching the active household") {
+            runTest {
+                component.loadOverview()
+                component.switchHousehold("household-2")
+            }
+
+            Then("updates the active household and marks the new household active") {
+                component.overview.value.activeHouseholdId shouldBe "household-2"
+                component.overview.value.households.first().isActive shouldBe true
+                gateway.switchCalls shouldBe 1
+            }
+        }
+
+        When("leaving the active household") {
+            runTest {
+                component.loadOverview()
+                component.leaveHousehold("household-1")
+            }
+
+            Then("falls back to a safe landing state") {
+                component.overview.value.activeHouseholdId shouldBe null
+                component.overview.value.households shouldBe emptyList()
+                gateway.leaveCalls shouldBe 1
             }
         }
     }

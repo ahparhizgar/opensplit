@@ -1,23 +1,31 @@
 package com.opensplit.routes
 
+import com.opensplit.db.HouseholdContexts
 import com.opensplit.db.Households
 import com.opensplit.db.Memberships
 import com.opensplit.db.Users
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.household.CreateHouseholdRequest
 import com.opensplit.dto.household.CreateHouseholdResponse
+import com.opensplit.dto.household.HouseholdMemberResponse
+import com.opensplit.dto.household.HouseholdOverviewResponse
+import com.opensplit.dto.household.HouseholdSummaryResponse
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.dto.household.JoinHouseholdResponse
+import com.opensplit.dto.household.SwitchHouseholdRequest
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.routing.delete
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID
 
@@ -67,6 +75,11 @@ fun Application.householdRoutes() {
                     it[Memberships.id] = UUID.randomUUID().toString()
                     it[Memberships.householdId] = householdId
                     it[Memberships.userId] = userId
+                }
+                HouseholdContexts.deleteWhere { HouseholdContexts.userId eq userId }
+                HouseholdContexts.insert {
+                    it[HouseholdContexts.userId] = userId
+                    it[HouseholdContexts.activeHouseholdId] = householdId
                 }
             }
 
@@ -139,9 +152,126 @@ fun Application.householdRoutes() {
                         it[Memberships.userId] = userId
                     }
                 }
+                HouseholdContexts.deleteWhere { HouseholdContexts.userId eq userId }
+                HouseholdContexts.insert {
+                    it[HouseholdContexts.userId] = userId
+                    it[HouseholdContexts.activeHouseholdId] = hid
+                }
             }
 
             call.respond(HttpStatusCode.OK, JoinHouseholdResponse(hid, true))
+        }
+
+        get("/households/overview") {
+            val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ") ?: call.request.cookies["opensplit-auth-session"]
+            val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+            val userId = resolveUserIdFromToken(token)
+            if (userId == null) {
+                call.respond(HttpStatusCode.Unauthorized, ErrorResponse(generalError = "Authentication required", errors = mapOf("token" to "Authentication required")))
+                return@get
+            }
+
+            val activeHouseholdId = transaction {
+                HouseholdContexts.select { HouseholdContexts.userId eq userId }.limit(1).firstOrNull()?.get(HouseholdContexts.activeHouseholdId)
+            }
+
+            val householdRows = transaction {
+                if (activeHouseholdId == null) {
+                    emptyList()
+                } else {
+                    Households.select { Households.id eq activeHouseholdId }.toList()
+                }
+            }
+
+            val households = transaction {
+                Memberships.select { Memberships.userId eq userId }.map { membership ->
+                    val hid = membership[Memberships.householdId]
+                    val row = Households.select { Households.id eq hid }.limit(1).first()
+                    val memberCount = Memberships.select { Memberships.householdId eq hid }.count().toInt()
+                    HouseholdSummaryResponse(
+                        id = row[Households.id],
+                        name = row[Households.name],
+                        memberCount = memberCount,
+                        isActive = activeHouseholdId == hid,
+                    )
+                }
+            }
+
+            val members = transaction {
+                if (activeHouseholdId == null) emptyList() else {
+                    Memberships.select { Memberships.householdId eq activeHouseholdId }.map { membership ->
+                        val row = Users.select { Users.id eq membership[Memberships.userId] }.limit(1).first()
+                        HouseholdMemberResponse(
+                            userId = row[Users.id],
+                            email = row[Users.email],
+                            isOwner = transaction { Households.select { Households.id eq activeHouseholdId }.limit(1).first()[Households.ownerId] } == row[Users.id]
+                        )
+                    }
+                }
+            }
+
+            call.respond(HttpStatusCode.OK, HouseholdOverviewResponse(activeHouseholdId = activeHouseholdId, households = households, members = members))
+        }
+
+        post("/households/context") {
+            val req = call.receive<SwitchHouseholdRequest>()
+            val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ") ?: call.request.cookies["opensplit-auth-session"]
+            val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+            val userId = resolveUserIdFromToken(token)
+            if (userId == null) {
+                call.respond(HttpStatusCode.Unauthorized, ErrorResponse(generalError = "Authentication required", errors = mapOf("token" to "Authentication required")))
+                return@post
+            }
+
+            val household = transaction { Households.select { Households.id eq req.householdId }.limit(1).firstOrNull() }
+            if (household == null) {
+                call.respond(HttpStatusCode.NotFound, ErrorResponse(generalError = "Invalid household id", errors = mapOf("householdId" to "Invalid household id")))
+                return@post
+            }
+            val isMember = transaction { Memberships.select { (Memberships.householdId eq req.householdId) and (Memberships.userId eq userId) }.any() }
+            if (!isMember && household[Households.ownerId] != userId) {
+                call.respond(HttpStatusCode.Forbidden, ErrorResponse(generalError = "Missing permission to access this household", errors = mapOf("permission" to "Missing permission to access this household")))
+                return@post
+            }
+
+            transaction {
+                HouseholdContexts.deleteWhere { HouseholdContexts.userId eq userId }
+                HouseholdContexts.insert {
+                    it[HouseholdContexts.userId] = userId
+                    it[HouseholdContexts.activeHouseholdId] = req.householdId
+                }
+            }
+
+            call.respond(HttpStatusCode.OK, loadOverviewForUser(userId))
+        }
+
+        delete("/households/{householdId}/memberships/me") {
+            val householdId = call.parameters["householdId"]
+            val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ") ?: call.request.cookies["opensplit-auth-session"]
+            val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+            val userId = resolveUserIdFromToken(token)
+            if (userId == null) {
+                call.respond(HttpStatusCode.Unauthorized, ErrorResponse(generalError = "Authentication required", errors = mapOf("token" to "Authentication required")))
+                return@delete
+            }
+            if (householdId.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest, ErrorResponse(generalError = "Household id is required", errors = mapOf("householdId" to "Household id is required")))
+                return@delete
+            }
+
+            transaction {
+                Memberships.deleteWhere { (Memberships.householdId eq householdId) and (Memberships.userId eq userId) }
+                val stillMember = Memberships.select { Memberships.userId eq userId }.limit(1).firstOrNull()?.get(Memberships.householdId)
+                HouseholdContexts.deleteWhere { HouseholdContexts.userId eq userId }
+                if (stillMember != null) {
+                    HouseholdContexts.insert {
+                        it[HouseholdContexts.userId] = userId
+                        it[HouseholdContexts.activeHouseholdId] = stillMember
+                    }
+                }
+            }
+
+            call.respond(HttpStatusCode.OK, loadOverviewForUser(userId))
         }
     }
 }
@@ -152,3 +282,37 @@ private fun resolveUserIdFromToken(token: String?): String? {
     val userId = token?.let { jwtUserIdRegex.find(it)?.groupValues?.getOrNull(1) } ?: return null
     return transaction { Users.select { Users.id eq userId }.limit(1).firstOrNull()?.get(Users.id) }
 }
+
+private fun loadOverviewForUser(userId: String): HouseholdOverviewResponse {
+    val activeHouseholdId = transaction {
+        HouseholdContexts.select { HouseholdContexts.userId eq userId }.limit(1).firstOrNull()?.get(HouseholdContexts.activeHouseholdId)
+    }
+    val households = transaction {
+        Memberships.select { Memberships.userId eq userId }.map { membership ->
+            val hid = membership[Memberships.householdId]
+            val row = Households.select { Households.id eq hid }.limit(1).first()
+            val memberCount = Memberships.select { Memberships.householdId eq hid }.count().toInt()
+            HouseholdSummaryResponse(
+                id = row[Households.id],
+                name = row[Households.name],
+                memberCount = memberCount,
+                isActive = activeHouseholdId == hid,
+            )
+        }
+    }
+    val members = transaction {
+        if (activeHouseholdId == null) emptyList() else {
+            val ownerId = Households.select { Households.id eq activeHouseholdId }.limit(1).first()[Households.ownerId]
+            Memberships.select { Memberships.householdId eq activeHouseholdId }.map { membership ->
+                val row = Users.select { Users.id eq membership[Memberships.userId] }.limit(1).first()
+                HouseholdMemberResponse(
+                    userId = row[Users.id],
+                    email = row[Users.email],
+                    isOwner = row[Users.id] == ownerId,
+                )
+            }
+        }
+    }
+    return HouseholdOverviewResponse(activeHouseholdId = activeHouseholdId, households = households, members = members)
+}
+

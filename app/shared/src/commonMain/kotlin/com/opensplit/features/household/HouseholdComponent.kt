@@ -4,12 +4,16 @@ import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.root.Destination
 import com.opensplit.root.TopLevelDestinationConfig
+import com.opensplit.dto.household.HouseholdMemberResponse
+import com.opensplit.dto.household.HouseholdOverviewResponse
+import com.opensplit.dto.household.HouseholdSummaryResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 
 enum class HouseholdTab { Create, Join }
@@ -19,8 +23,12 @@ interface HouseholdComponent : Destination {
     val createComponent: CreateHouseholdComponent
     val joinComponent: JoinHouseholdComponent
     val householdId: StateFlow<String?>
+    val overview: StateFlow<HouseholdOverviewResponse>
     fun useCreate()
     fun useJoin()
+    suspend fun loadOverview()
+    suspend fun switchHousehold(householdId: String)
+    suspend fun leaveHousehold(householdId: String)
 
     @Serializable
     class Config : TopLevelDestinationConfig
@@ -32,7 +40,7 @@ interface HouseholdComponent : Destination {
 
 class DefaultHouseholdComponent(
     context: CContext,
-    gateway: HouseholdGateway,
+    private val gateway: HouseholdGateway,
 ) : HouseholdComponent, CContext by context {
 
     private val scope = componentScope()
@@ -45,14 +53,19 @@ class DefaultHouseholdComponent(
     private val _activeTab = MutableStateFlow(HouseholdTab.Create)
     override val activeTab: StateFlow<HouseholdTab> = _activeTab
 
+    private val _overview = MutableStateFlow(HouseholdOverviewResponse())
+    override val overview: StateFlow<HouseholdOverviewResponse> = _overview
+
     override val householdId: StateFlow<String?> = combine(
         createComponent.uiState.map { it.householdId },
         joinComponent.uiState.map { it.householdId },
-    ) { createId, joinId -> createId ?: joinId }.stateIn(
+        overview.map { it.activeHouseholdId },
+    ) { createId, joinId, activeId -> createId ?: joinId ?: activeId }.stateIn(
         scope = scope,
         started = SharingStarted.Eagerly,
         initialValue = null,
     )
+
 
     override fun useCreate() {
         _activeTab.value = HouseholdTab.Create
@@ -60,6 +73,18 @@ class DefaultHouseholdComponent(
 
     override fun useJoin() {
         _activeTab.value = HouseholdTab.Join
+    }
+
+    override suspend fun loadOverview() {
+        _overview.value = gateway.loadOverview()
+    }
+
+    override suspend fun switchHousehold(householdId: String) {
+        _overview.value = gateway.switchHousehold(householdId)
+    }
+
+    override suspend fun leaveHousehold(householdId: String) {
+        _overview.value = gateway.leaveHousehold(householdId)
     }
 
     class Factory(
@@ -75,6 +100,7 @@ class DefaultHouseholdComponent(
     }
 }
 
+@Suppress("unused")
 class FakeHouseholdComponent(
     householdId: String? = "household-1",
 ) : HouseholdComponent {
@@ -83,7 +109,11 @@ class FakeHouseholdComponent(
     private val _activeTab = MutableStateFlow(HouseholdTab.Create)
     override val activeTab: StateFlow<HouseholdTab> = _activeTab
     override val householdId: StateFlow<String?> = MutableStateFlow(householdId)
+    override val overview: StateFlow<HouseholdOverviewResponse> = MutableStateFlow(HouseholdOverviewResponse(activeHouseholdId = householdId))
     override fun useCreate() {}
     override fun useJoin() {}
+    override suspend fun loadOverview() {}
+    override suspend fun switchHousehold(householdId: String) {}
+    override suspend fun leaveHousehold(householdId: String) {}
 }
 
