@@ -10,6 +10,7 @@ import com.opensplit.component.DefaultCContext
 import com.opensplit.root.RootComponent
 import org.koin.core.context.GlobalContext.startKoin
 import javax.swing.SwingUtilities
+import androidx.compose.ui.unit.dp
 
 fun main() {
     val lifecycle = LifecycleRegistry()
@@ -24,7 +25,7 @@ fun main() {
     }
     DecomposeSettings.settings = DecomposeSettings(duplicateConfigurationsEnabled = true)
     application {
-        val windowState = rememberWindowState()
+        val windowState = rememberWindowState(width = 1280.dp, height = 900.dp)
         LifecycleController(lifecycle, windowState)
 
         Window(

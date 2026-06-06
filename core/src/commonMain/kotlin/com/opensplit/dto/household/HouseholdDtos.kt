@@ -36,6 +36,7 @@ data class HouseholdSummaryResponse(
     val name: String,
     val memberCount: Int,
     val isActive: Boolean = false,
+    val isOwner: Boolean = false,
 )
 
 @Serializable
@@ -43,6 +44,7 @@ data class HouseholdMemberResponse(
     val userId: String,
     val email: String,
     val isOwner: Boolean = false,
+    val isCurrentUser: Boolean = false,
 )
 
 @Serializable

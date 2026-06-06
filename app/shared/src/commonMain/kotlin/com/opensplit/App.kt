@@ -1,7 +1,6 @@
 package com.opensplit
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -12,10 +11,11 @@ import com.opensplit.features.household.HouseholdComponent
 import com.opensplit.features.household.HouseholdRootScreen
 import com.opensplit.root.FakeRootComponent
 import com.opensplit.root.RootComponent
+import com.opensplit.ui.OpenSplitTheme
 
 @Composable
 fun App(root: RootComponent) {
-    MaterialTheme {
+    OpenSplitTheme {
         Children(root.childStack) {
             when (val child = it.instance) {
                 is AuthComponent -> AuthRootScreen(
