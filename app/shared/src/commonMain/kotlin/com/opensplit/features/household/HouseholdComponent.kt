@@ -2,18 +2,15 @@ package com.opensplit.features.household
 
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
+import com.opensplit.dto.household.HouseholdOverviewResponse
 import com.opensplit.root.Destination
 import com.opensplit.root.TopLevelDestinationConfig
-import com.opensplit.dto.household.HouseholdMemberResponse
-import com.opensplit.dto.household.HouseholdOverviewResponse
-import com.opensplit.dto.household.HouseholdSummaryResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 
 enum class HouseholdTab { Create, Join }
@@ -24,6 +21,7 @@ interface HouseholdComponent : Destination {
     val joinComponent: JoinHouseholdComponent
     val householdId: StateFlow<String?>
     val overview: StateFlow<HouseholdOverviewResponse>
+
     /** True while the initial overview is being fetched after login. */
     val isLoadingOverview: StateFlow<Boolean>
     fun useCreate()
@@ -36,7 +34,7 @@ interface HouseholdComponent : Destination {
     class Config : TopLevelDestinationConfig
 
     interface Factory {
-        fun create(cContext: CContext, config: Config) : HouseholdComponent
+        fun create(cContext: CContext, config: Config): HouseholdComponent
     }
 }
 
@@ -61,16 +59,18 @@ class DefaultHouseholdComponent(
     private val _isLoadingOverview = MutableStateFlow(true)
     override val isLoadingOverview: StateFlow<Boolean> = _isLoadingOverview
 
-    override val householdId: StateFlow<String?> = combine(
-        createComponent.uiState.map { it.householdId },
-        joinComponent.uiState.map { it.householdId },
-        overview.map { it.activeHouseholdId },
-    ) { createId, joinId, activeId -> createId ?: joinId ?: activeId }.stateIn(
-        scope = scope,
-        started = SharingStarted.Eagerly,
-        initialValue = null,
-    )
-
+    override val householdId: StateFlow<String?> by lazy {
+        combine(
+            createComponent.uiState.map { it.householdId },
+            joinComponent.uiState.map { it.householdId },
+            overview.map { it.activeHouseholdId },
+        ) { createId, joinId, activeId -> createId ?: joinId ?: activeId }
+            .stateIn(
+                scope = scope,
+                started = SharingStarted.Lazily,
+                initialValue = null,
+            )
+    }
 
 
     override fun useCreate() {
@@ -83,7 +83,8 @@ class DefaultHouseholdComponent(
 
     override suspend fun loadOverview() {
         try {
-            _overview.value = gateway.loadOverview()
+            val result = gateway.loadOverview()
+            _overview.value = result
         } finally {
             // Clear the initial-load spinner regardless of success/failure so the
             // UI can show either the households page or the create/join setup screen.
@@ -121,7 +122,8 @@ class FakeHouseholdComponent(
     private val _activeTab = MutableStateFlow(HouseholdTab.Create)
     override val activeTab: StateFlow<HouseholdTab> = _activeTab
     override val householdId: StateFlow<String?> = MutableStateFlow(householdId)
-    override val overview: StateFlow<HouseholdOverviewResponse> = MutableStateFlow(HouseholdOverviewResponse(activeHouseholdId = householdId))
+    override val overview: StateFlow<HouseholdOverviewResponse> =
+        MutableStateFlow(HouseholdOverviewResponse(activeHouseholdId = householdId))
     override val isLoadingOverview: StateFlow<Boolean> = MutableStateFlow(false)
     override fun useCreate() {}
     override fun useJoin() {}

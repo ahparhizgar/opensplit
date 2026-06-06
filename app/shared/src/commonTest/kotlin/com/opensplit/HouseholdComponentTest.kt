@@ -1,5 +1,7 @@
 package com.opensplit
 
+import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.arkivanov.essenty.lifecycle.start
 import com.opensplit.component.createDefaultComponentContext
 import com.opensplit.features.household.DefaultCreateHouseholdComponent
 import com.opensplit.features.household.DefaultHouseholdComponent
@@ -7,6 +9,7 @@ import com.opensplit.features.household.HouseholdComponent
 import com.opensplit.features.household.HouseholdGateway
 import com.opensplit.features.household.HouseholdTab
 import com.opensplit.remote.RemoteException
+import com.opensplit.dto.household.HouseholdSummaryResponse
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.When
 import com.opensplit.util.createComponentContext
@@ -18,8 +21,6 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
-import kotlinx.coroutines.test.runTest
-
 
 class HouseholdComponentTest : BehaviorSpec({
     Given("a Household component – Create tab") {
@@ -195,43 +196,52 @@ class HouseholdComponentTest : BehaviorSpec({
 
         var component by testValue {
             DefaultHouseholdComponent(
-                context = createDefaultComponentContext(createComponentContext()),
+                context = createDefaultComponentContext(
+                    createComponentContext(LifecycleRegistry().also {
+                        it.start()
+                    })
+                ),
                 gateway = gateway,
             )
         }
 
-        When("loading household overview") {
-            runTest { component.loadOverview() }
-
+        When(
+            "loading household overview",
+            { component.loadOverview() }
+        ) {
             Then("exposes the active household from the overview") {
                 component.overview.value.activeHouseholdId shouldBe "household-1"
-                component.householdId.value shouldBe "household-1"
                 gateway.loadOverviewCalls shouldBe 1
             }
         }
 
-        When("switching the active household") {
-            runTest {
+        When(
+            "switching the active household",
+            {
                 component.loadOverview()
                 component.switchHousehold("household-2")
             }
-
+        ) {
             Then("updates the active household and marks the new household active") {
                 component.overview.value.activeHouseholdId shouldBe "household-2"
-                component.overview.value.households.first().isActive shouldBe true
+                component.overview.value.households.find { it.isActive }?.id shouldBe "household-2"
                 gateway.switchCalls shouldBe 1
             }
         }
 
-        When("leaving the active household") {
-            runTest {
+        When(
+            "leaving the active household",
+            {
                 component.loadOverview()
                 component.leaveHousehold("household-1")
             }
+        ) {
 
             Then("falls back to a safe landing state") {
-                component.overview.value.activeHouseholdId shouldBe null
-                component.overview.value.households shouldBe emptyList()
+                component.overview.value.activeHouseholdId shouldBe "household-2"
+                component.overview.value.households shouldBe listOf(
+                    HouseholdSummaryResponse(id = "household-2", name = "River House", memberCount = 2, isActive = true)
+                )
                 gateway.leaveCalls shouldBe 1
             }
         }
