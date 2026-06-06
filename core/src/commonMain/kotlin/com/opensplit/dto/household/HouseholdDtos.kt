@@ -37,6 +37,7 @@ data class HouseholdSummaryResponse(
     val memberCount: Int,
     val isActive: Boolean = false,
     val isOwner: Boolean = false,
+    val inviteCode: String? = null,
 )
 
 @Serializable

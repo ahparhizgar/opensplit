@@ -93,6 +93,20 @@ class HouseholdScenarios {
     }
 
     @Test
+    fun overviewIncludesInviteCode() = testOpenSplit {
+        val created = client.post("/households") {
+            setBody(CreateHouseholdRequest("Family Home"))
+        }.body<CreateHouseholdResponse>()
+
+        val overview = client.get("/households/overview")
+            .body<HouseholdOverviewResponse>()
+
+        assertEquals(1, overview.households.size)
+        val household = overview.households.first()
+        assertEquals(created.inviteCode, household.inviteCode)
+    }
+
+    @Test
     fun householdOverviewSwitchAndLeaveFlow() = testOpenSplit {
         val firstHousehold = client.post("/households") {
             setBody(CreateHouseholdRequest("Maple House"))
@@ -105,16 +119,16 @@ class HouseholdScenarios {
         val overviewResponse = client.get("/households/overview")
         assertEquals(HttpStatusCode.OK, overviewResponse.status)
         val overview = overviewResponse.body<HouseholdOverviewResponse>()
-        assertEquals(firstHousehold.id, overview.activeHouseholdId)
+        assertEquals(secondHousehold.id, overview.activeHouseholdId)
         assertEquals(2, overview.households.size)
         assertEquals(1, overview.members.size)
 
         val switchResponse = client.post("/households/context") {
-            setBody(mapOf("householdId" to secondHousehold.id))
+            setBody(mapOf("householdId" to firstHousehold.id))
         }
         assertEquals(HttpStatusCode.OK, switchResponse.status)
         val switched = switchResponse.body<HouseholdOverviewResponse>()
-        assertEquals(secondHousehold.id, switched.activeHouseholdId)
+        assertEquals(firstHousehold.id, switched.activeHouseholdId)
         assertEquals(2, switched.households.size)
 
         val leaveResponse = client.delete("/households/${secondHousehold.id}/memberships/me")

@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="jvmApp" type="JetRunConfigurationType">
+    <option name="MAIN_CLASS_NAME" value="com.opensplit.MainKt" />
+    <module name="OpenSplit.app.desktopApp.main" />
+    <shortenClasspath name="NONE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

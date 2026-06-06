@@ -530,6 +530,9 @@ private fun HouseholdSummaryCard(
     household: com.opensplit.dto.household.HouseholdSummaryResponse?,
     householdId: String,
 ) {
+    val inviteCode = household?.inviteCode
+    var copied by remember { mutableStateOf(false) }
+
     Card(
         colors = CardDefaults.cardColors(),
         modifier = Modifier
@@ -563,6 +566,43 @@ private fun HouseholdSummaryCard(
                         text = "You are owner",
                         style = MaterialTheme.typography.labelSmall,
                     )
+                }
+            }
+            if (inviteCode != null) {
+                val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Invite code:",
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.testTag("household-invite-code-label"),
+                    )
+                    Surface(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = MaterialTheme.shapes.small,
+                    ) {
+                        Text(
+                            text = inviteCode,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            ),
+                            modifier = Modifier
+                                .testTag("household-invite-code-value")
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        )
+                    }
+                    TextButton(
+                        onClick = {
+                            clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(inviteCode))
+                            copied = true
+                        },
+                        modifier = Modifier.testTag("household-copy-invite-code"),
+                    ) {
+                        Text(if (copied) "Copied!" else "Copy")
+                    }
                 }
             }
         }

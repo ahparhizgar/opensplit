@@ -17,8 +17,8 @@ class FakeHouseholdGateway : HouseholdGateway {
     private var overview = HouseholdOverviewResponse(
         activeHouseholdId = "household-1",
         households = listOf(
-            HouseholdSummaryResponse(id = "household-1", name = "Maple House", memberCount = 1, isActive = true),
-            HouseholdSummaryResponse(id = "household-2", name = "River House", memberCount = 2),
+            HouseholdSummaryResponse(id = "household-1", name = "Maple House", memberCount = 1, isActive = true, inviteCode = "invite-abc123"),
+            HouseholdSummaryResponse(id = "household-2", name = "River House", memberCount = 2, inviteCode = "invite-def456"),
         ),
         members = listOf(HouseholdMemberResponse(userId = "user-1", email = "amir@example.com", isOwner = true)),
     )
@@ -27,7 +27,7 @@ class FakeHouseholdGateway : HouseholdGateway {
         createCalls++
         overview = HouseholdOverviewResponse(
             activeHouseholdId = "household-1",
-            households = listOf(HouseholdSummaryResponse(id = "household-1", name = name, memberCount = 1, isActive = true)),
+            households = listOf(HouseholdSummaryResponse(id = "household-1", name = name, memberCount = 1, isActive = true, inviteCode = "invite-abc123")),
             members = listOf(HouseholdMemberResponse(userId = "user-1", email = "amir@example.com", isOwner = true)),
         )
         return CreateHouseholdResponse(
@@ -42,7 +42,7 @@ class FakeHouseholdGateway : HouseholdGateway {
         overview = overview.copy(
             activeHouseholdId = "household-2",
             households = listOf(
-                HouseholdSummaryResponse(id = "household-2", name = "Joined House", memberCount = 2, isActive = true),
+                HouseholdSummaryResponse(id = "household-2", name = "Joined House", memberCount = 2, isActive = true, inviteCode = "invite-def456"),
             ),
             members = listOf(HouseholdMemberResponse(userId = "user-1", email = "amir@example.com", isOwner = false)),
         )

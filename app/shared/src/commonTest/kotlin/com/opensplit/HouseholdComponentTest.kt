@@ -213,6 +213,13 @@ class HouseholdComponentTest : BehaviorSpec({
                 component.overview.value.activeHouseholdId shouldBe "household-1"
                 gateway.loadOverviewCalls shouldBe 1
             }
+
+            Then("overview includes inviteCode for each household") {
+                val households = component.overview.value.households
+                households.forEach { h ->
+                    h.inviteCode.shouldNotBeNull()
+                }
+            }
         }
 
         When(
@@ -240,7 +247,7 @@ class HouseholdComponentTest : BehaviorSpec({
             Then("falls back to a safe landing state") {
                 component.overview.value.activeHouseholdId shouldBe "household-2"
                 component.overview.value.households shouldBe listOf(
-                    HouseholdSummaryResponse(id = "household-2", name = "River House", memberCount = 2, isActive = true)
+                    HouseholdSummaryResponse(id = "household-2", name = "River House", memberCount = 2, isActive = true, inviteCode = "invite-def456")
                 )
                 gateway.leaveCalls shouldBe 1
             }

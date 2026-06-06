@@ -193,6 +193,7 @@ fun Application.householdRoutes() {
                         name = row[Households.name],
                         memberCount = memberCount,
                         isActive = activeHouseholdId == hid,
+                        inviteCode = row[Households.inviteCode],
                     )
                 }
             }
@@ -297,6 +298,7 @@ private fun loadOverviewForUser(userId: String): HouseholdOverviewResponse {
                 name = row[Households.name],
                 memberCount = memberCount,
                 isActive = activeHouseholdId == hid,
+                inviteCode = row[Households.inviteCode],
             )
         }
     }
