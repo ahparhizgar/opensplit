@@ -1,6 +1,7 @@
 package com.opensplit.features.household
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,12 +19,14 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,22 +46,45 @@ fun HouseholdRootScreen(
     component: HouseholdComponent,
     modifier: Modifier = Modifier,
 ) {
+    // Trigger the initial overview load the first time this screen is composed.
+    // This lets the component remain a pure state-holder while the UI drives
+    // the async fetch, giving us a clean loading → route decision.
+    LaunchedEffect(component) {
+        component.loadOverview()
+    }
+
+    val isLoading by component.isLoadingOverview.collectAsState()
     val householdId by component.householdId.collectAsState()
     val overview by component.overview.collectAsState()
     Surface(modifier = modifier.fillMaxSize()) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val sizeClass = adaptiveLayoutSizeClass(maxWidth)
-            if (householdId == null) {
-                HouseholdSetupScreen(component = component, sizeClass = sizeClass)
-            } else {
-                HouseholdActiveScreen(
-                    householdId = householdId!!,
-                    overview = overview,
-                    onSwitchHousehold = component::switchHousehold,
-                    onLeaveHousehold = component::leaveHousehold,
-                    onRefresh = component::loadOverview,
-                    sizeClass = sizeClass,
-                )
+            when {
+                isLoading -> {
+                    // Show a centered spinner while checking whether the user
+                    // already belongs to a household.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .testTag("household-loading"),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                householdId == null -> {
+                    HouseholdSetupScreen(component = component, sizeClass = sizeClass)
+                }
+                else -> {
+                    HouseholdActiveScreen(
+                        householdId = householdId!!,
+                        overview = overview,
+                        onSwitchHousehold = component::switchHousehold,
+                        onLeaveHousehold = component::leaveHousehold,
+                        onRefresh = component::loadOverview,
+                        sizeClass = sizeClass,
+                    )
+                }
             }
         }
     }

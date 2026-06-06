@@ -24,6 +24,8 @@ interface HouseholdComponent : Destination {
     val joinComponent: JoinHouseholdComponent
     val householdId: StateFlow<String?>
     val overview: StateFlow<HouseholdOverviewResponse>
+    /** True while the initial overview is being fetched after login. */
+    val isLoadingOverview: StateFlow<Boolean>
     fun useCreate()
     fun useJoin()
     suspend fun loadOverview()
@@ -56,6 +58,9 @@ class DefaultHouseholdComponent(
     private val _overview = MutableStateFlow(HouseholdOverviewResponse())
     override val overview: StateFlow<HouseholdOverviewResponse> = _overview
 
+    private val _isLoadingOverview = MutableStateFlow(true)
+    override val isLoadingOverview: StateFlow<Boolean> = _isLoadingOverview
+
     override val householdId: StateFlow<String?> = combine(
         createComponent.uiState.map { it.householdId },
         joinComponent.uiState.map { it.householdId },
@@ -67,6 +72,7 @@ class DefaultHouseholdComponent(
     )
 
 
+
     override fun useCreate() {
         _activeTab.value = HouseholdTab.Create
     }
@@ -76,7 +82,13 @@ class DefaultHouseholdComponent(
     }
 
     override suspend fun loadOverview() {
-        _overview.value = gateway.loadOverview()
+        try {
+            _overview.value = gateway.loadOverview()
+        } finally {
+            // Clear the initial-load spinner regardless of success/failure so the
+            // UI can show either the households page or the create/join setup screen.
+            _isLoadingOverview.value = false
+        }
     }
 
     override suspend fun switchHousehold(householdId: String) {
@@ -110,6 +122,7 @@ class FakeHouseholdComponent(
     override val activeTab: StateFlow<HouseholdTab> = _activeTab
     override val householdId: StateFlow<String?> = MutableStateFlow(householdId)
     override val overview: StateFlow<HouseholdOverviewResponse> = MutableStateFlow(HouseholdOverviewResponse(activeHouseholdId = householdId))
+    override val isLoadingOverview: StateFlow<Boolean> = MutableStateFlow(false)
     override fun useCreate() {}
     override fun useJoin() {}
     override suspend fun loadOverview() {}
