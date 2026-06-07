@@ -5,6 +5,7 @@ import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.dto.household.CreateHouseholdRequest
 import com.opensplit.dto.household.CreateHouseholdResponse
+import com.opensplit.dto.household.HouseholdMemberResponse
 import com.opensplit.dto.household.HouseholdOverviewResponse
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.dto.household.JoinHouseholdResponse
@@ -21,6 +22,17 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class HouseholdScenarios {
+    @Test
+    fun overviewMarksCurrentUser() = testOpenSplit {
+        client.post("/households") {
+            setBody(CreateHouseholdRequest("My Home"))
+        }.also { assertEquals(HttpStatusCode.Created, it.status) }
+
+        val overview = client.get("/households/overview").body<HouseholdOverviewResponse>()
+        val currentUser = overview.members.find { it.isCurrentUser }
+        assertEquals(1, overview.members.size)
+        assertTrue(currentUser != null, "Current user should be marked as isCurrentUser")
+    }
     @Test
     fun createAndJoinHousehold() = testOpenSplit {
         val created = client.post("/households") {
@@ -48,6 +60,28 @@ class HouseholdScenarios {
         assertEquals(HttpStatusCode.NotFound, response.status)
         val error = response.body<ErrorResponse>()
         assertEquals("Invalid invite code or household id", error.errors["inviteCodeOrId"])
+    }
+
+    @Test
+    fun leavingLastHouseholdReturnsSafeLandingState() = testOpenSplit {
+        val created = client.post("/households") {
+            setBody(CreateHouseholdRequest("My Home"))
+        }.body<CreateHouseholdResponse>()
+
+        val otherUser = client.post("/users") {
+            setBody(SignUpRequest("leave-test@example.com", "password123"))
+        }.body<AuthSessionState>()
+        val otherClient = createAuthenticatedClient(otherUser.accessToken)
+
+        otherClient.post("/households/join") {
+            setBody(JoinHouseholdRequest(created.inviteCode!!))
+        }.also { assertEquals(HttpStatusCode.OK, it.status) }
+
+        val leaveResponse = otherClient.delete("/households/${created.id}/memberships/me")
+        assertEquals(HttpStatusCode.OK, leaveResponse.status)
+        val afterLeave = leaveResponse.body<HouseholdOverviewResponse>()
+        assertEquals(null, afterLeave.activeHouseholdId)
+        assertEquals(0, afterLeave.households.size)
     }
 
     @Test
@@ -104,6 +138,49 @@ class HouseholdScenarios {
         assertEquals(1, overview.households.size)
         val household = overview.households.first()
         assertEquals(created.inviteCode, household.inviteCode)
+    }
+
+    @Test
+    fun ownerLeavesWithOtherMembersTransfersOwnership() = testOpenSplit {
+        val created = client.post("/households") {
+            setBody(CreateHouseholdRequest("Our Home"))
+        }.body<CreateHouseholdResponse>()
+
+        val otherUser = client.post("/users") {
+            setBody(SignUpRequest("owner-transfer@example.com", "password123"))
+        }.body<AuthSessionState>()
+        val otherClient = createAuthenticatedClient(otherUser.accessToken)
+
+        otherClient.post("/households/join") {
+            setBody(JoinHouseholdRequest(created.inviteCode!!))
+        }.also { assertEquals(HttpStatusCode.OK, it.status) }
+
+        // Owner leaves, ownership should transfer
+        client.delete("/households/${created.id}/memberships/me").also {
+            assertEquals(HttpStatusCode.OK, it.status)
+        }
+
+        // Other user checks overview — they should now be the owner
+        val overview = otherClient.get("/households/overview").body<HouseholdOverviewResponse>()
+        val me = overview.members.find { it.isCurrentUser }
+        assertTrue(me != null, "Other user should still be a member")
+        assertTrue(me.isOwner, "Ownership should have been transferred to the remaining member")
+    }
+
+    @Test
+    fun ownerLeavesAsLastMemberHouseholdBecomesOwnerless() = testOpenSplit {
+        val created = client.post("/households") {
+            setBody(CreateHouseholdRequest("Solo Home"))
+        }.body<CreateHouseholdResponse>()
+
+        client.delete("/households/${created.id}/memberships/me").also {
+            assertEquals(HttpStatusCode.OK, it.status)
+        }
+
+        // Verify safe landing
+        val overview = client.get("/households/overview").body<HouseholdOverviewResponse>()
+        assertEquals(null, overview.activeHouseholdId, "Should have no active household")
+        assertEquals(0, overview.households.size, "Should have no households")
     }
 
     @Test

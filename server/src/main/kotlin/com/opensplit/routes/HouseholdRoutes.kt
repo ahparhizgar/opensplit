@@ -26,8 +26,10 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
 fun Application.householdRoutes() {
@@ -194,6 +196,7 @@ fun Application.householdRoutes() {
                         name = row[Households.name],
                         memberCount = memberCount,
                         isActive = activeHouseholdId == hid,
+                        isOwner = row[Households.ownerId] == userId,
                         inviteCode = row[Households.inviteCode],
                     )
                 }
@@ -203,11 +206,12 @@ fun Application.householdRoutes() {
                 if (activeHouseholdId == null) emptyList() else {
                     Memberships.select { Memberships.householdId eq activeHouseholdId }.map { membership ->
                         val row = Users.select { Users.id eq membership[Memberships.userId] }.limit(1).first()
-                        HouseholdMemberResponse(
-                            userId = row[Users.id],
-                            email = row[Users.email],
-                            isOwner = transaction { Households.select { Households.id eq activeHouseholdId }.limit(1).first()[Households.ownerId] } == row[Users.id]
-                        )
+                HouseholdMemberResponse(
+                    userId = row[Users.id],
+                    email = row[Users.email],
+                    isOwner = transaction { Households.select { Households.id eq activeHouseholdId }.limit(1).first()[Households.ownerId] } == row[Users.id],
+                    isCurrentUser = row[Users.id] == userId,
+                )
                     }
                 }
             }
@@ -262,6 +266,19 @@ fun Application.householdRoutes() {
             }
 
             transaction {
+                val household = Households.select { Households.id eq householdId }.limit(1).firstOrNull()
+                if (household != null && household[Households.ownerId] == userId) {
+                    val nextOwnerQuery = Memberships.select {
+                        (Memberships.householdId eq householdId) and (Memberships.userId neq userId)
+                    }.limit(1).firstOrNull()
+                    if (nextOwnerQuery != null) {
+                        val nextUserId = nextOwnerQuery[Memberships.userId]
+                        Households.update({ Households.id eq householdId }) {
+                            it[Households.ownerId] = nextUserId
+                        }
+                    }
+                }
+
                 Memberships.deleteWhere { (Memberships.householdId eq householdId) and (Memberships.userId eq userId) }
                 val stillMember = Memberships.select { Memberships.userId eq userId }.limit(1).firstOrNull()?.get(Memberships.householdId)
                 HouseholdContexts.deleteWhere { HouseholdContexts.userId eq userId }
@@ -292,28 +309,31 @@ private fun loadOverviewForUser(userId: String): HouseholdOverviewResponse {
             val hid = membership[Memberships.householdId]
             val row = Households.select { Households.id eq hid }.limit(1).first()
             val memberCount = Memberships.select { Memberships.householdId eq hid }.count().toInt()
-            HouseholdSummaryResponse(
-                id = row[Households.id],
-                name = row[Households.name],
-                memberCount = memberCount,
-                isActive = activeHouseholdId == hid,
-                inviteCode = row[Households.inviteCode],
+        val ownerId = row[Households.ownerId]
+        HouseholdSummaryResponse(
+            id = row[Households.id],
+            name = row[Households.name],
+            memberCount = memberCount,
+            isActive = activeHouseholdId == hid,
+            isOwner = ownerId == userId,
+            inviteCode = row[Households.inviteCode],
+        )
+    }
+}
+val members = transaction {
+    if (activeHouseholdId == null) emptyList() else {
+        val ownerId = Households.select { Households.id eq activeHouseholdId }.limit(1).first()[Households.ownerId]
+        Memberships.select { Memberships.householdId eq activeHouseholdId }.map { membership ->
+            val row = Users.select { Users.id eq membership[Memberships.userId] }.limit(1).first()
+            HouseholdMemberResponse(
+                userId = row[Users.id],
+                email = row[Users.email],
+                isOwner = row[Users.id] == ownerId,
+                isCurrentUser = row[Users.id] == userId,
             )
         }
     }
-    val members = transaction {
-        if (activeHouseholdId == null) emptyList() else {
-            val ownerId = Households.select { Households.id eq activeHouseholdId }.limit(1).first()[Households.ownerId]
-            Memberships.select { Memberships.householdId eq activeHouseholdId }.map { membership ->
-                val row = Users.select { Users.id eq membership[Memberships.userId] }.limit(1).first()
-                HouseholdMemberResponse(
-                    userId = row[Users.id],
-                    email = row[Users.email],
-                    isOwner = row[Users.id] == ownerId,
-                )
-            }
-        }
-    }
-    return HouseholdOverviewResponse(activeHouseholdId = activeHouseholdId, households = households, members = members)
+}
+return HouseholdOverviewResponse(activeHouseholdId = activeHouseholdId, households = households, members = members)
 }
 

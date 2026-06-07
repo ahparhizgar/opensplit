@@ -23,8 +23,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
 
 class HouseholdComponentTest : BehaviorSpec({
+    extensions(MainDispatcherExtension())
     Given("a Household component – Create tab") {
-        extensions(MainDispatcherExtension())
         val koin by integrationKoin()
 
         var component by testValue {
@@ -97,7 +97,6 @@ class HouseholdComponentTest : BehaviorSpec({
     }
 
     Given("a Household component – Join tab") {
-        extensions(MainDispatcherExtension())
         val koin by integrationKoin()
 
         var component by testValue {
@@ -148,7 +147,6 @@ class HouseholdComponentTest : BehaviorSpec({
     }
 
     Given("a CreateHouseholdComponent when gateway returns an error") {
-        extensions(MainDispatcherExtension())
 
         var createComponent by testValue {
             DefaultCreateHouseholdComponent(
@@ -189,8 +187,35 @@ class HouseholdComponentTest : BehaviorSpec({
         }
     }
 
+    Given("a Household component with a single household") {
+        val lifecycle = LifecycleRegistry()
+        val gateway = FakeHouseholdGateway().withSingleHousehold()
+
+        var component by testValue {
+            DefaultHouseholdComponent(
+                context = createDefaultComponentContext(
+                    createComponentContext(lifecycle.also { it.start() })
+                ),
+                gateway = gateway,
+            )
+        }
+
+        When(
+            "leaving the only household",
+            {
+                component.loadOverview()
+                component.leaveHousehold("household-1")
+            }
+        ) {
+            Then("returns to setup state with null householdId and empty households") {
+                component.overview.value.activeHouseholdId shouldBe null
+                component.overview.value.households shouldBe emptyList()
+                gateway.leaveCalls shouldBe 1
+            }
+        }
+    }
+
     Given("a Household component with an overview capable gateway") {
-        extensions(MainDispatcherExtension())
 
         val gateway = FakeHouseholdGateway()
 

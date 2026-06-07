@@ -14,6 +14,17 @@ class FakeHouseholdGateway : HouseholdGateway {
     var switchCalls = 0
     var leaveCalls = 0
 
+    fun withSingleHousehold(): FakeHouseholdGateway {
+        overview = HouseholdOverviewResponse(
+            activeHouseholdId = "household-1",
+            households = listOf(
+                HouseholdSummaryResponse(id = "household-1", name = "Solo House", memberCount = 1, isActive = true, inviteCode = "invite-abc123"),
+            ),
+            members = listOf(HouseholdMemberResponse(userId = "user-1", email = "amir@example.com", isOwner = true)),
+        )
+        return this
+    }
+
     private var overview = HouseholdOverviewResponse(
         activeHouseholdId = "household-1",
         households = listOf(

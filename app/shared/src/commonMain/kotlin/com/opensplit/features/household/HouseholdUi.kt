@@ -475,6 +475,7 @@ fun HouseholdActiveScreen(
             householdName = householdToLeave?.name ?: leaveConfirmHouseholdId!!,
             isActive = isLeavingActive,
             hasAlternatives = hasAlternativeHouseholds,
+            isOwner = householdToLeave?.isOwner == true,
             onConfirm = {
                 scope.launch {
                     onLeaveHousehold(leaveConfirmHouseholdId!!)
@@ -881,6 +882,7 @@ private fun HouseholdLeaveConfirmDialog(
     householdName: String,
     isActive: Boolean,
     hasAlternatives: Boolean,
+    isOwner: Boolean,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -888,13 +890,22 @@ private fun HouseholdLeaveConfirmDialog(
         onDismissRequest = onDismiss,
         title = { Text("Leave household?") },
         text = {
-            Text(
-                when {
-                    !isActive -> "You will lose access to this household's shared expenses unless someone invites you again."
-                    hasAlternatives -> "You will leave $householdName and switch to another household you still belong to."
-                    else -> "You will leave $householdName and return to household setup."
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    when {
+                        !isActive -> "You will lose access to this household's shared expenses unless someone invites you again."
+                        hasAlternatives -> "You will leave $householdName and switch to another household you still belong to."
+                        else -> "You will leave $householdName and return to household setup."
+                    }
+                )
+                if (isOwner) {
+                    Text(
+                        text = "As the owner, leaving will transfer ownership to another member.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
                 }
-            )
+            }
         },
         confirmButton = {
             Button(
