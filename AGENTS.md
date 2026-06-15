@@ -63,6 +63,11 @@ Code review standards
 - Story ACs must cover the display/feedback side of every feature, not just creation. Validate ACs against the checklist at story creation time, not after implementation.
 - Review checklist items are non-negotiable: security, error states, empty states, display of created data, test coverage.
 
+Common AI mistakes:
+- Don't use fully qualified name
+- Always write previews for screens or public composable components
+- Don't make functions of decompose components suspend. instead launch in them and return the job.
+
 References (explicit files)
 - `settings.gradle.kts`
 - `gradle/libs.versions.toml`

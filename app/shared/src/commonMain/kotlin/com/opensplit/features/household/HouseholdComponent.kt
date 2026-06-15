@@ -1,16 +1,19 @@
 package com.opensplit.features.household
 
+import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.dto.household.HouseholdOverviewResponse
 import com.opensplit.root.Destination
 import com.opensplit.root.TopLevelDestinationConfig
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 enum class HouseholdTab { Create, Join }
@@ -26,9 +29,9 @@ interface HouseholdComponent : Destination {
     val isLoadingOverview: StateFlow<Boolean>
     fun useCreate()
     fun useJoin()
-    suspend fun loadOverview()
-    suspend fun switchHousehold(householdId: String)
-    suspend fun leaveHousehold(householdId: String)
+    fun loadOverview(): Job
+    fun switchHousehold(householdId: String): Job
+    fun leaveHousehold(householdId: String): Job
 
     @Serializable
     class Config : TopLevelDestinationConfig
@@ -44,6 +47,12 @@ class DefaultHouseholdComponent(
 ) : HouseholdComponent, CContext by context {
 
     private val scope = componentScope()
+
+    init {
+        doOnCreate {
+            loadOverview()
+        }
+    }
 
     override val createComponent: CreateHouseholdComponent =
         DefaultCreateHouseholdComponent(context, gateway)
@@ -81,24 +90,27 @@ class DefaultHouseholdComponent(
         _activeTab.value = HouseholdTab.Join
     }
 
-    override suspend fun loadOverview() {
+    override fun loadOverview() = scope.launch {
         try {
             val result = gateway.loadOverview()
             _overview.value = result
         } finally {
             // Clear the initial-load spinner regardless of success/failure so the
-            // UI can show either the households page or the create/join setup screen.
+            // UI can show either the households page or the creation/join setup screen.
             _isLoadingOverview.value = false
         }
+
     }
 
-    override suspend fun switchHousehold(householdId: String) {
+    override fun switchHousehold(householdId: String) = scope.launch {
         _overview.value = gateway.switchHousehold(householdId)
     }
 
-    override suspend fun leaveHousehold(householdId: String) {
+
+    override fun leaveHousehold(householdId: String) = scope.launch {
         _overview.value = gateway.leaveHousehold(householdId)
     }
+
 
     class Factory(
         private val gateway: HouseholdGateway,
@@ -127,8 +139,8 @@ class FakeHouseholdComponent(
     override val isLoadingOverview: StateFlow<Boolean> = MutableStateFlow(false)
     override fun useCreate() {}
     override fun useJoin() {}
-    override suspend fun loadOverview() {}
-    override suspend fun switchHousehold(householdId: String) {}
-    override suspend fun leaveHousehold(householdId: String) {}
+    override fun loadOverview() = Job()
+    override fun switchHousehold(householdId: String) = Job()
+    override fun leaveHousehold(householdId: String) = Job()
 }
 
