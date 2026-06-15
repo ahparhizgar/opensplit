@@ -14,7 +14,10 @@ import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthMode
 import com.opensplit.features.auth.FakeAuthComponent
 import com.opensplit.features.auth.TokenStorage
+import com.opensplit.features.household.CreateJoinHouseholdComponent
 import com.opensplit.features.household.HouseholdComponent
+import com.opensplit.features.household.HouseholdDetailComponent
+import com.opensplit.features.household.MyHouseholdsListComponent
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
@@ -74,6 +77,18 @@ class DefaultRootComponent(
 
             is HouseholdComponent.Config ->
                 componentProvider.provide(HouseholdComponent.Factory::class)
+                    .create(cContext, config)
+
+            is CreateJoinHouseholdComponent.Config ->
+                componentProvider.provide(CreateJoinHouseholdComponent.Factory::class)
+                    .create(cContext)
+
+            is MyHouseholdsListComponent.Config ->
+                componentProvider.provide(MyHouseholdsListComponent.Factory::class)
+                    .create(cContext)
+
+            is HouseholdDetailComponent.Config ->
+                componentProvider.provide(HouseholdDetailComponent.Factory::class)
                     .create(cContext, config)
 
             else -> error("Destination not defined in createChild")

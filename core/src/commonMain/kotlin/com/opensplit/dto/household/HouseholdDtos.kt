@@ -35,7 +35,6 @@ data class HouseholdSummaryResponse(
     val id: String,
     val name: String,
     val memberCount: Int,
-    val isActive: Boolean = false,
     val isOwner: Boolean = false,
     val inviteCode: String? = null,
 )
@@ -50,7 +49,6 @@ data class HouseholdMemberResponse(
 
 @Serializable
 data class HouseholdOverviewResponse(
-    val activeHouseholdId: String? = null,
     val households: List<HouseholdSummaryResponse> = emptyList(),
     val members: List<HouseholdMemberResponse> = emptyList(),
 )

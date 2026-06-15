@@ -7,10 +7,16 @@ import com.opensplit.features.auth.AuthGateway
 import com.opensplit.features.auth.DefaultAuthComponent
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.auth.createAuthGateway
+import com.opensplit.features.household.CreateJoinHouseholdComponent
+import com.opensplit.features.household.DefaultCreateJoinHouseholdComponent
 import com.opensplit.features.household.DefaultHouseholdComponent
+import com.opensplit.features.household.DefaultHouseholdDetailComponent
+import com.opensplit.features.household.DefaultMyHouseholdsListComponent
 import com.opensplit.features.household.HouseholdComponent
+import com.opensplit.features.household.HouseholdDetailComponent
 import com.opensplit.features.household.HouseholdGateway
 import com.opensplit.features.household.KtorHouseholdGateway
+import com.opensplit.features.household.MyHouseholdsListComponent
 import com.opensplit.root.ComponentProvider
 import com.opensplit.root.DefaultRootComponent
 import com.opensplit.root.KoinComponentProvider
@@ -34,5 +40,10 @@ fun appModule() = module {
         .bind<AuthComponent.Factory>()
     factoryOf(DefaultHouseholdComponent::Factory)
         .bind<HouseholdComponent.Factory>()
+    factoryOf(DefaultCreateJoinHouseholdComponent::Factory)
+        .bind<CreateJoinHouseholdComponent.Factory>()
+    factoryOf(DefaultMyHouseholdsListComponent::Factory)
+        .bind<MyHouseholdsListComponent.Factory>()
+    factoryOf(DefaultHouseholdDetailComponent::Factory)
+        .bind<HouseholdDetailComponent.Factory>()
 }
-

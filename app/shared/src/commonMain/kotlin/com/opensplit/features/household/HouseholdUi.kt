@@ -15,10 +15,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.opensplit.dto.household.HouseholdOverviewResponse
+import com.arkivanov.decompose.extensions.compose.stack.Children
 import kotlinx.coroutines.launch
 
 @Composable
@@ -38,51 +38,146 @@ fun HouseholdRootScreen(
     component: HouseholdComponent,
     modifier: Modifier = Modifier,
 ) {
-    val isLoading by component.isLoadingOverview.collectAsState()
-    val householdId by component.householdId.collectAsState()
-    val overview by component.overview.collectAsState()
-    Surface(modifier = modifier.fillMaxSize()) {
-        when {
-            isLoading -> {
-                // Show a centered spinner while checking whether the user
-                // already belongs to a household.
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .testTag("household-loading"),
-                    contentAlignment = Alignment.Center,
-                ) {
+    Children(
+        stack = component.childStack,
+        modifier = modifier,
+    ) {
+        when (val child = it.instance) {
+            is HouseholdComponent.Child.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
 
-            householdId == null -> {
-                val activeTab by component.activeTab.collectAsState()
-                val scope = rememberCoroutineScope()
-                HouseholdSetupContent(
-                    component = component,
-                    activeTab = activeTab,
-                    scope = scope,
-                    width = 420.dp,
-                    modifier = Modifier.widthIn(max = 420.dp),
-                )
-            }
+            is HouseholdComponent.Child.CreateJoin ->
+                CreateJoinHouseholdScreen(child.component)
 
-            else -> {
-                HouseholdActiveScreen(
-                    householdId = householdId!!,
-                    overview = overview,
-                    onLeaveHousehold = component::leaveHousehold,
-                    onRefresh = component::loadOverview,
+            is HouseholdComponent.Child.List ->
+                MyHouseholdsListScreen(
+                    component = child.component,
+                    onHouseholdClick = { id ->
+                        component.onHouseholdClick(id)
+                    }
                 )
-            }
+
+            is HouseholdComponent.Child.Detail -> HouseholdDetailScreen(child.component)
         }
     }
 }
 
 @Composable
+fun CreateJoinHouseholdScreen(
+    component: CreateJoinHouseholdComponent,
+    modifier: Modifier = Modifier,
+) {
+    val activeTab by component.activeTab.collectAsState()
+    val scope = rememberCoroutineScope()
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        HouseholdSetupContent(
+            createJoinComponent = component,
+            activeTab = activeTab,
+            scope = scope,
+            width = 420.dp,
+            modifier = Modifier.widthIn(max = 420.dp),
+        )
+    }
+}
+
+@Composable
+fun MyHouseholdsListScreen(
+    component: MyHouseholdsListComponent,
+    onHouseholdClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isLoading by component.isLoading.collectAsState()
+    val overview by component.overview.collectAsState()
+
+    if (isLoading) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    } else {
+        val scope = rememberCoroutineScope()
+        var leaveConfirmHouseholdId by remember<MutableState<String?>> { mutableStateOf(null) }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .safeContentPadding()
+                .testTag("household-active-shell"),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = 24.dp,
+                        vertical = 16.dp,
+                    )
+                    .widthIn(max = 1200.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Household membership",
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.weight(1f),
+                    )
+                    // Add list of households here to make it a "List" component
+                    overview.households.forEach { household ->
+                        TextButton(onClick = {
+                            onHouseholdClick(household.id)
+                        }) {
+                            Text(text = household.name)
+                        }
+                    }
+                }
+            }
+        }
+        // Leave confirmation dialog
+        if (leaveConfirmHouseholdId != null) {
+            val householdToLeave = overview.households.find { it.id == leaveConfirmHouseholdId }
+
+            HouseholdLeaveConfirmDialog(
+                householdName = householdToLeave?.name ?: leaveConfirmHouseholdId!!,
+                isOwner = householdToLeave?.isOwner == true,
+                onConfirm = {
+                    scope.launch {
+                        component.leaveHousehold(leaveConfirmHouseholdId!!)
+                        component.loadOverview()
+                        leaveConfirmHouseholdId = null
+                    }
+                },
+                onDismiss = { leaveConfirmHouseholdId = null },
+            )
+        }
+    }
+}
+
+@Composable
+fun HouseholdDetailScreen(
+    component: HouseholdDetailComponent,
+    modifier: Modifier = Modifier,
+) {
+    val name by component.householdName.collectAsState()
+    Column(
+        modifier = modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Household: $name", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = "ID: ${component.householdId}")
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(text = "Detailed view coming soon...", style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+@Composable
 private fun HouseholdSetupContent(
-    component: HouseholdComponent,
+    createJoinComponent: CreateJoinHouseholdComponent,
     activeTab: HouseholdTab,
     scope: kotlinx.coroutines.CoroutineScope,
     width: androidx.compose.ui.unit.Dp,
@@ -101,7 +196,7 @@ private fun HouseholdSetupContent(
 
         Row(modifier = Modifier.fillMaxWidth()) {
             TextButton(
-                onClick = { component.useCreate() },
+                onClick = { createJoinComponent.useCreate() },
                 modifier = Modifier
                     .weight(1f)
                     .testTag("household-tab-create"),
@@ -115,7 +210,7 @@ private fun HouseholdSetupContent(
                 )
             }
             TextButton(
-                onClick = { component.useJoin() },
+                onClick = { createJoinComponent.useJoin() },
                 modifier = Modifier
                     .weight(1f)
                     .testTag("household-tab-join"),
@@ -134,10 +229,10 @@ private fun HouseholdSetupContent(
 
         when (activeTab) {
             HouseholdTab.Create -> {
-                val state by component.createComponent.uiState.collectAsState()
+                val state by createJoinComponent.createComponent.uiState.collectAsState()
                 CreateHouseholdForm(
                     state = state,
-                    onNameChange = component.createComponent::updateHouseholdName,
+                    onNameChange = createJoinComponent.createComponent::updateHouseholdName,
                     width = width,
                 )
                 state.generalError?.let {
@@ -150,7 +245,7 @@ private fun HouseholdSetupContent(
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
-                    onClick = { scope.launch { component.createComponent.submit() } },
+                    onClick = { scope.launch { createJoinComponent.createComponent.submit() } },
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("household-submit"),
@@ -161,10 +256,10 @@ private fun HouseholdSetupContent(
             }
 
             HouseholdTab.Join -> {
-                val state by component.joinComponent.uiState.collectAsState()
+                val state by createJoinComponent.joinComponent.uiState.collectAsState()
                 JoinHouseholdForm(
                     state = state,
-                    onCodeChange = component.joinComponent::updateInviteCode,
+                    onCodeChange = createJoinComponent.joinComponent::updateInviteCode,
                     width = width,
                 )
                 state.generalError?.let {
@@ -177,7 +272,7 @@ private fun HouseholdSetupContent(
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
-                    onClick = { scope.launch { component.joinComponent.submit() } },
+                    onClick = { scope.launch { createJoinComponent.joinComponent.submit() } },
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("household-submit"),
@@ -243,87 +338,8 @@ private fun JoinHouseholdForm(
 }
 
 @Composable
-fun HouseholdActiveScreen(
-    householdId: String,
-    overview: HouseholdOverviewResponse,
-    onLeaveHousehold: suspend (String) -> Unit,
-    onRefresh: () -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    val activeHousehold = overview.households.find { it.isActive }
-    var leaveConfirmHouseholdId by remember { mutableStateOf<String?>(null) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeContentPadding()
-            .testTag("household-active-shell"),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = 24.dp,
-                    vertical = 16.dp,
-                )
-                .widthIn(max = 1200.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Household membership",
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = MaterialTheme.shapes.small,
-                ) {
-                    Text(
-                        text = "Active: ${activeHousehold?.name ?: householdId}",
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier
-                            .testTag("household-context-mobile")
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                    )
-                }
-            }
-        }
-    }
-
-    // Leave confirmation dialog
-    if (leaveConfirmHouseholdId != null) {
-        val householdToLeave = overview.households.find { it.id == leaveConfirmHouseholdId }
-        val activeHouseholdId = overview.activeHouseholdId
-        val isLeavingActive = leaveConfirmHouseholdId == activeHouseholdId
-        val hasAlternativeHouseholds = overview.households.any { !it.isActive }
-
-        HouseholdLeaveConfirmDialog(
-            householdName = householdToLeave?.name ?: leaveConfirmHouseholdId!!,
-            isActive = isLeavingActive,
-            hasAlternatives = hasAlternativeHouseholds,
-            isOwner = householdToLeave?.isOwner == true,
-            onConfirm = {
-                scope.launch {
-                    onLeaveHousehold(leaveConfirmHouseholdId!!)
-                    onRefresh()
-                    leaveConfirmHouseholdId = null
-                }
-            },
-            onDismiss = { leaveConfirmHouseholdId = null },
-        )
-    }
-}
-
-@Composable
 private fun HouseholdLeaveConfirmDialog(
     householdName: String,
-    isActive: Boolean,
-    hasAlternatives: Boolean,
     isOwner: Boolean,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
@@ -333,13 +349,7 @@ private fun HouseholdLeaveConfirmDialog(
         title = { Text("Leave household?") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    when {
-                        !isActive -> "You will lose access to this household's shared expenses unless someone invites you again."
-                        hasAlternatives -> "You will leave $householdName and switch to another household you still belong to."
-                        else -> "You will leave $householdName and return to household setup."
-                    }
-                )
+                Text("You will lose access to this household's shared expenses unless someone invites you again.")
                 if (isOwner) {
                     Text(
                         text = "As the owner, leaving will transfer ownership to another member.",
@@ -373,9 +383,9 @@ private fun HouseholdLeaveConfirmDialog(
 @Composable
 fun HouseholdRootScreenPreview() {
     MaterialTheme {
-        HouseholdRootScreen(
-            component = FakeHouseholdComponent(),
-            modifier = Modifier.fillMaxSize(),
-        )
+        // Just show a placeholder for preview since FakeHouseholdComponent is gone
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Household Root Screen Preview")
+        }
     }
 }
