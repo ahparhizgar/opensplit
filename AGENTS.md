@@ -58,6 +58,11 @@ Pointers for follow-up actions an agent may take
 Last note
 - The repository is a Kotlin Multiplatform project named `OpenSplit` (see `settings.gradle.kts`). Expect platform-specific build complexity; inspect `app/shared` and `core` first to understand shared business logic.
 
+Code review standards
+- Run `docs/review-checklist.md` during every review — each item must be verified before marking `done`.
+- Story ACs must cover the display/feedback side of every feature, not just creation. Validate ACs against the checklist at story creation time, not after implementation.
+- Review checklist items are non-negotiable: security, error states, empty states, display of created data, test coverage.
+
 References (explicit files)
 - `settings.gradle.kts`
 - `gradle/libs.versions.toml`
@@ -66,5 +71,6 @@ References (explicit files)
 - `app/shared/build.gradle.kts`
 - `.github/workflows/build.yml`
 - `.agents/`
+- `docs/review-checklist.md`
 
 
