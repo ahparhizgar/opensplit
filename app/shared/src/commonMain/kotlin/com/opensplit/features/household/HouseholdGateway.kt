@@ -6,7 +6,6 @@ import com.opensplit.dto.household.CreateHouseholdResponse
 import com.opensplit.dto.household.HouseholdOverviewResponse
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.dto.household.JoinHouseholdResponse
-import com.opensplit.dto.household.SwitchHouseholdRequest
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.auth.createAuthHttpClient
 import com.opensplit.features.auth.getApiBaseUrl
@@ -30,7 +29,6 @@ interface HouseholdGateway {
     suspend fun createHousehold(name: String): CreateHouseholdResponse
     suspend fun joinHousehold(inviteCode: String): JoinHouseholdResponse
     suspend fun loadOverview(): HouseholdOverviewResponse
-    suspend fun switchHousehold(householdId: String): HouseholdOverviewResponse
     suspend fun leaveHousehold(householdId: String): HouseholdOverviewResponse
 }
 
@@ -83,16 +81,6 @@ class KtorHouseholdGateway(
     override suspend fun loadOverview(): HouseholdOverviewResponse {
         if (checkTokenExpired()) handleUnauthorized()
         val response = client.get("$baseUrl/households/overview")
-        if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
-        return parseResponse(response)
-    }
-
-    override suspend fun switchHousehold(householdId: String): HouseholdOverviewResponse {
-        if (checkTokenExpired()) handleUnauthorized()
-        val response = client.post("$baseUrl/households/context") {
-            contentType(ContentType.Application.Json)
-            setBody(SwitchHouseholdRequest(householdId = householdId))
-        }
         if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
         return parseResponse(response)
     }

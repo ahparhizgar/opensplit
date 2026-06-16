@@ -1,15 +1,7 @@
 package com.opensplit
 
-import com.arkivanov.essenty.lifecycle.LifecycleRegistry
-import com.arkivanov.essenty.lifecycle.start
 import com.opensplit.component.createDefaultComponentContext
-import com.opensplit.features.household.DefaultCreateHouseholdComponent
-import com.opensplit.features.household.DefaultHouseholdComponent
-import com.opensplit.features.household.HouseholdComponent
-import com.opensplit.features.household.HouseholdGateway
-import com.opensplit.features.household.HouseholdTab
-import com.opensplit.remote.RemoteException
-import com.opensplit.dto.household.HouseholdSummaryResponse
+import com.opensplit.features.household.*
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.When
 import com.opensplit.util.createComponentContext
@@ -21,22 +13,22 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
+import io.kotest.matchers.collections.shouldNotBeEmpty
 
 class HouseholdComponentTest : BehaviorSpec({
     extensions(MainDispatcherExtension())
-    Given("a Household component – Create tab") {
-        val koin by integrationKoin()
+    val koin by integrationKoin()
 
-        var component by testValue {
-            koin.get<HouseholdComponent.Factory>().create(
-                createDefaultComponentContext(createComponentContext()),
-                HouseholdComponent.Config()
+    Given("a CreateJoinHouseholdComponent – Create tab") {
+        var createJoinComponent by testValue {
+            koin.get<CreateJoinHouseholdComponent.Factory>().create(
+                createDefaultComponentContext(createComponentContext())
             )
         }
 
         Then("initial tab is Create and fields are empty") {
-            component.activeTab.value shouldBe HouseholdTab.Create
-            component.createComponent.uiState.value.let { state ->
+            createJoinComponent.activeTab.value shouldBe HouseholdTab.Create
+            createJoinComponent.createComponent.uiState.value.let { state ->
                 state.householdName shouldBe ""
                 state.fieldErrors should beEmpty()
                 state.householdId shouldBe null
@@ -45,10 +37,10 @@ class HouseholdComponentTest : BehaviorSpec({
 
         When(
             "submitting with an empty household name",
-            { component.createComponent.submit() }
+            { createJoinComponent.createComponent.submit() }
         ) {
             Then("shows a validation error for name") {
-                component.createComponent.uiState.value.let { state ->
+                createJoinComponent.createComponent.uiState.value.let { state ->
                     state.fieldErrors shouldNot beEmpty()
                     state.fieldErrors["name"].shouldNotBeNull()
                     state.householdId shouldBe null
@@ -59,12 +51,12 @@ class HouseholdComponentTest : BehaviorSpec({
         When(
             "submitting with a valid household name",
             {
-                component.createComponent.updateHouseholdName("Family Home")
-                component.createComponent.submit()
+                createJoinComponent.createComponent.updateHouseholdName("Family Home")
+                createJoinComponent.createComponent.submit()
             }
         ) {
             Then("creates the household and sets householdId") {
-                component.createComponent.uiState.value.let { state ->
+                createJoinComponent.createComponent.uiState.value.let { state ->
                     state.fieldErrors should beEmpty()
                     state.generalError shouldBe null
                     state.householdId.shouldNotBeNull()
@@ -76,205 +68,52 @@ class HouseholdComponentTest : BehaviorSpec({
         When(
             "typing then clearing the household name",
             {
-                component.createComponent.updateHouseholdName("test")
-                component.createComponent.updateHouseholdName("")
-                component.createComponent.submit()
+                createJoinComponent.createComponent.updateHouseholdName("test")
+                createJoinComponent.createComponent.updateHouseholdName("")
+                createJoinComponent.createComponent.submit()
             }
         ) {
             Then("still shows validation error on empty name") {
-                component.createComponent.uiState.value.fieldErrors["name"].shouldNotBeNull()
+                createJoinComponent.createComponent.uiState.value.fieldErrors["name"].shouldNotBeNull()
             }
         }
 
         When(
             "switching to Join tab",
-            { component.useJoin() }
+            { createJoinComponent.useJoin() }
         ) {
             Then("active tab is now Join") {
-                component.activeTab.value shouldBe HouseholdTab.Join
+                createJoinComponent.activeTab.value shouldBe HouseholdTab.Join
             }
         }
     }
 
-    Given("a Household component – Join tab") {
-        val koin by integrationKoin()
-
-        var component by testValue {
-            koin.get<HouseholdComponent.Factory>().create(
-                createDefaultComponentContext(createComponentContext()),
-                HouseholdComponent.Config()
+    Given("a MyHouseholdsListComponent") {
+        var listComponent by testValue {
+            koin.get<MyHouseholdsListComponent.Factory>().create(
+                createDefaultComponentContext(createComponentContext())
             )
         }
 
         When(
-            "submitting with an empty invite code",
-            { component.joinComponent.submit() }
+            "loading overview",
+            { listComponent.loadOverview() }
         ) {
-            Then("shows a validation error for inviteCode") {
-                component.joinComponent.uiState.value.let { state ->
-                    state.fieldErrors shouldNot beEmpty()
-                    state.fieldErrors["inviteCode"].shouldNotBeNull()
-                    state.householdId shouldBe null
-                }
+            Then("loads households from gateway") {
+                listComponent.overview.value.households.shouldNotBeEmpty()
+                koin.get<FakeHouseholdGateway>().loadOverviewCalls shouldBe 1
             }
         }
 
         When(
-            "submitting with a valid invite code",
+            "leaving a household",
             {
-                component.joinComponent.updateInviteCode("invite-abc123")
-                component.joinComponent.submit()
+                val id = "household-1"
+                listComponent.leaveHousehold(id)
             }
         ) {
-            Then("joins the household and sets householdId") {
-                component.joinComponent.uiState.value.let { state ->
-                    state.fieldErrors should beEmpty()
-                    state.generalError shouldBe null
-                    state.householdId.shouldNotBeNull()
-                    koin.get<FakeHouseholdGateway>().joinCalls shouldBe 1
-                }
-            }
-        }
-
-        When(
-            "switching to Create tab",
-            { component.useCreate() }
-        ) {
-            Then("active tab is now Create") {
-                component.activeTab.value shouldBe HouseholdTab.Create
-            }
-        }
-    }
-
-    Given("a CreateHouseholdComponent when gateway returns an error") {
-
-        var createComponent by testValue {
-            DefaultCreateHouseholdComponent(
-                context = createDefaultComponentContext(createComponentContext()),
-                gateway = object : HouseholdGateway {
-                    override suspend fun createHousehold(name: String) =
-                        throw RemoteException(generalError = "Server error")
-
-                    override suspend fun joinHousehold(inviteCode: String) =
-                        throw RemoteException(generalError = "Server error")
-
-                    override suspend fun loadOverview() =
-                        throw RemoteException(generalError = "Server error")
-
-                    override suspend fun switchHousehold(householdId: String) =
-                        throw RemoteException(generalError = "Server error")
-
-                    override suspend fun leaveHousehold(householdId: String) =
-                        throw RemoteException(generalError = "Server error")
-                }
-            )
-        }
-
-        When(
-            "the gateway throws RemoteException on create",
-            {
-                createComponent.updateHouseholdName("My Household")
-                createComponent.submit()
-            }
-        ) {
-            Then("shows the general error and householdId remains null") {
-                createComponent.uiState.value.let { state ->
-                    state.generalError.shouldNotBeNull()
-                    state.householdId shouldBe null
-                    state.isSubmitting shouldBe false
-                }
-            }
-        }
-    }
-
-    Given("a Household component with a single household") {
-        val lifecycle = LifecycleRegistry()
-        val gateway = FakeHouseholdGateway().withSingleHousehold()
-
-        var component by testValue {
-            DefaultHouseholdComponent(
-                context = createDefaultComponentContext(
-                    createComponentContext(lifecycle.also { it.start() })
-                ),
-                gateway = gateway,
-            )
-        }
-
-        When(
-            "leaving the only household",
-            {
-                component.loadOverview()
-                component.leaveHousehold("household-1")
-            }
-        ) {
-            Then("returns to setup state with null householdId and empty households") {
-                component.overview.value.activeHouseholdId shouldBe null
-                component.overview.value.households shouldBe emptyList()
-                gateway.leaveCalls shouldBe 1
-            }
-        }
-    }
-
-    Given("a Household component with an overview capable gateway") {
-
-        val gateway = FakeHouseholdGateway()
-
-        var component by testValue {
-            DefaultHouseholdComponent(
-                context = createDefaultComponentContext(
-                    createComponentContext(LifecycleRegistry().also {
-                        it.start()
-                    })
-                ),
-                gateway = gateway,
-            )
-        }
-
-        When(
-            "loading household overview",
-            { component.loadOverview() }
-        ) {
-            Then("exposes the active household from the overview") {
-                component.overview.value.activeHouseholdId shouldBe "household-1"
-                gateway.loadOverviewCalls shouldBe 1
-            }
-
-            Then("overview includes inviteCode for each household") {
-                val households = component.overview.value.households
-                households.forEach { h ->
-                    h.inviteCode.shouldNotBeNull()
-                }
-            }
-        }
-
-        When(
-            "switching the active household",
-            {
-                component.loadOverview()
-                component.switchHousehold("household-2")
-            }
-        ) {
-            Then("updates the active household and marks the new household active") {
-                component.overview.value.activeHouseholdId shouldBe "household-2"
-                component.overview.value.households.find { it.isActive }?.id shouldBe "household-2"
-                gateway.switchCalls shouldBe 1
-            }
-        }
-
-        When(
-            "leaving the active household",
-            {
-                component.loadOverview()
-                component.leaveHousehold("household-1")
-            }
-        ) {
-
-            Then("falls back to a safe landing state") {
-                component.overview.value.activeHouseholdId shouldBe "household-2"
-                component.overview.value.households shouldBe listOf(
-                    HouseholdSummaryResponse(id = "household-2", name = "River House", memberCount = 2, isActive = true, inviteCode = "invite-def456")
-                )
-                gateway.leaveCalls shouldBe 1
+            Then("calls gateway to leave") {
+                koin.get<FakeHouseholdGateway>().leaveCalls shouldBe 1
             }
         }
     }

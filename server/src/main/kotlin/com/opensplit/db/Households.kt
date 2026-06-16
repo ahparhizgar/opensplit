@@ -18,9 +18,3 @@ object Memberships : Table("memberships") {
     val householdId = varchar("household_id", 36)
     val userId = varchar("user_id", 36)
 }
-
-object HouseholdContexts : Table("household_contexts") {
-    val userId = varchar("user_id", 36).uniqueIndex()
-    val activeHouseholdId = varchar("active_household_id", 36).nullable()
-}
-

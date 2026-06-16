@@ -4,6 +4,7 @@ import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.pushNew
+import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.opensplit.component.CContext
 import com.opensplit.root.ComponentProvider
@@ -96,4 +97,19 @@ class DefaultHouseholdComponent(
             componentProvider = componentProvider
         )
     }
+}
+
+class FakeHouseholdComponent(
+    override val childStack: MutableValue<ChildStack<*, HouseholdComponent.Child>> =
+        MutableValue(
+            ChildStack(
+                active = com.arkivanov.decompose.Child.Created(
+                    configuration = HouseholdComponent.Config(),
+                    instance = HouseholdComponent.Child.Loading
+                ),
+                backStack = emptyList()
+            )
+        )
+) : HouseholdComponent {
+    override fun onHouseholdClick(id: String) {}
 }

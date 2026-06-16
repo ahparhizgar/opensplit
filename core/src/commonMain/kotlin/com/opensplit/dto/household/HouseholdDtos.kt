@@ -25,10 +25,6 @@ data class JoinHouseholdResponse(
     val joined: Boolean,
 )
 
-@Serializable
-data class SwitchHouseholdRequest(
-    val householdId: String,
-)
 
 @Serializable
 data class HouseholdSummaryResponse(

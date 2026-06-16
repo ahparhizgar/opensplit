@@ -13,8 +13,7 @@ class DatabaseInitializer(
             SchemaUtils.create(
                 Users,
                 Households,
-                Memberships,
-                HouseholdContexts
+                Memberships
             )
         }
     }

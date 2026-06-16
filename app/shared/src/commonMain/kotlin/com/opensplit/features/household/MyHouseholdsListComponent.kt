@@ -16,7 +16,6 @@ interface MyHouseholdsListComponent {
     val isLoading: StateFlow<Boolean>
 
     fun loadOverview(): Job
-    fun switchHousehold(householdId: String): Job
     fun leaveHousehold(householdId: String): Job
 
     @Serializable
@@ -55,10 +54,6 @@ class DefaultMyHouseholdsListComponent(
         }
     }
 
-    override fun switchHousehold(householdId: String) = scope.launch {
-        _overview.value = gateway.switchHousehold(householdId)
-    }
-
     override fun leaveHousehold(householdId: String) = scope.launch {
         _overview.value = gateway.leaveHousehold(householdId)
     }
@@ -77,6 +72,5 @@ class FakeMyHouseholdsListComponent(
     override val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false),
 ) : MyHouseholdsListComponent {
     override fun loadOverview() = Job()
-    override fun switchHousehold(householdId: String) = Job()
     override fun leaveHousehold(householdId: String) = Job()
 }

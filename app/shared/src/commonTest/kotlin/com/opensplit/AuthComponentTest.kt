@@ -14,11 +14,10 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
-import org.koin.core.qualifier.named
 
 class AuthComponentTest : BehaviorSpec({
+    extensions(MainDispatcherExtension())
     Given("an Auth component") {
-        extensions(MainDispatcherExtension())
         val koin by integrationKoin()
 
         var component by testValue {

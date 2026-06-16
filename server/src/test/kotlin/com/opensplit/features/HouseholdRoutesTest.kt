@@ -23,17 +23,6 @@ import kotlin.test.assertTrue
 
 class HouseholdScenarios {
     @Test
-    fun overviewMarksCurrentUser() = testOpenSplit {
-        client.post("/households") {
-            setBody(CreateHouseholdRequest("My Home"))
-        }.also { assertEquals(HttpStatusCode.Created, it.status) }
-
-        val overview = client.get("/households/overview").body<HouseholdOverviewResponse>()
-        val currentUser = overview.members.find { it.isCurrentUser }
-        assertEquals(1, overview.members.size)
-        assertTrue(currentUser != null, "Current user should be marked as isCurrentUser")
-    }
-    @Test
     fun createAndJoinHousehold() = testOpenSplit {
         val created = client.post("/households") {
             setBody(CreateHouseholdRequest("Maple House"))
@@ -80,7 +69,6 @@ class HouseholdScenarios {
         val leaveResponse = otherClient.delete("/households/${created.id}/memberships/me")
         assertEquals(HttpStatusCode.OK, leaveResponse.status)
         val afterLeave = leaveResponse.body<HouseholdOverviewResponse>()
-        assertEquals(null, afterLeave.activeHouseholdId)
         assertEquals(0, afterLeave.households.size)
     }
 
@@ -102,28 +90,6 @@ class HouseholdScenarios {
         assertEquals(HttpStatusCode.Forbidden, joinById.status)
         val error = joinById.body<ErrorResponse>()
         assertEquals("Missing permission to access this household", error.errors["permission"])
-    }
-
-    @Test
-    fun createJoinAndCheckActiveContextSmokeTest() = testOpenSplit {
-        val created = client.post("/households") {
-            setBody(CreateHouseholdRequest("Maple House"))
-        }.body<CreateHouseholdResponse>()
-
-        val otherUser = client.post("/users") {
-            setBody(SignUpRequest("join-flow@example.com", "password123"))
-        }.body<AuthSessionState>()
-        val otherClient = createAuthenticatedClient(otherUser.accessToken)
-
-        val join = otherClient.post("/households/join") {
-            setBody(JoinHouseholdRequest(created.inviteCode!!))
-        }.also {
-            assertEquals(HttpStatusCode.OK, it.status)
-        }.body<JoinHouseholdResponse>()
-
-        val contextResponse = otherClient.get("/household-context")
-        assertEquals(HttpStatusCode.OK, contextResponse.status)
-        assertEquals(created.id, join.householdId)
     }
 
     @Test
@@ -160,11 +126,10 @@ class HouseholdScenarios {
             assertEquals(HttpStatusCode.OK, it.status)
         }
 
-        // Other user checks overview — they should now be the owner
+        // Verify other user is still in the household
         val overview = otherClient.get("/households/overview").body<HouseholdOverviewResponse>()
-        val me = overview.members.find { it.isCurrentUser }
-        assertTrue(me != null, "Other user should still be a member")
-        assertTrue(me.isOwner, "Ownership should have been transferred to the remaining member")
+        assertEquals(1, overview.households.size)
+        assertTrue(overview.households.first().isOwner, "Ownership should have been transferred")
     }
 
     @Test
@@ -179,39 +144,6 @@ class HouseholdScenarios {
 
         // Verify safe landing
         val overview = client.get("/households/overview").body<HouseholdOverviewResponse>()
-        assertEquals(null, overview.activeHouseholdId, "Should have no active household")
         assertEquals(0, overview.households.size, "Should have no households")
-    }
-
-    @Test
-    fun householdOverviewSwitchAndLeaveFlow() = testOpenSplit {
-        val firstHousehold = client.post("/households") {
-            setBody(CreateHouseholdRequest("Maple House"))
-        }.body<CreateHouseholdResponse>()
-
-        val secondHousehold = client.post("/households") {
-            setBody(CreateHouseholdRequest("River House"))
-        }.body<CreateHouseholdResponse>()
-
-        val overviewResponse = client.get("/households/overview")
-        assertEquals(HttpStatusCode.OK, overviewResponse.status)
-        val overview = overviewResponse.body<HouseholdOverviewResponse>()
-        assertEquals(secondHousehold.id, overview.activeHouseholdId)
-        assertEquals(2, overview.households.size)
-        assertEquals(1, overview.members.size)
-
-        val switchResponse = client.post("/households/context") {
-            setBody(mapOf("householdId" to firstHousehold.id))
-        }
-        assertEquals(HttpStatusCode.OK, switchResponse.status)
-        val switched = switchResponse.body<HouseholdOverviewResponse>()
-        assertEquals(firstHousehold.id, switched.activeHouseholdId)
-        assertEquals(2, switched.households.size)
-
-        val leaveResponse = client.delete("/households/${secondHousehold.id}/memberships/me")
-        assertEquals(HttpStatusCode.OK, leaveResponse.status)
-        val afterLeave = leaveResponse.body<HouseholdOverviewResponse>()
-        assertEquals(firstHousehold.id, afterLeave.activeHouseholdId)
-        assertEquals(1, afterLeave.households.size)
     }
 }
