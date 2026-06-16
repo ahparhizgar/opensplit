@@ -1,9 +1,10 @@
-package com.opensplit.features.household
+package com.opensplit.features.household.my
 
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.dto.household.HouseholdOverviewResponse
+import com.opensplit.features.household.HouseholdService
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +29,7 @@ interface MyHouseholdsListComponent {
 
 class DefaultMyHouseholdsListComponent(
     context: CContext,
-    private val gateway: HouseholdGateway,
+    private val gateway: HouseholdService,
 ) : MyHouseholdsListComponent, CContext by context {
 
     private val scope = componentScope()
@@ -59,7 +60,7 @@ class DefaultMyHouseholdsListComponent(
     }
 
     class Factory(
-        private val gateway: HouseholdGateway,
+        private val gateway: HouseholdService,
     ) : MyHouseholdsListComponent.Factory {
         override fun create(cContext: CContext): MyHouseholdsListComponent =
             DefaultMyHouseholdsListComponent(cContext, gateway)

@@ -25,16 +25,16 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
-interface HouseholdGateway {
+interface HouseholdService {
     suspend fun createHousehold(name: String): CreateHouseholdResponse
     suspend fun joinHousehold(inviteCode: String): JoinHouseholdResponse
     suspend fun loadOverview(): HouseholdOverviewResponse
     suspend fun leaveHousehold(householdId: String): HouseholdOverviewResponse
 }
 
-class KtorHouseholdGateway(
+class KtorHouseholdService(
     private val tokenStorage: TokenStorage,
-) : HouseholdGateway {
+) : HouseholdService {
 
     private val baseUrl = getApiBaseUrl()
 

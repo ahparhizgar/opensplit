@@ -1,4 +1,4 @@
-package com.opensplit.features.household
+package com.opensplit.features.household.details
 
 import com.opensplit.component.CContext
 import com.opensplit.root.TopLevelDestinationConfig
@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 
-interface HouseholdDetailComponent {
+interface HouseholdDetailsComponent {
     val householdId: String
     val householdName: StateFlow<String>
 
@@ -14,31 +14,31 @@ interface HouseholdDetailComponent {
     data class Config(val householdId: String) : TopLevelDestinationConfig
 
     interface Factory {
-        fun create(cContext: CContext, config: Config): HouseholdDetailComponent
+        fun create(cContext: CContext, config: Config): HouseholdDetailsComponent
     }
 }
 
-class DefaultHouseholdDetailComponent(
+class DefaultHouseholdDetailsComponent(
     context: CContext,
-    config: HouseholdDetailComponent.Config,
-) : HouseholdDetailComponent, CContext by context {
+    config: HouseholdDetailsComponent.Config,
+) : HouseholdDetailsComponent, CContext by context {
 
     override val householdId: String = config.householdId
     // For now, it's just a placeholder or we could fetch it.
     // Given "minimal", I'll just use a flow with a placeholder.
     override val householdName: StateFlow<String> = MutableStateFlow("Household $householdId")
 
-    class Factory : HouseholdDetailComponent.Factory {
+    class Factory : HouseholdDetailsComponent.Factory {
         override fun create(
             cContext: CContext,
-            config: HouseholdDetailComponent.Config
-        ): HouseholdDetailComponent = DefaultHouseholdDetailComponent(cContext, config)
+            config: HouseholdDetailsComponent.Config
+        ): HouseholdDetailsComponent = DefaultHouseholdDetailsComponent(cContext, config)
     }
 }
 
-class FakeHouseholdDetailComponent(
+class FakeHouseholdDetailsComponent(
     override val householdId: String = "h1",
     name: String = "Fake Household"
-) : HouseholdDetailComponent {
+) : HouseholdDetailsComponent {
     override val householdName: StateFlow<String> = MutableStateFlow(name)
 }

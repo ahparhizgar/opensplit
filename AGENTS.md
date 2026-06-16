@@ -67,6 +67,8 @@ Common AI mistakes:
 - Don't use fully qualified name
 - Always write previews for screens or public composable components
 - Don't make functions of decompose components suspend. instead launch in them and return the job.
+- Pass the whole component to extracted private composables. don't split states and callbacks in them.
+- But for public components which there is no equivalent component, pass states and callbacks.
 
 References (explicit files)
 - `settings.gradle.kts`

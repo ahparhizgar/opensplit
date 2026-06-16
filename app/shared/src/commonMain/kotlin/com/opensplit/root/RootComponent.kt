@@ -14,10 +14,10 @@ import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthMode
 import com.opensplit.features.auth.FakeAuthComponent
 import com.opensplit.features.auth.TokenStorage
-import com.opensplit.features.household.CreateJoinHouseholdComponent
-import com.opensplit.features.household.HouseholdComponent
-import com.opensplit.features.household.HouseholdDetailComponent
-import com.opensplit.features.household.MyHouseholdsListComponent
+import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
+import com.opensplit.features.household.root.RootHouseholdComponent
+import com.opensplit.features.household.details.HouseholdDetailsComponent
+import com.opensplit.features.household.my.MyHouseholdsListComponent
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
@@ -52,7 +52,7 @@ class DefaultRootComponent(
             try {
                 val token = tokenStorage.getAccessToken()
                 if (!token.isNullOrEmpty()) {
-                    navigation.pushNew(HouseholdComponent.Config())
+                    navigation.pushNew(RootHouseholdComponent.Config())
                 }
             } catch (_: Throwable) {
                 // Swallow any persistence errors; default to auth flow.
@@ -75,8 +75,8 @@ class DefaultRootComponent(
                 componentProvider.provide(AuthComponent.Factory::class)
                     .create(cContext, config)
 
-            is HouseholdComponent.Config ->
-                componentProvider.provide(HouseholdComponent.Factory::class)
+            is RootHouseholdComponent.Config ->
+                componentProvider.provide(RootHouseholdComponent.Factory::class)
                     .create(cContext, config)
 
             is CreateJoinHouseholdComponent.Config ->
@@ -87,8 +87,8 @@ class DefaultRootComponent(
                 componentProvider.provide(MyHouseholdsListComponent.Factory::class)
                     .create(cContext)
 
-            is HouseholdDetailComponent.Config ->
-                componentProvider.provide(HouseholdDetailComponent.Factory::class)
+            is HouseholdDetailsComponent.Config ->
+                componentProvider.provide(HouseholdDetailsComponent.Factory::class)
                     .create(cContext, config)
 
             else -> error("Destination not defined in createChild")

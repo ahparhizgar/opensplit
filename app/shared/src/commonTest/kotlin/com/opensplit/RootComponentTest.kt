@@ -6,8 +6,8 @@ import com.opensplit.component.CContext
 import com.opensplit.component.createDefaultComponentContext
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.FakeAuthComponent
-import com.opensplit.features.household.FakeHouseholdComponent
-import com.opensplit.features.household.HouseholdComponent
+import com.opensplit.features.household.root.FakeRootHouseholdComponent
+import com.opensplit.features.household.root.RootHouseholdComponent
 import com.opensplit.root.ComponentProvider
 import com.opensplit.root.DefaultRootComponent
 import com.opensplit.util.MainDispatcherExtension
@@ -59,7 +59,7 @@ class RootComponentTest : BehaviorSpec({
             testCoroutineScheduler.advanceUntilIdle()
             Then("it navigates to the household screen") {
                 val child = root.childStack.value
-                child.active.configuration.shouldBeInstanceOf<HouseholdComponent.Config>()
+                child.active.configuration.shouldBeInstanceOf<RootHouseholdComponent.Config>()
             }
         }
     }
@@ -76,20 +76,20 @@ private class FakeAuthComponentFactory : AuthComponent.Factory {
         FakeAuthComponent()
 }
 
-private class FakeHouseholdComponentFactory : HouseholdComponent.Factory {
-    override fun create(cContext: CContext, config: HouseholdComponent.Config): HouseholdComponent =
-        FakeHouseholdComponent()
+private class FakeHouseholdComponentFactory : RootHouseholdComponent.Factory {
+    override fun create(cContext: CContext, config: RootHouseholdComponent.Config): RootHouseholdComponent =
+        FakeRootHouseholdComponent()
 }
 
 private class TestComponentProvider(
     private val authFactory: AuthComponent.Factory,
-    private val householdFactory: HouseholdComponent.Factory,
+    private val householdFactory: RootHouseholdComponent.Factory,
 ) : ComponentProvider {
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any> provide(kClass: kotlin.reflect.KClass<T>): T {
         return when (kClass) {
             AuthComponent.Factory::class -> authFactory
-            HouseholdComponent.Factory::class -> householdFactory
+            RootHouseholdComponent.Factory::class -> householdFactory
             else -> error("Unknown factory: $kClass")
         } as T
     }

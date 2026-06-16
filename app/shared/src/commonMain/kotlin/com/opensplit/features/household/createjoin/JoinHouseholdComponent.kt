@@ -1,6 +1,7 @@
-package com.opensplit.features.household
+package com.opensplit.features.household.createjoin
 
 import com.opensplit.component.CContext
+import com.opensplit.features.household.HouseholdService
 import com.opensplit.remote.RemoteException
 import com.opensplit.validation.household.HouseholdValidation
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +24,7 @@ interface JoinHouseholdComponent {
 
 class DefaultJoinHouseholdComponent(
     context: CContext,
-    private val gateway: HouseholdGateway,
+    private val gateway: HouseholdService,
 ) : JoinHouseholdComponent, CContext by context {
 
     private val _uiState = MutableStateFlow(JoinHouseholdViewState())

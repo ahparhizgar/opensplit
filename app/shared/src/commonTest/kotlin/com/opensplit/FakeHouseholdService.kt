@@ -5,15 +5,15 @@ import com.opensplit.dto.household.HouseholdMemberResponse
 import com.opensplit.dto.household.HouseholdOverviewResponse
 import com.opensplit.dto.household.HouseholdSummaryResponse
 import com.opensplit.dto.household.JoinHouseholdResponse
-import com.opensplit.features.household.HouseholdGateway
+import com.opensplit.features.household.HouseholdService
 
-class FakeHouseholdGateway : HouseholdGateway {
+class FakeHouseholdService : HouseholdService {
     var createCalls = 0
     var joinCalls = 0
     var loadOverviewCalls = 0
     var leaveCalls = 0
 
-    fun withSingleHousehold(): FakeHouseholdGateway {
+    fun withSingleHousehold(): FakeHouseholdService {
         overview = HouseholdOverviewResponse(
             households = listOf(
                 HouseholdSummaryResponse(id = "household-1", name = "Solo House", memberCount = 1, inviteCode = "invite-abc123"),

@@ -1,5 +1,6 @@
-package com.opensplit.features.household
+package com.opensplit.features.household.root
 
+import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
@@ -7,12 +8,15 @@ import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.opensplit.component.CContext
+import com.opensplit.features.household.details.HouseholdDetailsComponent
+import com.opensplit.features.household.my.MyHouseholdsListComponent
+import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.root.ComponentProvider
 import com.opensplit.root.Destination
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.serialization.Serializable
 
-interface HouseholdComponent : Destination {
+interface RootHouseholdComponent : Destination {
     val childStack: Value<ChildStack<*, Child>>
     fun onHouseholdClick(id: String)
 
@@ -20,25 +24,25 @@ interface HouseholdComponent : Destination {
         object Loading : Child()
         data class CreateJoin(val component: CreateJoinHouseholdComponent) : Child()
         data class List(val component: MyHouseholdsListComponent) : Child()
-        data class Detail(val component: HouseholdDetailComponent) : Child()
+        data class Detail(val component: HouseholdDetailsComponent) : Child()
     }
 
     @Serializable
     class Config : TopLevelDestinationConfig
 
     interface Factory {
-        fun create(cContext: CContext, config: Config): HouseholdComponent
+        fun create(cContext: CContext, config: Config): RootHouseholdComponent
     }
 }
 
-class DefaultHouseholdComponent(
+class DefaultRootHouseholdComponent(
     context: CContext,
     private val componentProvider: ComponentProvider,
-) : HouseholdComponent, CContext by context {
+) : RootHouseholdComponent, CContext by context {
 
     private val navigation = StackNavigation<Config>()
 
-    override val childStack: Value<ChildStack<*, HouseholdComponent.Child>> =
+    override val childStack: Value<ChildStack<*, RootHouseholdComponent.Child>> =
         childStack(
             source = navigation,
             serializer = null,
@@ -51,22 +55,22 @@ class DefaultHouseholdComponent(
         navigation.pushNew(Config.Detail(id))
     }
 
-    private fun createChild(config: Config, cContext: CContext): HouseholdComponent.Child {
+    private fun createChild(config: Config, cContext: CContext): RootHouseholdComponent.Child {
         return when (config) {
-            is Config.Loading -> HouseholdComponent.Child.Loading
-            is Config.CreateJoin -> HouseholdComponent.Child.CreateJoin(
+            is Config.Loading -> RootHouseholdComponent.Child.Loading
+            is Config.CreateJoin -> RootHouseholdComponent.Child.CreateJoin(
                 componentProvider.provide(CreateJoinHouseholdComponent.Factory::class)
                     .create(cContext)
             )
 
-            is Config.List -> HouseholdComponent.Child.List(
+            is Config.List -> RootHouseholdComponent.Child.List(
                 componentProvider.provide(MyHouseholdsListComponent.Factory::class)
                     .create(cContext)
             )
 
-            is Config.Detail -> HouseholdComponent.Child.Detail(
-                componentProvider.provide(HouseholdDetailComponent.Factory::class)
-                    .create(cContext, HouseholdDetailComponent.Config(config.householdId))
+            is Config.Detail -> RootHouseholdComponent.Child.Detail(
+                componentProvider.provide(HouseholdDetailsComponent.Factory::class)
+                    .create(cContext, HouseholdDetailsComponent.Config(config.householdId))
             )
         }
     }
@@ -88,28 +92,28 @@ class DefaultHouseholdComponent(
 
     class Factory(
         private val componentProvider: ComponentProvider,
-    ) : HouseholdComponent.Factory {
+    ) : RootHouseholdComponent.Factory {
         override fun create(
             cContext: CContext,
-            config: HouseholdComponent.Config
-        ): HouseholdComponent = DefaultHouseholdComponent(
+            config: RootHouseholdComponent.Config
+        ): RootHouseholdComponent = DefaultRootHouseholdComponent(
             context = cContext,
             componentProvider = componentProvider
         )
     }
 }
 
-class FakeHouseholdComponent(
-    override val childStack: MutableValue<ChildStack<*, HouseholdComponent.Child>> =
+class FakeRootHouseholdComponent(
+    override val childStack: MutableValue<ChildStack<*, RootHouseholdComponent.Child>> =
         MutableValue(
             ChildStack(
-                active = com.arkivanov.decompose.Child.Created(
-                    configuration = HouseholdComponent.Config(),
-                    instance = HouseholdComponent.Child.Loading
+                active = Child.Created(
+                    configuration = RootHouseholdComponent.Config(),
+                    instance = RootHouseholdComponent.Child.Loading
                 ),
                 backStack = emptyList()
             )
         )
-) : HouseholdComponent {
+) : RootHouseholdComponent {
     override fun onHouseholdClick(id: String) {}
 }

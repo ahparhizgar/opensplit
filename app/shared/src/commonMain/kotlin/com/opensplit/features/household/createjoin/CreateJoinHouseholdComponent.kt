@@ -1,6 +1,7 @@
-package com.opensplit.features.household
+package com.opensplit.features.household.createjoin
 
 import com.opensplit.component.CContext
+import com.opensplit.features.household.HouseholdService
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +28,7 @@ interface CreateJoinHouseholdComponent {
 
 class DefaultCreateJoinHouseholdComponent(
     context: CContext,
-    gateway: HouseholdGateway,
+    gateway: HouseholdService,
 ) : CreateJoinHouseholdComponent, CContext by context {
 
     override val createComponent: CreateHouseholdComponent =
@@ -47,7 +48,7 @@ class DefaultCreateJoinHouseholdComponent(
     }
 
     class Factory(
-        private val gateway: HouseholdGateway,
+        private val gateway: HouseholdService,
     ) : CreateJoinHouseholdComponent.Factory {
         override fun create(cContext: CContext): CreateJoinHouseholdComponent =
             DefaultCreateJoinHouseholdComponent(cContext, gateway)

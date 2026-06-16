@@ -1,7 +1,9 @@
 package com.opensplit
 
 import com.opensplit.component.createDefaultComponentContext
-import com.opensplit.features.household.*
+import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
+import com.opensplit.features.household.createjoin.HouseholdTab
+import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.When
 import com.opensplit.util.createComponentContext
@@ -60,7 +62,7 @@ class HouseholdComponentTest : BehaviorSpec({
                     state.fieldErrors should beEmpty()
                     state.generalError shouldBe null
                     state.householdId.shouldNotBeNull()
-                    koin.get<FakeHouseholdGateway>().createCalls shouldBe 1
+                    koin.get<FakeHouseholdService>().createCalls shouldBe 1
                 }
             }
         }
@@ -101,7 +103,7 @@ class HouseholdComponentTest : BehaviorSpec({
         ) {
             Then("loads households from gateway") {
                 listComponent.overview.value.households.shouldNotBeEmpty()
-                koin.get<FakeHouseholdGateway>().loadOverviewCalls shouldBe 1
+                koin.get<FakeHouseholdService>().loadOverviewCalls shouldBe 1
             }
         }
 
@@ -113,7 +115,7 @@ class HouseholdComponentTest : BehaviorSpec({
             }
         ) {
             Then("calls gateway to leave") {
-                koin.get<FakeHouseholdGateway>().leaveCalls shouldBe 1
+                koin.get<FakeHouseholdService>().leaveCalls shouldBe 1
             }
         }
     }

@@ -7,8 +7,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthRootScreen
-import com.opensplit.features.household.HouseholdComponent
-import com.opensplit.features.household.HouseholdRootScreen
+import com.opensplit.features.household.root.RootHouseholdComponent
+import com.opensplit.features.household.root.HouseholdRootScreen
 import com.opensplit.root.FakeRootComponent
 import com.opensplit.root.RootComponent
 import com.opensplit.ui.OpenSplitTheme
@@ -22,7 +22,7 @@ fun App(root: RootComponent) {
                     component = child,
                     modifier = Modifier.fillMaxSize(),
                 )
-                is HouseholdComponent -> HouseholdRootScreen(
+                is RootHouseholdComponent -> HouseholdRootScreen(
                     component = child,
                     modifier = Modifier.fillMaxSize(),
                 )
