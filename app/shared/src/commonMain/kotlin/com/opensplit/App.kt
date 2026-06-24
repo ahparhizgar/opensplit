@@ -13,6 +13,8 @@ import com.opensplit.features.household.root.HouseholdRootScreen
 import com.opensplit.features.household.root.RootHouseholdComponent
 import com.opensplit.root.FakeRootComponent
 import com.opensplit.root.RootComponent
+import com.opensplit.splash.SplashDestination
+import com.opensplit.splash.SplashScreen
 import com.opensplit.ui.OpenSplitTheme
 
 @Composable
@@ -23,6 +25,9 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
             stack = root.childStack
         ) {
             when (val child = it.instance) {
+                is SplashDestination ->
+                    SplashScreen()
+
                 is AuthComponent -> AuthRootScreen(
                     component = child,
                     modifier = Modifier.fillMaxSize(),

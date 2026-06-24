@@ -4,7 +4,7 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
-import com.arkivanov.decompose.router.stack.pushNew
+import com.arkivanov.decompose.router.stack.navigate
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.opensplit.component.CContext
@@ -15,9 +15,10 @@ import com.opensplit.features.auth.AuthMode
 import com.opensplit.features.auth.FakeAuthComponent
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
-import com.opensplit.features.household.root.RootHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
+import com.opensplit.features.household.root.RootHouseholdComponent
+import com.opensplit.splash.SplashDestination
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
@@ -45,14 +46,17 @@ class DefaultRootComponent(
         @Suppress("UNCHECKED_CAST")
         navOwner.navigation = navigation as StackNavigation<Any>
 
-        // On startup, check if an access token was previously saved. If so,
-        // navigate directly to the household overview so the user doesn't
-        // have to sign in again after closing the app.
         scope.launch {
             try {
                 val token = tokenStorage.getAccessToken()
                 if (!token.isNullOrEmpty()) {
-                    navigation.pushNew(RootHouseholdComponent.Config())
+                    navigation.navigate {
+                        listOf(RootHouseholdComponent.Config())
+                    }
+                } else {
+                    navigation.navigate {
+                        listOf(AuthComponent.Config(AuthMode.SignUp))
+                    }
                 }
             } catch (_: Throwable) {
                 // Swallow any persistence errors; default to auth flow.
@@ -64,13 +68,14 @@ class DefaultRootComponent(
         childStack(
             source = navigation,
             serializer = null,
-            initialConfiguration = AuthComponent.Config(AuthMode.SignUp),
+            initialConfiguration = SplashDestination,
             handleBackButton = true,
             childFactory = ::createChild,
         )
 
     private fun createChild(config: TopLevelDestinationConfig, cContext: CContext): Any {
         return when (config) {
+            is SplashDestination -> SplashDestination
             is AuthComponent.Config ->
                 componentProvider.provide(AuthComponent.Factory::class)
                     .create(cContext, config)
