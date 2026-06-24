@@ -27,9 +27,6 @@ fun HouseholdRootScreen(
                 }
             }
 
-            is RootHouseholdComponent.Child.CreateJoin ->
-                CreateJoinHouseholdScreen(child.component)
-
             is RootHouseholdComponent.Child.List ->
                 MyHouseholdsListScreen(
                     component = child.component,

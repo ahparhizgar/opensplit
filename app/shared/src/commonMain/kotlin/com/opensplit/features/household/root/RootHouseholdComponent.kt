@@ -22,7 +22,6 @@ interface RootHouseholdComponent : Destination {
 
     sealed class Child {
         object Loading : Child()
-        data class CreateJoin(val component: CreateJoinHouseholdComponent) : Child()
         data class List(val component: MyHouseholdsListComponent) : Child()
         data class Detail(val component: HouseholdDetailsComponent) : Child()
     }
@@ -58,10 +57,6 @@ class DefaultRootHouseholdComponent(
     private fun createChild(config: Config, cContext: CContext): RootHouseholdComponent.Child {
         return when (config) {
             is Config.Loading -> RootHouseholdComponent.Child.Loading
-            is Config.CreateJoin -> RootHouseholdComponent.Child.CreateJoin(
-                componentProvider.provide(CreateJoinHouseholdComponent.Factory::class)
-                    .create(cContext)
-            )
 
             is Config.List -> RootHouseholdComponent.Child.List(
                 componentProvider.provide(MyHouseholdsListComponent.Factory::class)
@@ -79,9 +74,6 @@ class DefaultRootHouseholdComponent(
     sealed class Config {
         @Serializable
         object Loading : Config()
-
-        @Serializable
-        object CreateJoin : Config()
 
         @Serializable
         object List : Config()

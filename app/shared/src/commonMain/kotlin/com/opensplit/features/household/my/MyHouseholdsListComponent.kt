@@ -1,10 +1,13 @@
 package com.opensplit.features.household.my
 
+import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
+import com.opensplit.component.navigation
 import com.opensplit.dto.household.HouseholdOverviewResponse
 import com.opensplit.features.household.HouseholdService
+import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +21,7 @@ interface MyHouseholdsListComponent {
 
     fun loadOverview(): Job
     fun leaveHousehold(householdId: String): Job
+    fun onAddHouseholdClick()
 
     @Serializable
     class Config : TopLevelDestinationConfig
@@ -59,6 +63,10 @@ class DefaultMyHouseholdsListComponent(
         _overview.value = gateway.leaveHousehold(householdId)
     }
 
+    override fun onAddHouseholdClick() {
+        navigation.pushNew(CreateJoinHouseholdComponent.Config())
+    }
+
     class Factory(
         private val gateway: HouseholdService,
     ) : MyHouseholdsListComponent.Factory {
@@ -74,4 +82,5 @@ class FakeMyHouseholdsListComponent(
 ) : MyHouseholdsListComponent {
     override fun loadOverview() = Job()
     override fun leaveHousehold(householdId: String) = Job()
+    override fun onAddHouseholdClick() {}
 }
