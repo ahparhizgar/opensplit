@@ -30,7 +30,7 @@ fun appModule() = module {
     factory {
         KoinComponentProvider(this)
     }.bind<ComponentProvider>()
-    single { createDataStore() }
+    singleOf(::createDataStore)
     singleOf(::DataStoreTokenStorage).bind<TokenStorage>()
     factory { createAuthGateway() }.bind<AuthGateway>()
     factoryOf(::KtorHouseholdService).bind<HouseholdService>()

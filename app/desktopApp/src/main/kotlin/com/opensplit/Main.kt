@@ -17,13 +17,22 @@ import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.opensplit.component.DefaultCContext
 import com.opensplit.root.RootComponent
 import org.koin.core.context.GlobalContext.startKoin
+import org.koin.dsl.module
 import javax.swing.SwingUtilities
 
-fun main() {
+fun main(vararg args: String) {
     val lifecycle = LifecycleRegistry()
-
+    println(args.joinToString())
     val koin =
         startKoin {
+            modules(
+                module {
+                    single {
+                        DataDir(args.firstOrNull { it.startsWith("--datadir=") }
+                            ?.removePrefix("--datadir=") ?: DataDir.DEFAULT)
+                    }
+                }
+            )
             modules(appModule())
         }.koin
 

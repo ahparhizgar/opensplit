@@ -17,7 +17,7 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "org.example.project.MainKt"
+        mainClass = "com.opensplit.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
@@ -25,4 +25,28 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+tasks.register<JavaExec>("runA") {
+    val runTask = tasks.named<JavaExec>("run").get()
+
+    group = "application"
+    description = "Run app with profile A"
+
+    classpath = runTask.classpath
+    mainClass.set(runTask.mainClass)
+
+    args("--datadir=app-data/A")
+}
+
+tasks.register<JavaExec>("runB") {
+    val runTask = tasks.named<JavaExec>("run").get()
+
+    group = "application"
+    description = "Run app with profile B"
+
+    classpath = runTask.classpath
+    mainClass.set(runTask.mainClass)
+
+    args("--datadir=app-data/B")
 }
