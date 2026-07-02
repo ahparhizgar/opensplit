@@ -23,14 +23,17 @@ fun HouseholdDetailsScreen(
     component: HouseholdDetailsComponent,
     modifier: Modifier = Modifier,
 ) {
-    val name by component.householdName.collectAsState()
+    val uiState by component.uiState.collectAsState()
     Surface(modifier = modifier) {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Household: $name", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                text = "Household: ${uiState.household?.name}",
+                style = MaterialTheme.typography.headlineMedium
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = "ID: ${component.householdId}")
             Spacer(modifier = Modifier.height(32.dp))

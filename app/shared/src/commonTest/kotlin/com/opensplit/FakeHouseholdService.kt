@@ -1,5 +1,6 @@
 package com.opensplit
 
+import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.HouseholdMemberDto
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
@@ -117,5 +118,13 @@ class FakeHouseholdService : HouseholdService {
             members = if (remaining.isEmpty()) emptyList() else overview.members,
         )
         return overview
+    }
+
+    override suspend fun getHousehold(id: String): HouseholdDto {
+        return HouseholdDto(
+            id = id,
+            name = "Household ${id.take(5)}",
+            members = overview.members,
+        )
     }
 }

@@ -2,6 +2,7 @@ package com.opensplit.features.household
 
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.household.CreateHouseholdRequest
+import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.NewHouseholdDto
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.JoinHouseholdRequest
@@ -29,6 +30,7 @@ interface HouseholdService {
     suspend fun joinHousehold(inviteCode: String)
     suspend fun loadOverview(): HouseholdOverviewDto
     suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto
+    suspend fun getHousehold(id: String): HouseholdDto
 }
 
 class KtorHouseholdService(
@@ -87,6 +89,13 @@ class KtorHouseholdService(
     override suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto {
         if (checkTokenExpired()) handleUnauthorized()
         val response = client.delete("$baseUrl/households/$householdId/memberships/me")
+        if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
+        return parseResponse(response)
+    }
+
+    override suspend fun getHousehold(id: String): HouseholdDto {
+        if (checkTokenExpired()) handleUnauthorized()
+        val response = client.get("$baseUrl/households/$id")
         if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
         return parseResponse(response)
     }
