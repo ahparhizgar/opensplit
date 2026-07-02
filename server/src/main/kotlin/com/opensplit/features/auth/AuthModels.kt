@@ -25,6 +25,7 @@ class BcryptPasswordHasher : PasswordHasher {
 @Serializable
 data class AuthSession(
     val userId: String,
+    val name: String? = null,
     val email: String,
     val householdId: String? = null,
     val accessToken: String,
@@ -32,6 +33,7 @@ data class AuthSession(
 
 data class RegisteredUser(
     val userId: String,
+    val name: String? = null,
     val email: String,
     val passwordHash: String,
 )
@@ -39,7 +41,7 @@ data class RegisteredUser(
 class AuthService(
     private val passwordHasher: PasswordHasher = BcryptPasswordHasher(),
 ) {
-    fun signUp(email: String, password: String): AuthSession {
+    fun signUp(email: String, password: String, name: String? = null): AuthSession {
         val existing = transaction { Users.select { Users.email eq email }.limit(1).firstOrNull() }
         require(existing == null) { "Email already exists" }
         val userId = UUID.randomUUID().toString()
@@ -47,11 +49,12 @@ class AuthService(
         transaction {
             Users.insert {
                 it[Users.id] = userId
+                it[Users.name] = name
                 it[Users.email] = email
                 it[Users.passwordHash] = passwordHash
             }
         }
-        val user = RegisteredUser(userId = userId, email = email, passwordHash = passwordHash)
+        val user = RegisteredUser(userId = userId, name = name, email = email, passwordHash = passwordHash)
         return user.toSessionState()
     }
 
@@ -63,6 +66,7 @@ class AuthService(
         if (!passwordHasher.verify(password, storedHash)) throw IllegalArgumentException("Invalid credentials")
         val user = RegisteredUser(
             userId = row[Users.id],
+            name = row[Users.name],
             email = row[Users.email],
             passwordHash = storedHash,
         )
@@ -73,6 +77,7 @@ class AuthService(
 
     private fun RegisteredUser.toSessionState(): AuthSession = AuthSession(
         userId = userId,
+        name = name,
         email = email,
         householdId = null,
         accessToken = JwtTokenService.issue(userId, email),

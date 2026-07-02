@@ -46,4 +46,6 @@ fun appModule() = module {
         .bind<MyHouseholdsListComponent.Factory>()
     factoryOf(DefaultHouseholdDetailsComponent::Factory)
         .bind<HouseholdDetailsComponent.Factory>()
+    factoryOf(com.opensplit.features.household.settings.DefaultHouseholdSettingsComponent::Factory)
+        .bind<com.opensplit.features.household.settings.HouseholdSettingsComponent.Factory>()
 }

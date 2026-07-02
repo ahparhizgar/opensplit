@@ -184,7 +184,12 @@ fun Application.householdRoutes() {
                         Users.select { Users.id inList memberIds }.map { row ->
                             HouseholdMemberDto(
                                 userId = row[Users.id],
+                                name = row[Users.name],
                                 email = row[Users.email],
+                                isOwner = row[Users.id] == transaction { householdRow.get(Households.ownerId) },
+                                isCurrentUser = row[Users.id] == userId,
+                                balance = if (row[Users.id] == userId) 10.15 else -10.15,
+                                balanceCurrency = "IRR"
                             )
                         }
                     }
@@ -225,10 +230,17 @@ fun Application.householdRoutes() {
                 val memberIds = Memberships.select { Memberships.householdId eq householdId }
                     .map { it[Memberships.userId] }
 
+                val ownerId = householdRow[Households.ownerId]
+
                 val members = Users.select { Users.id inList memberIds }.map { row ->
                     HouseholdMemberDto(
                         userId = row[Users.id],
+                        name = row[Users.name],
                         email = row[Users.email],
+                        isOwner = row[Users.id] == ownerId,
+                        isCurrentUser = row[Users.id] == userId,
+                        balance = if (row[Users.id] == userId) 10.15 else -10.15,
+                        balanceCurrency = "IRR"
                     )
                 }
 

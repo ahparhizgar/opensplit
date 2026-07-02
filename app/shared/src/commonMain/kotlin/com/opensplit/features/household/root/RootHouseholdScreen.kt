@@ -10,6 +10,7 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.opensplit.features.household.details.HouseholdDetailsScreen
 import com.opensplit.features.household.my.MyHouseholdsListScreen
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdScreen
+import com.opensplit.features.household.settings.HouseholdSettingsScreen
 
 @Composable
 fun HouseholdRootScreen(
@@ -36,7 +37,12 @@ fun HouseholdRootScreen(
                 )
 
             is RootHouseholdComponent.Child.Detail ->
-                HouseholdDetailsScreen(child.component)
+                HouseholdDetailsScreen(
+                    component = child.component,
+                )
+
+            is RootHouseholdComponent.Child.Settings ->
+                HouseholdSettingsScreen(child.component)
         }
     }
 }

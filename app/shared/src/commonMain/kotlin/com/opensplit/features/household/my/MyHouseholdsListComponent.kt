@@ -6,6 +6,7 @@ import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.component.navigation
 import com.opensplit.dto.household.HouseholdOverviewDto
+import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.features.household.HouseholdService
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.root.TopLevelDestinationConfig
@@ -77,7 +78,34 @@ class DefaultMyHouseholdsListComponent(
 
 class FakeMyHouseholdsListComponent(
     override val overview: MutableStateFlow<HouseholdOverviewDto>
-    = MutableStateFlow(HouseholdOverviewDto()),
+    = MutableStateFlow(
+        HouseholdOverviewDto(
+            households = listOf(
+                HouseholdSummaryDto(
+                    id = "1",
+                    name = "Box Gym Bros",
+                    memberCount = 2,
+                    balance = 10.15,
+                    currency = "IRR",
+                    description = "Ali B. owes you IRR10.15"
+                ),
+                HouseholdSummaryDto(
+                    id = "2",
+                    name = "203.3",
+                    memberCount = 3,
+                    isSettled = true,
+                ),
+                HouseholdSummaryDto(
+                    id = "3",
+                    name = "گلابی",
+                    memberCount = 4,
+                    isSettled = true,
+                )
+            ),
+            overallBalance = 10.15,
+            overallCurrency = "IRR"
+        )
+    ),
     override val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false),
 ) : MyHouseholdsListComponent {
     override fun loadOverview() = Job()

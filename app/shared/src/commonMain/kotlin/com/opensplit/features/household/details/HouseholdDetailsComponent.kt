@@ -1,12 +1,14 @@
 package com.opensplit.features.household.details
 
 import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.component.navigation
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.features.household.HouseholdService
+import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +22,7 @@ interface HouseholdDetailsComponent {
 
     fun onAddMemberClicked() {}
     fun onBack() {}
+    fun onSettingsClick() {}
 
     @Serializable
     data class Config(val householdId: String) : TopLevelDestinationConfig
@@ -53,6 +56,10 @@ class DefaultHouseholdDetailsComponent(
 
     override fun onAddMemberClicked() {
         TODO()
+    }
+
+    override fun onSettingsClick() {
+        navigation.pushNew(HouseholdSettingsComponent.Config(householdId))
     }
 
     override fun onBack() {

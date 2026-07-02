@@ -28,7 +28,7 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
             }
 
             val session = try {
-                authService.signUp(request.email, request.password)
+                authService.signUp(request.email, request.password, request.name)
             } catch (_: IllegalArgumentException) {
                 call.respond(HttpStatusCode.Conflict, ErrorResponse(errors = mapOf("email" to "Account already exists")))
                 return@post

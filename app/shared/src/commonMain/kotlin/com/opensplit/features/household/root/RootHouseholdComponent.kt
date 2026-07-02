@@ -11,6 +11,7 @@ import com.opensplit.component.CContext
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
+import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.root.ComponentProvider
 import com.opensplit.root.Destination
 import com.opensplit.root.TopLevelDestinationConfig
@@ -24,6 +25,7 @@ interface RootHouseholdComponent : Destination {
         object Loading : Child()
         data class List(val component: MyHouseholdsListComponent) : Child()
         data class Detail(val component: HouseholdDetailsComponent) : Child()
+        data class Settings(val component: HouseholdSettingsComponent) : Child()
     }
 
     @Serializable
@@ -67,6 +69,11 @@ class DefaultRootHouseholdComponent(
                 componentProvider.provide(HouseholdDetailsComponent.Factory::class)
                     .create(cContext, HouseholdDetailsComponent.Config(config.householdId))
             )
+
+            is Config.Settings -> RootHouseholdComponent.Child.Settings(
+                componentProvider.provide(HouseholdSettingsComponent.Factory::class)
+                    .create(cContext, HouseholdSettingsComponent.Config(config.householdId))
+            )
         }
     }
 
@@ -80,6 +87,9 @@ class DefaultRootHouseholdComponent(
 
         @Serializable
         data class Detail(val householdId: String) : Config()
+
+        @Serializable
+        data class Settings(val householdId: String) : Config()
     }
 
     class Factory(

@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -55,6 +56,17 @@ fun HouseholdDetailsScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+
+                IconButton(
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    onClick = { component.onSettingsClick() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -131,9 +143,9 @@ fun HouseholdDetailsScreen(
 fun HouseholdDetailsScreenLoadingPreview() {
     OpenSplitTheme {
         HouseholdDetailsScreen(
-            FakeHouseholdDetailsComponent(
+            component = FakeHouseholdDetailsComponent(
                 uiState = HouseholdDetailsComponent.UiState()
-            )
+            ),
         )
     }
 }
@@ -143,13 +155,13 @@ fun HouseholdDetailsScreenLoadingPreview() {
 fun HouseholdDetailsScreenPreview() {
     OpenSplitTheme {
         HouseholdDetailsScreen(
-            FakeHouseholdDetailsComponent(
+            component = FakeHouseholdDetailsComponent(
                 uiState = HouseholdDetailsComponent.UiState(
                     household = FakeHouseholdDtoFactory.create(
                         members = emptyList()
                     )
                 )
-            )
+            ),
         )
     }
 }
@@ -159,11 +171,11 @@ fun HouseholdDetailsScreenPreview() {
 fun HouseholdDetailsScreenWithMemberPreview() {
     OpenSplitTheme {
         HouseholdDetailsScreen(
-            FakeHouseholdDetailsComponent(
+            component = FakeHouseholdDetailsComponent(
                 uiState = HouseholdDetailsComponent.UiState(
                     household = FakeHouseholdDtoFactory.create()
                 )
-            )
+            ),
         )
     }
 }

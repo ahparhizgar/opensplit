@@ -11,6 +11,8 @@ import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdScreen
 import com.opensplit.features.household.root.HouseholdRootScreen
 import com.opensplit.features.household.root.RootHouseholdComponent
+import com.opensplit.features.household.settings.HouseholdSettingsComponent
+import com.opensplit.features.household.settings.HouseholdSettingsScreen
 import com.opensplit.root.FakeRootComponent
 import com.opensplit.root.RootComponent
 import com.opensplit.splash.SplashDestination
@@ -42,6 +44,13 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
                     component = child,
                     modifier = Modifier.fillMaxSize(),
                 )
+
+                is HouseholdSettingsComponent -> HouseholdSettingsScreen(
+                    component = child,
+                    modifier = Modifier.fillMaxSize(),
+                )
+
+                else -> error("Unknown child: $child")
             }
         }
     }

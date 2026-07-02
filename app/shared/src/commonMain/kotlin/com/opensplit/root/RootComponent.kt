@@ -18,6 +18,7 @@ import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.features.household.root.RootHouseholdComponent
+import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.splash.SplashDestination
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -94,6 +95,10 @@ class DefaultRootComponent(
 
             is HouseholdDetailsComponent.Config ->
                 componentProvider.provide(HouseholdDetailsComponent.Factory::class)
+                    .create(cContext, config)
+
+            is HouseholdSettingsComponent.Config ->
+                componentProvider.provide(HouseholdSettingsComponent.Factory::class)
                     .create(cContext, config)
 
             else -> error("Destination not defined in createChild")

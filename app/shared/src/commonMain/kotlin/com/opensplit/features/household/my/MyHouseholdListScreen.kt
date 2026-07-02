@@ -6,36 +6,45 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.GroupAdd
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.opensplit.dto.household.HouseholdSummaryDto
@@ -62,103 +71,108 @@ fun MyHouseholdsListScreen(
             }
         } else {
             val scope = rememberCoroutineScope()
-            var leaveConfirmHouseholdId by remember<MutableState<String?>> { mutableStateOf(null) }
-            var selectedNavIndex by remember { mutableStateOf(0) }
+            var leaveConfirmHouseholdId by rememberSaveable { mutableStateOf<String?>(null) }
+            var selectedNavIndex by rememberSaveable { mutableStateOf(0) }
+            var isSettledExpanded by rememberSaveable { mutableStateOf(false) }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .testTag("household-active-shell"),
-            ) {
-                // Main scrollable content
+            val (activeHouseholds, settledHouseholds) = remember(overview.households) {
+                overview.households.partition { !it.isSettled }
+            }
+
+            Scaffold(
+                bottomBar = {
+                    BottomNav(
+                        selectedIndex = selectedNavIndex,
+                        onItemSelected = { selectedNavIndex = it },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                },
+                floatingActionButton = {
+                    AddExpenseFab(onClick = { /* Navigate to add expense */ })
+                },
+                modifier = Modifier.testTag("household-active-shell"),
+            ) { padding ->
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+                        .fillMaxSize()
+                        .padding(padding),
                 ) {
+                    // Top Action Icons
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            text = "OpenSplit",
-                            style = MaterialTheme.typography.headlineMedium,
-                            modifier = Modifier.testTag("header-title"),
+
+                        // Todo make it icon button
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clickable { }
+                                .testTag("header-search"),
                         )
-                        Row(
-                            modifier = Modifier,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Search",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable { }
-                                    .testTag("header-search"),
-                            )
-                            Icon(
-                                imageVector = Icons.Default.PersonAdd,
-                                contentDescription = "Add Household",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable { component.onAddHouseholdClick() }
-                                    .testTag("header-profile"),
-                            )
-                        }
+                        Spacer(Modifier.width(20.dp))
+                        // Todo make it icon button
+                        Icon(
+                            imageVector = Icons.Default.GroupAdd,
+                            contentDescription = "Add Household",
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clickable { component.onAddHouseholdClick() }
+                                .testTag("header-add-group"),
+                        )
                     }
 
-                    // Main content in LazyColumn
-                    LazyColumn(
+                    // Balance Summary Row
+                    BalanceSummaryRow(
+                        balance = overview.overallBalance,
+                        currency = overview.overallCurrency,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        // Balance Summary
-                        item {
-                            BalanceSummaryCard(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp),
-                            )
-                        }
+                            .padding(horizontal = 16.dp, vertical = 16.dp),
+                    )
 
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                            horizontal = 16.dp,
+                            vertical = 8.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
                         // Household Cards
-                        items(overview.households) { household ->
+                        items(activeHouseholds) { household ->
                             HouseholdCard(
                                 household = household,
                                 onClick = { onHouseholdClick(household.id) },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 8.dp)
                                     .testTag("household-card-${household.id}"),
                             )
                         }
 
-                        // FAB - Add Expense (styled as a pill button)
+                        // Sample "Non-group expenses" for visual fidelity
                         item {
-                            AddExpenseFab(
-                                onClick = { /* Navigate to add expense */ },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                            )
+                            NonGroupExpensesCard()
+                        }
+
+                        // Settled Groups Section
+                        if (settledHouseholds.isNotEmpty()) {
+                            item {
+                                SettledGroupsSection(
+                                    households = settledHouseholds,
+                                    isExpanded = isSettledExpanded,
+                                    onToggle = { isSettledExpanded = !isSettledExpanded },
+                                    onStartNewGroup = { component.onAddHouseholdClick() }
+                                )
+                            }
                         }
                     }
                 }
-
-                BottomNav(
-                    selectedIndex = selectedNavIndex,
-                    onItemSelected = { selectedNavIndex = it },
-                    modifier = Modifier.fillMaxWidth(),
-                )
             }
 
             // Leave confirmation dialog
@@ -183,44 +197,184 @@ fun MyHouseholdsListScreen(
 }
 
 @Composable
-private fun BalanceSummaryCard(
+private fun BalanceSummaryRow(
+    balance: Double,
+    currency: String,
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(8.dp),
-            )
-            .padding(16.dp)
-            .fillMaxWidth(),
+        modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "Overall, you are owed",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = "Overall, you are owed ",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Normal,
             )
             Text(
-                text = "$42.50",
-                style = MaterialTheme.typography.headlineSmall,
+                text = "$currency$balance",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
             )
         }
         Icon(
-            imageVector = Icons.Default.Search,
+            imageVector = Icons.Default.Tune,
             contentDescription = "Filter",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
-                .size(24.dp)
+                .size(28.dp)
                 .clickable { }
                 .testTag("balance-filter"),
         )
+    }
+}
+
+@Composable
+private fun NonGroupExpensesCard() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { }
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(8.dp),
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Description,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        Column {
+            Text(
+                text = "Non-group expenses",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = "settled up",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettledGroupsSection(
+    households: List<HouseholdSummaryDto>,
+    isExpanded: Boolean,
+    onToggle: () -> Unit,
+    onStartNewGroup: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        if (!isExpanded) {
+            Text(
+                text = "Hiding groups that have been settled up over one month.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            OutlinedButton(
+                onClick = onToggle,
+                modifier = Modifier.testTag("show-settled-btn"),
+            ) {
+                Text("Show ${households.size} settled-up groups")
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Previously settled groups. ",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = "Re-hide",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .clickable(onClick = onToggle)
+                        .testTag("hide-settled-btn"),
+                )
+            }
+
+            households.forEach { household ->
+                SettledHouseholdCard(name = household.name)
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = onStartNewGroup,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("start-new-group-btn"),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.GroupAdd,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Start a new group")
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettledHouseholdCard(name: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(8.dp),
+                )
+        )
+        Column {
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            )
+            Text(
+                text = "settled up",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            )
+        }
     }
 }
 
@@ -230,57 +384,45 @@ private fun HouseholdCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val bgColor = MaterialTheme.colorScheme.surfaceVariant
-    val statusColor = MaterialTheme.colorScheme.primary
-
     Row(
         modifier = modifier
-            .background(
-                color = bgColor,
-                shape = RoundedCornerShape(8.dp),
-            )
             .clickable(onClick = onClick)
-            .padding(12.dp)
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Avatar
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .size(64.dp)
                 .background(
-                    color = statusColor,
-                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(8.dp),
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = household.name.take(2).uppercase(),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimary,
+            Icon(
+                imageVector = Icons.Default.Groups,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
 
-        // Text content
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = household.name,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold,
             )
             Text(
-                text = if (household.isOwner) "Owner" else "Member",
-                style = MaterialTheme.typography.bodySmall,
-                color = statusColor,
+                text = "you are owed ${household.currency}${household.balance}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
             )
-            if (household.memberCount > 0) {
+            household.description?.let {
                 Text(
-                    text = "${household.memberCount} ${if (household.memberCount == 1) "member" else "members"}",
-                    style = MaterialTheme.typography.labelSmall,
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -291,19 +433,15 @@ private fun HouseholdCard(
 @Composable
 private fun AddExpenseFab(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
-    Button(
+    ExtendedFloatingActionButton(
         onClick = onClick,
-        modifier = modifier
-            .padding(vertical = 8.dp)
-            .testTag("add-expense-fab"),
-    ) {
-        Text(
-            text = "+ Add Expense",
-            style = MaterialTheme.typography.labelLarge,
-        )
-    }
+        icon = { Icon(Icons.Default.Description, contentDescription = null) },
+        text = { Text("Add expense") },
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        modifier = Modifier.testTag("add-expense-fab"),
+    )
 }
 
 @Composable
