@@ -5,10 +5,12 @@ import com.opensplit.db.Memberships
 import com.opensplit.db.Users
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.household.CreateHouseholdRequest
-import com.opensplit.dto.household.NewHouseholdDto
+import com.opensplit.dto.household.HouseholdDto
+import com.opensplit.dto.household.HouseholdMemberDto
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.dto.household.JoinHouseholdRequest
+import com.opensplit.dto.household.NewHouseholdDto
 import com.opensplit.features.auth.JwtTokenService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
@@ -18,11 +20,11 @@ import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import java.util.UUID
@@ -172,8 +174,82 @@ fun Application.householdRoutes() {
                 }
             }
 
-            // Todo return household overview
-            call.respond(HttpStatusCode.OK)
+            call.respond(
+                HttpStatusCode.OK,
+                HouseholdDto(
+                    hid, householdRow.get(Households.name),
+                    members = transaction {
+                        val memberIds = Memberships.select { Memberships.householdId eq hid }
+                            .map { it[Memberships.userId] }
+                        Users.select { Users.id inList memberIds }.map { row ->
+                            HouseholdMemberDto(
+                                userId = row[Users.id],
+                                email = row[Users.email],
+                            )
+                        }
+                    }
+                )
+            )
+        }
+
+        get("/households/{id}") {
+            val householdId =
+                call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+            val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ")
+            val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+            val userId = resolveUserIdFromToken(token)
+
+            if (userId == null) {
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(
+                        generalError = "Authentication required",
+                        errors = mapOf("token" to "Authentication required")
+                    ),
+                )
+                return@get
+            }
+
+            val result = transaction {
+                val isMember = Memberships.select {
+                    (Memberships.householdId eq householdId) and (Memberships.userId eq userId)
+                }.any()
+
+                if (!isMember) return@transaction null
+
+                val householdRow =
+                    Households.select { Households.id eq householdId }.limit(1).firstOrNull()
+                        ?: return@transaction null
+
+                val memberIds = Memberships.select { Memberships.householdId eq householdId }
+                    .map { it[Memberships.userId] }
+
+                val members = Users.select { Users.id inList memberIds }.map { row ->
+                    HouseholdMemberDto(
+                        userId = row[Users.id],
+                        email = row[Users.email],
+                    )
+                }
+
+                HouseholdDto(
+                    id = householdRow[Households.id],
+                    name = householdRow[Households.name],
+                    members = members
+                )
+            }
+
+            if (result == null) {
+                call.respond(
+                    HttpStatusCode.NotFound,
+                    ErrorResponse(
+                        generalError = "Household not found or access denied",
+                        errors = mapOf("id" to "Household not found or access denied")
+                    )
+                )
+            } else {
+                call.respond(HttpStatusCode.OK, result)
+            }
         }
 
         get("/households/overview") {

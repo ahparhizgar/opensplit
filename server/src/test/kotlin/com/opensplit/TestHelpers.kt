@@ -1,12 +1,17 @@
 package com.opensplit
 
+import com.opensplit.dto.auth.AuthSessionState
+import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.features.auth.AuthService
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
@@ -48,3 +53,10 @@ fun ApplicationTestBuilder.createAuthenticatedClient(token: String): HttpClient 
 }
 
 private fun ApplicationTestBuilder.createTestClient(token: String): HttpClient = createAuthenticatedClient(token)
+
+suspend fun ApplicationTestBuilder.createOtherClient(): HttpClient{
+    val otherUser = client.post("/users") {
+        setBody(SignUpRequest("other@example.com", "password123"))
+    }.body<AuthSessionState>()
+    return createAuthenticatedClient(otherUser.accessToken)
+}

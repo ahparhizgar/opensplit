@@ -8,6 +8,8 @@ import com.opensplit.dto.household.NewHouseholdDto
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.createAuthenticatedClient
+import com.opensplit.createOtherClient
+import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.testOpenSplit
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -33,6 +35,37 @@ class HouseholdScenarios {
         }.also {
             assertEquals(HttpStatusCode.OK, it.status)
         }
+    }
+
+    @Test
+    fun getHousehold_notFound() = testOpenSplit {
+        val r = client.get("/households/123456789")
+        assertEquals(HttpStatusCode.NotFound, r.status)
+    }
+
+    @Test
+    fun getNotMineHousehold_notFound() = testOpenSplit {
+        val created = client.post("/households") {
+            setBody(CreateHouseholdRequest("Maple House"))
+        }.body<NewHouseholdDto>()
+
+        val otherClient = createOtherClient()
+
+        val r = otherClient.get("/households/${created.id}")
+        assertEquals(HttpStatusCode.NotFound, r.status)
+    }
+
+    @Test
+    fun getHousehold_returns() = testOpenSplit {
+        val created = client.post("/households") {
+            setBody(CreateHouseholdRequest("Maple House"))
+        }.body<NewHouseholdDto>()
+
+        val r = client.get("/households/${created.id}")
+        assertEquals(HttpStatusCode.OK, r.status)
+        val household = r.body<HouseholdDto>()
+        assertEquals(created.id, household.id)
+        assertEquals(created.name, household.name)
     }
 
     @Test

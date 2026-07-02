@@ -43,3 +43,10 @@ data class HouseholdOverviewDto(
     val households: List<HouseholdSummaryDto> = emptyList(),
     val members: List<HouseholdMemberDto> = emptyList(),
 )
+
+@Serializable
+data class HouseholdDto(
+    val id: String,
+    val name: String,
+    val members: List<HouseholdMemberDto>,
+)
