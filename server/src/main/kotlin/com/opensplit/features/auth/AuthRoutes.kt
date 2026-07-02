@@ -101,5 +101,3 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
         }
     }
 }
-
-fun Application.configureJwtAuth() {}

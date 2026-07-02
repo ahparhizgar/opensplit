@@ -7,8 +7,9 @@ data class CreateHouseholdRequest(
     val name: String,
 )
 
+// To be replaced with household overview dto
 @Serializable
-data class CreateHouseholdResponse(
+data class NewHouseholdDto(
     val id: String,
     val name: String,
     val inviteCode: String? = null,
@@ -19,15 +20,9 @@ data class JoinHouseholdRequest(
     val inviteCodeOrId: String,
 )
 
-@Serializable
-data class JoinHouseholdResponse(
-    val householdId: String,
-    val joined: Boolean,
-)
-
 
 @Serializable
-data class HouseholdSummaryResponse(
+data class HouseholdSummaryDto(
     val id: String,
     val name: String,
     val memberCount: Int,
@@ -36,7 +31,7 @@ data class HouseholdSummaryResponse(
 )
 
 @Serializable
-data class HouseholdMemberResponse(
+data class HouseholdMemberDto(
     val userId: String,
     val email: String,
     val isOwner: Boolean = false,
@@ -44,8 +39,7 @@ data class HouseholdMemberResponse(
 )
 
 @Serializable
-data class HouseholdOverviewResponse(
-    val households: List<HouseholdSummaryResponse> = emptyList(),
-    val members: List<HouseholdMemberResponse> = emptyList(),
+data class HouseholdOverviewDto(
+    val households: List<HouseholdSummaryDto> = emptyList(),
+    val members: List<HouseholdMemberDto> = emptyList(),
 )
-

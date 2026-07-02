@@ -38,7 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.opensplit.dto.household.HouseholdSummaryResponse
+import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.components.BottomNav
 import kotlinx.coroutines.launch
@@ -226,7 +226,7 @@ private fun BalanceSummaryCard(
 
 @Composable
 private fun HouseholdCard(
-    household: HouseholdSummaryResponse,
+    household: HouseholdSummaryDto,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

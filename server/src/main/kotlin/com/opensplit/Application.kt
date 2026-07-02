@@ -5,7 +5,6 @@ import com.opensplit.db.databaseModule
 import com.opensplit.db.databaseTestModule
 import com.opensplit.features.auth.authModule
 import com.opensplit.features.auth.authRoutes
-import com.opensplit.features.auth.configureJwtAuth
 import com.opensplit.routes.healthRoute
 import com.opensplit.routes.householdRoutes
 import io.ktor.serialization.kotlinx.json.json
@@ -51,7 +50,6 @@ fun Application.openSplit(isTest: Boolean = false) {
     val initializer: DatabaseInitializer by inject()
     initializer.init()
 
-    configureJwtAuth()
     authRoutes()
     householdRoutes()
     healthRoute()

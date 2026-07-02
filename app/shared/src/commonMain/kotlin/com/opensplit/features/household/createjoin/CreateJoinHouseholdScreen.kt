@@ -139,7 +139,7 @@ fun CreateJoinHouseholdScreen(
 
 @Composable
 private fun JoinHouseholdForm(
-    state: JoinHouseholdViewState,
+    state: JoinHouseholdComponent.UiState,
     onCodeChange: (String) -> Unit,
     width: Dp,
 ) {

@@ -1,10 +1,9 @@
 package com.opensplit
 
-import com.opensplit.dto.household.CreateHouseholdResponse
-import com.opensplit.dto.household.HouseholdMemberResponse
-import com.opensplit.dto.household.HouseholdOverviewResponse
-import com.opensplit.dto.household.HouseholdSummaryResponse
-import com.opensplit.dto.household.JoinHouseholdResponse
+import com.opensplit.dto.household.HouseholdMemberDto
+import com.opensplit.dto.household.HouseholdOverviewDto
+import com.opensplit.dto.household.HouseholdSummaryDto
+import com.opensplit.dto.household.NewHouseholdDto
 import com.opensplit.features.household.HouseholdService
 
 class FakeHouseholdService : HouseholdService {
@@ -14,56 +13,103 @@ class FakeHouseholdService : HouseholdService {
     var leaveCalls = 0
 
     fun withSingleHousehold(): FakeHouseholdService {
-        overview = HouseholdOverviewResponse(
+        overview = HouseholdOverviewDto(
             households = listOf(
-                HouseholdSummaryResponse(id = "household-1", name = "Solo House", memberCount = 1, inviteCode = "invite-abc123"),
+                HouseholdSummaryDto(
+                    id = "household-1",
+                    name = "Solo House",
+                    memberCount = 1,
+                    inviteCode = "invite-abc123"
+                ),
             ),
-            members = listOf(HouseholdMemberResponse(userId = "user-1", email = "amir@example.com", isOwner = true)),
+            members = listOf(
+                HouseholdMemberDto(
+                    userId = "user-1",
+                    email = "amir@example.com",
+                    isOwner = true
+                )
+            ),
         )
         return this
     }
 
-    private var overview = HouseholdOverviewResponse(
+    private var overview = HouseholdOverviewDto(
         households = listOf(
-            HouseholdSummaryResponse(id = "household-1", name = "Maple House", memberCount = 1, inviteCode = "invite-abc123"),
-            HouseholdSummaryResponse(id = "household-2", name = "River House", memberCount = 2, inviteCode = "invite-def456"),
+            HouseholdSummaryDto(
+                id = "household-1",
+                name = "Maple House",
+                memberCount = 1,
+                inviteCode = "invite-abc123"
+            ),
+            HouseholdSummaryDto(
+                id = "household-2",
+                name = "River House",
+                memberCount = 2,
+                inviteCode = "invite-def456"
+            ),
         ),
-        members = listOf(HouseholdMemberResponse(userId = "user-1", email = "amir@example.com", isOwner = true)),
+        members = listOf(
+            HouseholdMemberDto(
+                userId = "user-1",
+                email = "amir@example.com",
+                isOwner = true
+            )
+        ),
     )
 
-    override suspend fun createHousehold(name: String): CreateHouseholdResponse {
+    override suspend fun createHousehold(name: String): NewHouseholdDto {
         createCalls++
-        overview = HouseholdOverviewResponse(
-            households = listOf(HouseholdSummaryResponse(id = "household-1", name = name, memberCount = 1, inviteCode = "invite-abc123")),
-            members = listOf(HouseholdMemberResponse(userId = "user-1", email = "amir@example.com", isOwner = true)),
+        overview = HouseholdOverviewDto(
+            households = listOf(
+                HouseholdSummaryDto(
+                    id = "household-1",
+                    name = name,
+                    memberCount = 1,
+                    inviteCode = "invite-abc123"
+                )
+            ),
+            members = listOf(
+                HouseholdMemberDto(
+                    userId = "user-1",
+                    email = "amir@example.com",
+                    isOwner = true
+                )
+            ),
         )
-        return CreateHouseholdResponse(
+        return NewHouseholdDto(
             id = "household-1",
             name = name,
             inviteCode = "invite-abc123",
         )
     }
 
-    override suspend fun joinHousehold(inviteCode: String): JoinHouseholdResponse {
+    override suspend fun joinHousehold(inviteCode: String) {
         joinCalls++
         overview = overview.copy(
             households = listOf(
-                HouseholdSummaryResponse(id = "household-2", name = "Joined House", memberCount = 2, inviteCode = "invite-def456"),
+                HouseholdSummaryDto(
+                    id = "household-2",
+                    name = "Joined House",
+                    memberCount = 2,
+                    inviteCode = "invite-def456"
+                ),
             ),
-            members = listOf(HouseholdMemberResponse(userId = "user-1", email = "amir@example.com", isOwner = false)),
-        )
-        return JoinHouseholdResponse(
-            householdId = "household-2",
-            joined = true,
+            members = listOf(
+                HouseholdMemberDto(
+                    userId = "user-1",
+                    email = "amir@example.com",
+                    isOwner = false
+                )
+            ),
         )
     }
 
-    override suspend fun loadOverview(): HouseholdOverviewResponse {
+    override suspend fun loadOverview(): HouseholdOverviewDto {
         loadOverviewCalls++
         return overview
     }
 
-    override suspend fun leaveHousehold(householdId: String): HouseholdOverviewResponse {
+    override suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto {
         leaveCalls++
         val remaining = overview.households.filterNot { it.id == householdId }
         overview = overview.copy(

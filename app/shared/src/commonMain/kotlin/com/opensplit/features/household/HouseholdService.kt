@@ -2,10 +2,9 @@ package com.opensplit.features.household
 
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.household.CreateHouseholdRequest
-import com.opensplit.dto.household.CreateHouseholdResponse
-import com.opensplit.dto.household.HouseholdOverviewResponse
+import com.opensplit.dto.household.NewHouseholdDto
+import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.JoinHouseholdRequest
-import com.opensplit.dto.household.JoinHouseholdResponse
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.auth.createAuthHttpClient
 import com.opensplit.features.auth.getApiBaseUrl
@@ -26,10 +25,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
 interface HouseholdService {
-    suspend fun createHousehold(name: String): CreateHouseholdResponse
-    suspend fun joinHousehold(inviteCode: String): JoinHouseholdResponse
-    suspend fun loadOverview(): HouseholdOverviewResponse
-    suspend fun leaveHousehold(householdId: String): HouseholdOverviewResponse
+    suspend fun createHousehold(name: String): NewHouseholdDto
+    suspend fun joinHousehold(inviteCode: String)
+    suspend fun loadOverview(): HouseholdOverviewDto
+    suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto
 }
 
 class KtorHouseholdService(
@@ -58,7 +57,7 @@ class KtorHouseholdService(
         throw RemoteException(generalError = "Session expired. Please sign in again.")
     }
 
-    override suspend fun createHousehold(name: String): CreateHouseholdResponse {
+    override suspend fun createHousehold(name: String): NewHouseholdDto {
         if (checkTokenExpired()) handleUnauthorized()
         val response = client.post("$baseUrl/households") {
             contentType(ContentType.Application.Json)
@@ -68,7 +67,7 @@ class KtorHouseholdService(
         return parseResponse(response)
     }
 
-    override suspend fun joinHousehold(inviteCode: String): JoinHouseholdResponse {
+    override suspend fun joinHousehold(inviteCode: String) {
         if (checkTokenExpired()) handleUnauthorized()
         val response = client.post("$baseUrl/households/join") {
             contentType(ContentType.Application.Json)
@@ -78,14 +77,14 @@ class KtorHouseholdService(
         return parseResponse(response)
     }
 
-    override suspend fun loadOverview(): HouseholdOverviewResponse {
+    override suspend fun loadOverview(): HouseholdOverviewDto {
         if (checkTokenExpired()) handleUnauthorized()
         val response = client.get("$baseUrl/households/overview")
         if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
         return parseResponse(response)
     }
 
-    override suspend fun leaveHousehold(householdId: String): HouseholdOverviewResponse {
+    override suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto {
         if (checkTokenExpired()) handleUnauthorized()
         val response = client.delete("$baseUrl/households/$householdId/memberships/me")
         if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()

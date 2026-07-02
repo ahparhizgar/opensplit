@@ -8,18 +8,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
-data class JoinHouseholdViewState(
-    val inviteCode: String = "",
-    val fieldErrors: Map<String, String> = emptyMap(),
-    val generalError: String? = null,
-    val isSubmitting: Boolean = false,
-    val householdId: String? = null,
-)
-
 interface JoinHouseholdComponent {
-    val uiState: StateFlow<JoinHouseholdViewState>
+    val uiState: StateFlow<UiState>
     fun updateInviteCode(code: String)
     suspend fun submit()
+
+    data class UiState(
+        val inviteCode: String = "",
+        val fieldErrors: Map<String, String> = emptyMap(),
+        val generalError: String? = null,
+        val isSubmitting: Boolean = false,
+    )
 }
 
 class DefaultJoinHouseholdComponent(
@@ -27,8 +26,8 @@ class DefaultJoinHouseholdComponent(
     private val gateway: HouseholdService,
 ) : JoinHouseholdComponent, CContext by context {
 
-    private val _uiState = MutableStateFlow(JoinHouseholdViewState())
-    override val uiState: StateFlow<JoinHouseholdViewState> = _uiState
+    private val _uiState = MutableStateFlow(JoinHouseholdComponent.UiState())
+    override val uiState: StateFlow<JoinHouseholdComponent.UiState> = _uiState
 
     override fun updateInviteCode(code: String) {
         _uiState.update {
@@ -56,8 +55,8 @@ class DefaultJoinHouseholdComponent(
         }
 
         try {
-            val result = gateway.joinHousehold(current.inviteCode)
-            _uiState.update { it.copy(householdId = result.householdId, isSubmitting = false) }
+            gateway.joinHousehold(current.inviteCode)
+            _uiState.update { it.copy(isSubmitting = false) }
         } catch (e: RemoteException) {
             _uiState.update {
                 it.copy(
@@ -71,10 +70,10 @@ class DefaultJoinHouseholdComponent(
 }
 
 class FakeJoinHouseholdComponent(
-    uiState: JoinHouseholdViewState = JoinHouseholdViewState(),
+    uiState: JoinHouseholdComponent.UiState = JoinHouseholdComponent.UiState(),
 ) : JoinHouseholdComponent {
     private val _uiState = MutableStateFlow(uiState)
-    override val uiState: StateFlow<JoinHouseholdViewState> = _uiState
+    override val uiState: StateFlow<JoinHouseholdComponent.UiState> = _uiState
     override fun updateInviteCode(code: String) {}
     override suspend fun submit() {}
 }

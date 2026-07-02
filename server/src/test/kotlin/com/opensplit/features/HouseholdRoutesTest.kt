@@ -4,11 +4,9 @@ import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.dto.household.CreateHouseholdRequest
-import com.opensplit.dto.household.CreateHouseholdResponse
-import com.opensplit.dto.household.HouseholdMemberResponse
-import com.opensplit.dto.household.HouseholdOverviewResponse
+import com.opensplit.dto.household.NewHouseholdDto
+import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.JoinHouseholdRequest
-import com.opensplit.dto.household.JoinHouseholdResponse
 import com.opensplit.createAuthenticatedClient
 import com.opensplit.testOpenSplit
 import io.ktor.client.call.body
@@ -28,16 +26,13 @@ class HouseholdScenarios {
             setBody(CreateHouseholdRequest("Maple House"))
         }.also {
             assertEquals(HttpStatusCode.Created, it.status)
-        }.body<CreateHouseholdResponse>()
+        }.body<NewHouseholdDto>()
 
-        val join = client.post("/households/join") {
+        client.post("/households/join") {
             setBody(JoinHouseholdRequest(created.inviteCode!!))
         }.also {
             assertEquals(HttpStatusCode.OK, it.status)
-        }.body<JoinHouseholdResponse>()
-
-        assertEquals(created.id, join.householdId)
-        assertTrue(join.joined)
+        }
     }
 
     @Test
@@ -55,7 +50,7 @@ class HouseholdScenarios {
     fun leavingLastHouseholdReturnsSafeLandingState() = testOpenSplit {
         val created = client.post("/households") {
             setBody(CreateHouseholdRequest("My Home"))
-        }.body<CreateHouseholdResponse>()
+        }.body<NewHouseholdDto>()
 
         val otherUser = client.post("/users") {
             setBody(SignUpRequest("leave-test@example.com", "password123"))
@@ -68,7 +63,7 @@ class HouseholdScenarios {
 
         val leaveResponse = otherClient.delete("/households/${created.id}/memberships/me")
         assertEquals(HttpStatusCode.OK, leaveResponse.status)
-        val afterLeave = leaveResponse.body<HouseholdOverviewResponse>()
+        val afterLeave = leaveResponse.body<HouseholdOverviewDto>()
         assertEquals(0, afterLeave.households.size)
     }
 
@@ -76,7 +71,7 @@ class HouseholdScenarios {
     fun joinByHouseholdIdRequiresMembership() = testOpenSplit {
         val created = client.post("/households") {
             setBody(CreateHouseholdRequest("Maple House"))
-        }.body<CreateHouseholdResponse>()
+        }.body<NewHouseholdDto>()
 
         val otherUser = client.post("/users") {
             setBody(SignUpRequest("member-check@example.com", "password123"))
@@ -96,10 +91,10 @@ class HouseholdScenarios {
     fun overviewIncludesInviteCode() = testOpenSplit {
         val created = client.post("/households") {
             setBody(CreateHouseholdRequest("Family Home"))
-        }.body<CreateHouseholdResponse>()
+        }.body<NewHouseholdDto>()
 
         val overview = client.get("/households/overview")
-            .body<HouseholdOverviewResponse>()
+            .body<HouseholdOverviewDto>()
 
         assertEquals(1, overview.households.size)
         val household = overview.households.first()
@@ -110,7 +105,7 @@ class HouseholdScenarios {
     fun ownerLeavesWithOtherMembersTransfersOwnership() = testOpenSplit {
         val created = client.post("/households") {
             setBody(CreateHouseholdRequest("Our Home"))
-        }.body<CreateHouseholdResponse>()
+        }.body<NewHouseholdDto>()
 
         val otherUser = client.post("/users") {
             setBody(SignUpRequest("owner-transfer@example.com", "password123"))
@@ -127,7 +122,7 @@ class HouseholdScenarios {
         }
 
         // Verify other user is still in the household
-        val overview = otherClient.get("/households/overview").body<HouseholdOverviewResponse>()
+        val overview = otherClient.get("/households/overview").body<HouseholdOverviewDto>()
         assertEquals(1, overview.households.size)
         assertTrue(overview.households.first().isOwner, "Ownership should have been transferred")
     }
@@ -136,14 +131,14 @@ class HouseholdScenarios {
     fun ownerLeavesAsLastMemberHouseholdBecomesOwnerless() = testOpenSplit {
         val created = client.post("/households") {
             setBody(CreateHouseholdRequest("Solo Home"))
-        }.body<CreateHouseholdResponse>()
+        }.body<NewHouseholdDto>()
 
         client.delete("/households/${created.id}/memberships/me").also {
             assertEquals(HttpStatusCode.OK, it.status)
         }
 
         // Verify safe landing
-        val overview = client.get("/households/overview").body<HouseholdOverviewResponse>()
+        val overview = client.get("/households/overview").body<HouseholdOverviewDto>()
         assertEquals(0, overview.households.size, "Should have no households")
     }
 }

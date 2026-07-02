@@ -5,7 +5,7 @@ import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.component.navigation
-import com.opensplit.dto.household.HouseholdOverviewResponse
+import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.features.household.HouseholdService
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.root.TopLevelDestinationConfig
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 interface MyHouseholdsListComponent {
-    val overview: StateFlow<HouseholdOverviewResponse>
+    val overview: StateFlow<HouseholdOverviewDto>
     val isLoading: StateFlow<Boolean>
 
     fun loadOverview(): Job
@@ -44,8 +44,8 @@ class DefaultMyHouseholdsListComponent(
         }
     }
 
-    private val _overview = MutableStateFlow(HouseholdOverviewResponse())
-    override val overview: StateFlow<HouseholdOverviewResponse> = _overview
+    private val _overview = MutableStateFlow(HouseholdOverviewDto())
+    override val overview: StateFlow<HouseholdOverviewDto> = _overview
 
     private val _isLoading = MutableStateFlow(true)
     override val isLoading: StateFlow<Boolean> = _isLoading
@@ -76,8 +76,8 @@ class DefaultMyHouseholdsListComponent(
 }
 
 class FakeMyHouseholdsListComponent(
-    override val overview: MutableStateFlow<HouseholdOverviewResponse>
-    = MutableStateFlow(HouseholdOverviewResponse()),
+    override val overview: MutableStateFlow<HouseholdOverviewDto>
+    = MutableStateFlow(HouseholdOverviewDto()),
     override val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false),
 ) : MyHouseholdsListComponent {
     override fun loadOverview() = Job()

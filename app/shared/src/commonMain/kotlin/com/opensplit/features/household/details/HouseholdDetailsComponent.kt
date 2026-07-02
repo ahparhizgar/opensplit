@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 
 interface HouseholdDetailsComponent {
     val householdId: String
-    val householdName: StateFlow<String>
+    val householdName: StateFlow<UiState>
 
     @Serializable
     data class Config(val householdId: String) : TopLevelDestinationConfig
@@ -16,6 +16,10 @@ interface HouseholdDetailsComponent {
     interface Factory {
         fun create(cContext: CContext, config: Config): HouseholdDetailsComponent
     }
+
+    data class UiState(
+        val householdName: String,
+    )
 }
 
 class DefaultHouseholdDetailsComponent(
@@ -24,9 +28,8 @@ class DefaultHouseholdDetailsComponent(
 ) : HouseholdDetailsComponent, CContext by context {
 
     override val householdId: String = config.householdId
-    // For now, it's just a placeholder or we could fetch it.
-    // Given "minimal", I'll just use a flow with a placeholder.
-    override val householdName: StateFlow<String> = MutableStateFlow("Household $householdId")
+    override val householdName: StateFlow<HouseholdDetailsComponent.UiState> =
+        MutableStateFlow(HouseholdDetailsComponent.UiState("Household $householdId"))
 
     class Factory : HouseholdDetailsComponent.Factory {
         override fun create(
@@ -40,5 +43,6 @@ class FakeHouseholdDetailsComponent(
     override val householdId: String = "h1",
     name: String = "Fake Household"
 ) : HouseholdDetailsComponent {
-    override val householdName: StateFlow<String> = MutableStateFlow(name)
+    override val householdName: StateFlow<HouseholdDetailsComponent.UiState> =
+        MutableStateFlow(HouseholdDetailsComponent.UiState(name))
 }
