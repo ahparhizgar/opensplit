@@ -1,8 +1,10 @@
 package com.opensplit.features.household.details
 
+import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
+import com.opensplit.component.navigation
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.features.household.HouseholdService
 import com.opensplit.root.TopLevelDestinationConfig
@@ -15,6 +17,9 @@ import kotlinx.serialization.Serializable
 interface HouseholdDetailsComponent {
     val householdId: String
     val uiState: StateFlow<UiState>
+
+    fun onAddMemberClicked() {}
+    fun onBack() {}
 
     @Serializable
     data class Config(val householdId: String) : TopLevelDestinationConfig
@@ -44,6 +49,14 @@ class DefaultHouseholdDetailsComponent(
         doOnCreate {
             loadDetails()
         }
+    }
+
+    override fun onAddMemberClicked() {
+        TODO()
+    }
+
+    override fun onBack() {
+        navigation.pop()
     }
 
     private fun loadDetails() = componentScope().launch {
@@ -77,17 +90,15 @@ class DefaultHouseholdDetailsComponent(
 }
 
 class FakeHouseholdDetailsComponent(
-    override val householdId: String = "h1",
-    name: String = "Fake Household"
+    override val householdId: String = "h12345",
+    uiState: HouseholdDetailsComponent.UiState = HouseholdDetailsComponent.UiState(
+        HouseholdDto(
+            id = householdId,
+            name = "Fake Household",
+            members = emptyList()
+        )
+    ),
 ) : HouseholdDetailsComponent {
     override val uiState: StateFlow<HouseholdDetailsComponent.UiState> =
-        MutableStateFlow(
-            HouseholdDetailsComponent.UiState(
-                household = HouseholdDto(
-                    id = householdId,
-                    name = name,
-                    members = emptyList()
-                )
-            )
-        )
+        MutableStateFlow(uiState)
 }

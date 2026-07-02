@@ -31,22 +31,8 @@ data class HouseholdSummaryDto(
 )
 
 @Serializable
-data class HouseholdMemberDto(
-    val userId: String,
-    val email: String,
-    val isOwner: Boolean = false,
-    val isCurrentUser: Boolean = false,
-)
-
-@Serializable
 data class HouseholdOverviewDto(
     val households: List<HouseholdSummaryDto> = emptyList(),
     val members: List<HouseholdMemberDto> = emptyList(),
 )
 
-@Serializable
-data class HouseholdDto(
-    val id: String,
-    val name: String,
-    val members: List<HouseholdMemberDto>,
-)
