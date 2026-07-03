@@ -26,7 +26,7 @@ import io.ktor.http.contentType
 
 interface HouseholdService {
     suspend fun createHousehold(name: String): HouseholdDto
-    suspend fun joinHousehold(inviteCode: String)
+    suspend fun joinHousehold(inviteCode: String): HouseholdDto
     suspend fun loadOverview(): HouseholdOverviewDto
     suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto
     suspend fun getHousehold(id: String): HouseholdDto
@@ -68,7 +68,7 @@ class KtorHouseholdService(
         return parseResponse(response)
     }
 
-    override suspend fun joinHousehold(inviteCode: String) {
+    override suspend fun joinHousehold(inviteCode: String): HouseholdDto {
         if (checkTokenExpired()) handleUnauthorized()
         val response = client.post("$baseUrl/households/join") {
             contentType(ContentType.Application.Json)

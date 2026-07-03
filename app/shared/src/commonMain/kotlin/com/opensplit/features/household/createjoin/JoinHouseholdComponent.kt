@@ -1,7 +1,10 @@
 package com.opensplit.features.household.createjoin
 
+import com.arkivanov.decompose.router.stack.navigate
 import com.opensplit.component.CContext
+import com.opensplit.component.navigation
 import com.opensplit.features.household.HouseholdService
+import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.remote.RemoteException
 import com.opensplit.validation.household.HouseholdValidation
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,8 +58,11 @@ class DefaultJoinHouseholdComponent(
         }
 
         try {
-            gateway.joinHousehold(current.inviteCode)
+            val a = gateway.joinHousehold(current.inviteCode)
             _uiState.update { it.copy(isSubmitting = false) }
+            navigation.navigate {
+                it.dropLast(1) + listOf(HouseholdDetailsComponent.Config(a.id))
+            }
         } catch (e: RemoteException) {
             _uiState.update {
                 it.copy(

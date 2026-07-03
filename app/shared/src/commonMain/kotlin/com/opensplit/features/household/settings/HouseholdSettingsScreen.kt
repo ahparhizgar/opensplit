@@ -36,11 +36,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.AndroidUiModes.UI_MODE_NIGHT_YES
 import androidx.compose.ui.tooling.preview.Preview
@@ -109,11 +112,15 @@ fun HouseholdSettingsScreen(
                         }
 
                         item {
+                            val clipboard = LocalClipboardManager.current
                             SettingsActionItem(
                                 modifier = Modifier.padding(horizontal = 16.dp),
                                 icon = Icons.Default.Link,
                                 text = "Invite via link",
-                                onClick = component::onInviteLinkClicked
+                                onClick = {
+                                    clipboard.setText(AnnotatedString(household.inviteLink))
+                                    component.onInviteLinkClicked()
+                                }
                             )
                         }
 
