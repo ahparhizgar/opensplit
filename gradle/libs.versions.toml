@@ -28,6 +28,7 @@ kotest = "6.1.11"
 ksp = "2.3.8"
 datastorePreferences = "1.3.0-alpha09"
 bcrypt = "0.10.2"
+ktfmtPlugin = "0.26.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -97,3 +98,4 @@ ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotest = { id = "io.kotest" , version.ref = "kotest" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp"}
+ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmtPlugin" }
