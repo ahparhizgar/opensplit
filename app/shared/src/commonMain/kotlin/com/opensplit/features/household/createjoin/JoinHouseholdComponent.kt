@@ -1,6 +1,7 @@
 package com.opensplit.features.household.createjoin
 
 import com.arkivanov.decompose.router.stack.navigate
+import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.opensplit.component.CContext
 import com.opensplit.component.navigation
 import com.opensplit.features.household.HouseholdService
@@ -60,7 +61,7 @@ class DefaultJoinHouseholdComponent(
     try {
       val a = gateway.joinHousehold(current.inviteCode)
       _uiState.update { it.copy(isSubmitting = false) }
-      navigation.navigate { it.dropLast(1) + listOf(HouseholdDetailsComponent.Config(a.id)) }
+      navigation.replaceCurrent(HouseholdDetailsComponent.Config(a.id))
     } catch (e: RemoteException) {
       _uiState.update {
         it.copy(

@@ -5,6 +5,8 @@ import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.navigate
+import com.arkivanov.decompose.router.stack.replaceAll
+import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.opensplit.component.CContext
@@ -50,9 +52,9 @@ class DefaultRootComponent(
       try {
         val token = tokenStorage.getAccessToken()
         if (!token.isNullOrEmpty()) {
-          navigation.navigate { listOf(MyHouseholdsListComponent.Config()) }
+          navigation.replaceAll(MyHouseholdsListComponent.Config())
         } else {
-          navigation.navigate { listOf(AuthComponent.Config(AuthMode.SignUp)) }
+          navigation.replaceAll(AuthComponent.Config(AuthMode.SignUp))
         }
       } catch (_: Throwable) {
         // Swallow any persistence errors; default to auth flow.

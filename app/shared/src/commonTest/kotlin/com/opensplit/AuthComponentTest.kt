@@ -3,6 +3,7 @@ package com.opensplit
 import com.opensplit.component.createDefaultComponentContext
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthMode
+import com.opensplit.util.And
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.When
 import com.opensplit.util.createComponentContext
@@ -47,7 +48,7 @@ class AuthComponentTest :
             }
           }
 
-          When(
+          And(
               "providing valid credentials",
               {
                 component.updateEmail("valid@example.com")

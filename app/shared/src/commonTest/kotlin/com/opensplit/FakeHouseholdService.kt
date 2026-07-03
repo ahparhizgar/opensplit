@@ -4,7 +4,6 @@ import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.HouseholdMemberDto
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
-import com.opensplit.dto.household.NewHouseholdDto
 import com.opensplit.features.household.HouseholdService
 
 class FakeHouseholdService : HouseholdService {
@@ -60,7 +59,7 @@ class FakeHouseholdService : HouseholdService {
               ),
       )
 
-  override suspend fun createHousehold(name: String): NewHouseholdDto {
+  override suspend fun createHousehold(name: String): HouseholdDto {
     createCalls++
     overview =
         HouseholdOverviewDto(
@@ -82,14 +81,15 @@ class FakeHouseholdService : HouseholdService {
                     )
                 ),
         )
-    return NewHouseholdDto(
+    return HouseholdDto(
         id = "household-1",
         name = name,
-        inviteCode = "invite-abc123",
+        inviteLink = "https://opensplit.com/join/invite-abc123",
+        members = overview.members,
     )
   }
 
-  override suspend fun joinHousehold(inviteCode: String) {
+  override suspend fun joinHousehold(inviteCode: String): HouseholdDto {
     joinCalls++
     overview =
         overview.copy(
@@ -111,6 +111,12 @@ class FakeHouseholdService : HouseholdService {
                     )
                 ),
         )
+      return HouseholdDto(
+          id = "household-2",
+          name = "Joined House",
+          inviteLink = "https://opensplit.com/join/invite-def456",
+          members = overview.members,
+      )
   }
 
   override suspend fun loadOverview(): HouseholdOverviewDto {
@@ -133,6 +139,7 @@ class FakeHouseholdService : HouseholdService {
     return HouseholdDto(
         id = id,
         name = "Household ${id.take(5)}",
+        inviteLink = "https://opensplit.com/join/invite-abc123",
         members = overview.members,
     )
   }

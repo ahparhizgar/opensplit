@@ -1,6 +1,7 @@
 package com.opensplit.features.household.createjoin
 
 import com.arkivanov.decompose.router.stack.navigate
+import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.opensplit.component.CContext
 import com.opensplit.component.navigation
 import com.opensplit.features.household.HouseholdService
@@ -42,9 +43,7 @@ class DefaultCreateJoinHouseholdComponent(
           context = context,
           gateway = gateway,
           onDone = { household ->
-            navigation.navigate {
-              it.dropLast(1) + listOf(HouseholdDetailsComponent.Config(household.id))
-            }
+            navigation.replaceCurrent(HouseholdDetailsComponent.Config(household.id))
           },
       )
   override val joinComponent: JoinHouseholdComponent =

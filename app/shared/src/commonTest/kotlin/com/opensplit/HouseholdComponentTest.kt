@@ -34,7 +34,6 @@ class HouseholdComponentTest :
           createJoinComponent.createComponent.uiState.value.let { state ->
             state.householdName shouldBe ""
             state.fieldErrors should beEmpty()
-            state.householdId shouldBe null
           }
         }
 
@@ -46,7 +45,6 @@ class HouseholdComponentTest :
             createJoinComponent.createComponent.uiState.value.let { state ->
               state.fieldErrors shouldNot beEmpty()
               state.fieldErrors["name"].shouldNotBeNull()
-              state.householdId shouldBe null
             }
           }
         }
@@ -58,11 +56,10 @@ class HouseholdComponentTest :
               createJoinComponent.createComponent.submit()
             },
         ) {
-          Then("creates the household and sets householdId") {
+          Then("creates the household") {
             createJoinComponent.createComponent.uiState.value.let { state ->
               state.fieldErrors should beEmpty()
               state.generalError shouldBe null
-              state.householdId.shouldNotBeNull()
               koin.get<FakeHouseholdService>().createCalls shouldBe 1
             }
           }

@@ -2,6 +2,7 @@ package com.opensplit.features.auth
 
 import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.router.stack.pushNew
+import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.opensplit.component.CContext
 import com.opensplit.component.navigation
 import com.opensplit.features.household.my.MyHouseholdsListComponent
@@ -139,7 +140,7 @@ class DefaultAuthComponent(
             isSubmitting = false,
         )
       }
-      navigation.pushNew(MyHouseholdsListComponent.Config())
+      navigation.replaceCurrent(MyHouseholdsListComponent.Config())
     } catch (e: com.opensplit.remote.RemoteException) {
       _uiState.update {
         it.copy(

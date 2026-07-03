@@ -1,11 +1,9 @@
 package com.opensplit.util
 
-import io.kotest.core.names.TestName
 import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.core.spec.style.TestXMethod
+import io.kotest.core.spec.style.scopes.BehaviorSpecGivenContainerScope
 import io.kotest.core.spec.style.scopes.BehaviorSpecWhenContainerScope
-import io.kotest.core.spec.style.scopes.ContainerScope
 import io.kotest.matchers.shouldBe
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -18,7 +16,7 @@ class SampleTest :
         var myVar by testValue { 1 }
         When("set it to 2", { myVar = 2 }) {
           Then("should be 2") { myVar shouldBe 2 }
-          When("adding 3 more") {
+          And("adding 3 more") {
             beforeEach { myVar += 3 }
             Then("should be 3") { myVar shouldBe 5 }
           }
@@ -34,28 +32,29 @@ class SampleTest :
       }
     })
 
-suspend fun ContainerScope.When(
+@Suppress("TestFunctionName")
+suspend fun BehaviorSpecGivenContainerScope.When(
     name: String,
     action: suspend BehaviorSpecWhenContainerScope.() -> Unit,
     test: suspend BehaviorSpecWhenContainerScope.() -> Unit,
-) =
-    registerContainer(
-        TestName(
-            name = name,
-            prefix = "When: ",
-            focus = false,
-            bang = false,
-            suffix = null,
-            defaultAffixes = true,
-        ),
-        xmethod = TestXMethod.NONE,
-        config = null,
-    ) {
-      with(BehaviorSpecWhenContainerScope(this)) {
-        beforeEach { action() }
-        test()
-      }
-    }
+) {
+  When(name) {
+    beforeEach { action() }
+    test()
+  }
+}
+
+@Suppress("TestFunctionName")
+suspend fun BehaviorSpecWhenContainerScope.And(
+    name: String,
+    action: suspend BehaviorSpecWhenContainerScope.() -> Unit,
+    test: suspend BehaviorSpecWhenContainerScope.() -> Unit,
+) {
+  And(name) {
+    beforeEach { action() }
+    test()
+  }
+}
 
 class SampleTestWrong :
     BehaviorSpec({
