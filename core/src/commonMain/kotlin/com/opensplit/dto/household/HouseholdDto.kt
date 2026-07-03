@@ -11,14 +11,15 @@ data class HouseholdDto(
 )
 
 object FakeHouseholdDtoFactory {
-    fun create(
-        id: String = "household-1",
-        name: String = "My Household",
-        members: List<HouseholdMemberDto> = FakeHouseholdMemberDtoFactory.createList(),
-    ) = HouseholdDto(
-        id = id,
-        name = name,
-        members = members,
-        inviteLink = "https://opensplit.com/invite/85243892"
-    )
+  fun create(
+      id: String = "household-1",
+      name: String = "My Household",
+      members: List<HouseholdMemberDto> = FakeHouseholdMemberDtoFactory.createList(),
+  ) =
+      HouseholdDto(
+          id = id,
+          name = name,
+          members = members,
+          inviteLink = "https://opensplit.com/invite/85243892",
+      )
 }

@@ -1,5 +1,5 @@
 package com.opensplit.core
 
 object ServerMessages {
-    fun healthResponse(): String = "ok"
+  fun healthResponse(): String = "ok"
 }

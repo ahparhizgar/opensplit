@@ -15,27 +15,30 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 interface HouseholdSettingsComponent {
-    val householdId: String
-    val uiState: StateFlow<UiState>
+  val householdId: String
+  val uiState: StateFlow<UiState>
 
-    fun onBack() {}
-    fun onAddPeopleClicked()
-    fun onInviteLinkClicked()
-    fun onLeaveGroupClicked()
-    fun onDeleteGroupClicked()
+  fun onBack() {}
 
-    @Serializable
-    data class Config(val householdId: String) : TopLevelDestinationConfig
+  fun onAddPeopleClicked()
 
-    interface Factory {
-        fun create(cContext: CContext, config: Config): HouseholdSettingsComponent
-    }
+  fun onInviteLinkClicked()
 
-    data class UiState(
-        val household: HouseholdDto? = null,
-        val isLoading: Boolean = false,
-        val error: String? = null,
-    )
+  fun onLeaveGroupClicked()
+
+  fun onDeleteGroupClicked()
+
+  @Serializable data class Config(val householdId: String) : TopLevelDestinationConfig
+
+  interface Factory {
+    fun create(cContext: CContext, config: Config): HouseholdSettingsComponent
+  }
+
+  data class UiState(
+      val household: HouseholdDto? = null,
+      val isLoading: Boolean = false,
+      val error: String? = null,
+  )
 }
 
 class DefaultHouseholdSettingsComponent(
@@ -44,86 +47,85 @@ class DefaultHouseholdSettingsComponent(
     private val householdService: HouseholdService,
 ) : HouseholdSettingsComponent, CContext by context {
 
-    override val householdId: String = config.householdId
-    private val _uiState = MutableStateFlow(HouseholdSettingsComponent.UiState(isLoading = true))
-    override val uiState: StateFlow<HouseholdSettingsComponent.UiState> = _uiState
+  override val householdId: String = config.householdId
+  private val _uiState = MutableStateFlow(HouseholdSettingsComponent.UiState(isLoading = true))
+  override val uiState: StateFlow<HouseholdSettingsComponent.UiState> = _uiState
 
-    init {
-        doOnCreate {
-            loadSettings()
-        }
-    }
+  init {
+    doOnCreate { loadSettings() }
+  }
 
-    override fun onBack() {
+  override fun onBack() {
+    navigation.pop()
+  }
+
+  override fun onAddPeopleClicked() {
+    // TODO: Implement add people
+  }
+
+  override fun onInviteLinkClicked() {
+    // TODO: Implement invite link
+  }
+
+  override fun onLeaveGroupClicked() {
+    componentScope().launch {
+      try {
+        householdService.leaveHousehold(householdId)
         navigation.pop()
+      } catch (e: Exception) {
+        _uiState.update { it.copy(error = "Failed to leave group: ${e.message}") }
+      }
     }
+  }
 
-    override fun onAddPeopleClicked() {
-        // TODO: Implement add people
-    }
+  override fun onDeleteGroupClicked() {
+    // TODO: Implement delete group
+  }
 
-    override fun onInviteLinkClicked() {
-        // TODO: Implement invite link
-    }
-
-    override fun onLeaveGroupClicked() {
-        componentScope().launch {
-            try {
-                householdService.leaveHousehold(householdId)
-                navigation.pop()
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Failed to leave group: ${e.message}") }
-            }
-        }
-    }
-
-    override fun onDeleteGroupClicked() {
-        // TODO: Implement delete group
-    }
-
-    private fun loadSettings() = componentScope().launch {
+  private fun loadSettings() =
+      componentScope().launch {
         _uiState.update { it.copy(isLoading = true) }
         try {
-            val response = householdService.getHousehold(householdId)
-            _uiState.update {
-                it.copy(
-                    household = response,
-                    isLoading = false
-                )
-            }
+          val response = householdService.getHousehold(householdId)
+          _uiState.update { it.copy(household = response, isLoading = false) }
         } catch (e: Exception) {
-            _uiState.update {
-                it.copy(
-                    error = e.message ?: "Failed to load settings",
-                    isLoading = false
-                )
-            }
+          _uiState.update {
+            it.copy(error = e.message ?: "Failed to load settings", isLoading = false)
+          }
         }
-    }
+      }
 
-    class Factory(
-        private val householdService: HouseholdService,
-    ) : HouseholdSettingsComponent.Factory {
-        override fun create(
-            cContext: CContext,
-            config: HouseholdSettingsComponent.Config
-        ): HouseholdSettingsComponent = DefaultHouseholdSettingsComponent(cContext, config, householdService)
-    }
+  class Factory(
+      private val householdService: HouseholdService,
+  ) : HouseholdSettingsComponent.Factory {
+    override fun create(
+        cContext: CContext,
+        config: HouseholdSettingsComponent.Config,
+    ): HouseholdSettingsComponent =
+        DefaultHouseholdSettingsComponent(cContext, config, householdService)
+  }
 }
 
 class FakeHouseholdSettingsComponent(
     override val householdId: String = "h1",
-    uiState: HouseholdSettingsComponent.UiState = HouseholdSettingsComponent.UiState(
-        household = com.opensplit.dto.household.FakeHouseholdDtoFactory.create(
-            id = "h1",
-            name = "Box Gym Bros",
-            members = com.opensplit.dto.household.FakeHouseholdMemberDtoFactory.createList()
-        )
-    )
+    uiState: HouseholdSettingsComponent.UiState =
+        HouseholdSettingsComponent.UiState(
+            household =
+                com.opensplit.dto.household.FakeHouseholdDtoFactory.create(
+                    id = "h1",
+                    name = "Box Gym Bros",
+                    members =
+                        com.opensplit.dto.household.FakeHouseholdMemberDtoFactory.createList(),
+                )
+        ),
 ) : HouseholdSettingsComponent {
-    override val uiState: StateFlow<HouseholdSettingsComponent.UiState> = MutableStateFlow(uiState)
-    override fun onAddPeopleClicked() {}
-    override fun onInviteLinkClicked() {}
-    override fun onLeaveGroupClicked() {}
-    override fun onDeleteGroupClicked() {}
+  override val uiState: StateFlow<HouseholdSettingsComponent.UiState> = MutableStateFlow(uiState)
+
+  override fun onAddPeopleClicked() {}
+
+  override fun onInviteLinkClicked() {}
+
+  override fun onLeaveGroupClicked() {}
+
+  override fun onDeleteGroupClicked() {}
 }

@@ -14,21 +14,23 @@ data class HouseholdMemberDto(
 )
 
 object FakeHouseholdMemberDtoFactory {
-    fun create(
-        id: String = "user-id",
-        name: String = "User $id",
-        balance: Double = 0.0,
-        isCurrentUser: Boolean = false
-    ) =
-        HouseholdMemberDto(
-            userId = id,
-            name = name,
-            email = "$id@example.com",
-            balance = balance,
-            isCurrentUser = isCurrentUser
-        )
+  fun create(
+      id: String = "user-id",
+      name: String = "User $id",
+      balance: Double = 0.0,
+      isCurrentUser: Boolean = false,
+  ) =
+      HouseholdMemberDto(
+          userId = id,
+          name = name,
+          email = "$id@example.com",
+          balance = balance,
+          isCurrentUser = isCurrentUser,
+      )
 
-    fun create1() = create("user-1", "AmirHossein (you)", 10.15, true)
-    fun create2() = create("user-2", "Ali Bagherifam", -10.15)
-    fun createList() = listOf(create1(), create2())
+  fun create1() = create("user-1", "AmirHossein (you)", 10.15, true)
+
+  fun create2() = create("user-2", "Ali Bagherifam", -10.15)
+
+  fun createList() = listOf(create1(), create2())
 }

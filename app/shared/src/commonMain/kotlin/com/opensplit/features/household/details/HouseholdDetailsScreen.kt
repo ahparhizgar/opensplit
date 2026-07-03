@@ -41,141 +41,134 @@ fun HouseholdDetailsScreen(
     component: HouseholdDetailsComponent,
     modifier: Modifier = Modifier,
 ) {
-    val uiState by component.uiState.collectAsState()
-    val household = uiState.household
-    Scaffold {
-        Column {
-            Box(
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.primary)
-                    .height(240.dp)
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                IconButton(onClick = { component.onBack() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-
-                IconButton(
-                    modifier = Modifier.align(Alignment.TopEnd),
-                    onClick = { component.onSettingsClick() }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-                if (household != null) {
-                    Text(
-                        modifier = Modifier.align(Alignment.BottomStart),
-                        text = household.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-            ) {
-                if (household != null) {
-                    if (household.members.isEmpty()) {
-                        Card {
-                            Column(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "You are the only member of this group!",
-                                )
-                                Button(
-                                    onClick = {
-                                        component.onAddMemberClicked()
-                                    },
-                                ) {
-                                    Row {
-                                        Icon(
-                                            modifier = Modifier.size(ButtonDefaults.IconSize),
-                                            imageVector = Icons.Default.PersonAdd,
-                                            contentDescription = null
-                                        )
-                                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                                        Text(text = "Add Member")
-                                    }
-                                }
-                                FilledTonalButton(
-                                    onClick = { TODO() },
-                                ) {
-                                    Row {
-                                        Icon(
-                                            modifier = Modifier.size(ButtonDefaults.IconSize),
-                                            imageVector = Icons.Default.Share,
-                                            contentDescription = null
-                                        )
-                                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                                        Text(text = "Share join link")
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        LazyColumn(modifier.fillMaxWidth()) {
-                            // TODO show transactions
-                        }
-                    }
-                }
-            }
+  val uiState by component.uiState.collectAsState()
+  val household = uiState.household
+  Scaffold {
+    Column {
+      Box(
+          modifier =
+              Modifier.background(MaterialTheme.colorScheme.primary)
+                  .height(240.dp)
+                  .fillMaxWidth()
+                  .padding(16.dp)
+      ) {
+        IconButton(onClick = { component.onBack() }) {
+          Icon(
+              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+              contentDescription = "Back",
+              tint = MaterialTheme.colorScheme.onPrimary,
+          )
         }
+
+        IconButton(
+            modifier = Modifier.align(Alignment.TopEnd),
+            onClick = { component.onSettingsClick() },
+        ) {
+          Icon(
+              imageVector = Icons.Default.Settings,
+              contentDescription = "Settings",
+              tint = MaterialTheme.colorScheme.onPrimary,
+          )
+        }
+        if (household != null) {
+          Text(
+              modifier = Modifier.align(Alignment.BottomStart),
+              text = household.name,
+              style = MaterialTheme.typography.titleLarge,
+              color = MaterialTheme.colorScheme.onPrimary,
+          )
+        }
+      }
+
+      Spacer(Modifier.height(16.dp))
+
+      Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        if (household != null) {
+          if (household.members.isEmpty()) {
+            Card {
+              Column(
+                  modifier = Modifier.fillMaxWidth().padding(16.dp),
+                  verticalArrangement = Arrangement.spacedBy(4.dp),
+                  horizontalAlignment = Alignment.CenterHorizontally,
+              ) {
+                Text(
+                    text = "You are the only member of this group!",
+                )
+                Button(
+                    onClick = { component.onAddMemberClicked() },
+                ) {
+                  Row {
+                    Icon(
+                        modifier = Modifier.size(ButtonDefaults.IconSize),
+                        imageVector = Icons.Default.PersonAdd,
+                        contentDescription = null,
+                    )
+                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                    Text(text = "Add Member")
+                  }
+                }
+                FilledTonalButton(
+                    onClick = { TODO() },
+                ) {
+                  Row {
+                    Icon(
+                        modifier = Modifier.size(ButtonDefaults.IconSize),
+                        imageVector = Icons.Default.Share,
+                        contentDescription = null,
+                    )
+                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                    Text(text = "Share join link")
+                  }
+                }
+              }
+            }
+          } else {
+            LazyColumn(modifier.fillMaxWidth()) {
+              // TODO show transactions
+            }
+          }
+        }
+      }
     }
+  }
 }
 
 @Preview
 @Composable
 fun HouseholdDetailsScreenLoadingPreview() {
-    OpenSplitTheme {
-        HouseholdDetailsScreen(
-            component = FakeHouseholdDetailsComponent(
-                uiState = HouseholdDetailsComponent.UiState()
-            ),
-        )
-    }
+  OpenSplitTheme {
+    HouseholdDetailsScreen(
+        component = FakeHouseholdDetailsComponent(uiState = HouseholdDetailsComponent.UiState()),
+    )
+  }
 }
 
 @Preview
 @Composable
 fun HouseholdDetailsScreenPreview() {
-    OpenSplitTheme {
-        HouseholdDetailsScreen(
-            component = FakeHouseholdDetailsComponent(
-                uiState = HouseholdDetailsComponent.UiState(
-                    household = FakeHouseholdDtoFactory.create(
-                        members = emptyList()
+  OpenSplitTheme {
+    HouseholdDetailsScreen(
+        component =
+            FakeHouseholdDetailsComponent(
+                uiState =
+                    HouseholdDetailsComponent.UiState(
+                        household = FakeHouseholdDtoFactory.create(members = emptyList())
                     )
-                )
             ),
-        )
-    }
+    )
+  }
 }
 
 @Preview
 @Composable
 fun HouseholdDetailsScreenWithMemberPreview() {
-    OpenSplitTheme {
-        HouseholdDetailsScreen(
-            component = FakeHouseholdDetailsComponent(
-                uiState = HouseholdDetailsComponent.UiState(
-                    household = FakeHouseholdDtoFactory.create()
-                )
+  OpenSplitTheme {
+    HouseholdDetailsScreen(
+        component =
+            FakeHouseholdDetailsComponent(
+                uiState =
+                    HouseholdDetailsComponent.UiState(household = FakeHouseholdDtoFactory.create())
             ),
-        )
-    }
+    )
+  }
 }

@@ -15,68 +15,71 @@ import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
 
-class AuthComponentTest : BehaviorSpec({
-    extensions(MainDispatcherExtension())
-    Given("an Auth component") {
+class AuthComponentTest :
+    BehaviorSpec({
+      extensions(MainDispatcherExtension())
+      Given("an Auth component") {
         val koin by integrationKoin()
 
         var component by testValue {
-            koin.get<AuthComponent.Factory>().create(
-                createDefaultComponentContext(createComponentContext()),
-                AuthComponent.Config(AuthMode.SignUp)
-            )
+          koin
+              .get<AuthComponent.Factory>()
+              .create(
+                  createDefaultComponentContext(createComponentContext()),
+                  AuthComponent.Config(AuthMode.SignUp),
+              )
         }
 
         When(
             "using sign up with invalid input",
             {
-                component.useSignUp()
-                component.updateEmail("bad-email")
-                component.updatePassword("short")
-                component.submit()
-            }
+              component.useSignUp()
+              component.updateEmail("bad-email")
+              component.updatePassword("short")
+              component.submit()
+            },
         ) {
-            Then("uses shared validation and routes on success") {
-                component.uiState.value.let { state ->
-                    state.fieldErrors shouldNot beEmpty()
-                    state.mode shouldBe AuthMode.SignUp
-                    state.session shouldBe null
-                }
+          Then("uses shared validation and routes on success") {
+            component.uiState.value.let { state ->
+              state.fieldErrors shouldNot beEmpty()
+              state.mode shouldBe AuthMode.SignUp
+              state.session shouldBe null
             }
+          }
 
-            When(
-                "providing valid credentials",
-                {
-                    component.updateEmail("valid@example.com")
-                    component.updatePassword("password123")
-                    component.submit()
-                }
-            ) {
-                Then("routes to authenticated session") {
-                    component.uiState.value.let { state ->
-                        state.fieldErrors should beEmpty()
-                        val session = state.session.shouldNotBeNull()
-                        session.email shouldBe "valid@example.com"
-                    }
-                }
+          When(
+              "providing valid credentials",
+              {
+                component.updateEmail("valid@example.com")
+                component.updatePassword("password123")
+                component.submit()
+              },
+          ) {
+            Then("routes to authenticated session") {
+              component.uiState.value.let { state ->
+                state.fieldErrors should beEmpty()
+                val session = state.session.shouldNotBeNull()
+                session.email shouldBe "valid@example.com"
+              }
             }
+          }
         }
 
         When(
             "submitting valid credentials",
             {
-                component.updateEmail("amir@example.com")
-                component.updatePassword("password123")
-                component.submit()
-            }
+              component.updateEmail("amir@example.com")
+              component.updatePassword("password123")
+              component.submit()
+            },
         ) {
-            Then("routes to household context after valid submission") {
-                component.uiState.value.let { state ->
-                    val session = state.session.shouldNotBeNull()
-                    session.email shouldBe "amir@example.com"
-                    koin.get<FakeAuthGateway>().signUpCalls shouldBe 1
-                }
+          Then("routes to household context after valid submission") {
+            component.uiState.value.let { state ->
+              val session = state.session.shouldNotBeNull()
+              session.email shouldBe "amir@example.com"
+              koin.get<FakeAuthGateway>().signUpCalls shouldBe 1
             }
+          }
         }
-    }
-})
+      }
+    })

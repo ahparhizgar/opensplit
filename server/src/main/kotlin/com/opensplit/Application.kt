@@ -18,39 +18,35 @@ import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
 
 fun main() {
-    embeddedServer(
-        Netty,
-        port = 8080,
-        host = "0.0.0.0",
-        module = Application::openSplit
-    ).start(wait = true)
+  embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::openSplit)
+      .start(wait = true)
 }
 
 fun Application.openSplit(isTest: Boolean = false) {
-    install(ContentNegotiation) {
-        json(
-            Json {
-                ignoreUnknownKeys = true
-                explicitNulls = false
-            },
-        )
+  install(ContentNegotiation) {
+    json(
+        Json {
+          ignoreUnknownKeys = true
+          explicitNulls = false
+        },
+    )
+  }
+  install(Koin) {
+    modules(
+        databaseModule(),
+        authModule(),
+    )
+    if (isTest) {
+      modules(
+          databaseTestModule(),
+      )
     }
-    install(Koin) {
-        modules(
-            databaseModule(),
-            authModule(),
-        )
-        if (isTest) {
-            modules(
-                databaseTestModule(),
-            )
-        }
-    }
+  }
 
-    val initializer: DatabaseInitializer by inject()
-    initializer.init()
+  val initializer: DatabaseInitializer by inject()
+  initializer.init()
 
-    authRoutes()
-    householdRoutes()
-    healthRoute()
+  authRoutes()
+  householdRoutes()
+  healthRoute()
 }

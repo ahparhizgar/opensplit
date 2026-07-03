@@ -32,109 +32,99 @@ fun CreateJoinHouseholdScreen(
     component: CreateJoinHouseholdComponent,
     modifier: Modifier = Modifier,
 ) {
-    val activeTab by component.activeTab.collectAsState()
-    val scope = rememberCoroutineScope()
-    Surface(modifier = modifier) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+  val activeTab by component.activeTab.collectAsState()
+  val scope = rememberCoroutineScope()
+  Surface(modifier = modifier) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+      Text(
+          text = "Set up your household",
+          style = MaterialTheme.typography.headlineMedium,
+      )
+      Spacer(modifier = Modifier.height(24.dp))
+
+      Row(modifier = Modifier.fillMaxWidth()) {
+        TextButton(
+            onClick = { component.useCreate() },
+            modifier = Modifier.weight(1f).testTag("household-tab-create"),
         ) {
-            Text(
-                text = "Set up your household",
-                style = MaterialTheme.typography.headlineMedium,
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(modifier = Modifier.fillMaxWidth()) {
-                TextButton(
-                    onClick = { component.useCreate() },
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag("household-tab-create"),
-                ) {
-                    Text(
-                        text = "Create",
-                        color = if (activeTab == HouseholdTab.Create)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-                TextButton(
-                    onClick = { component.useJoin() },
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag("household-tab-join"),
-                ) {
-                    Text(
-                        text = "Join",
-                        color = if (activeTab == HouseholdTab.Join)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            when (activeTab) {
-                HouseholdTab.Create -> {
-                    val state by component.createComponent.uiState.collectAsState()
-                    CreateHouseholdForm(
-                        state = state,
-                        onNameChange = component.createComponent::updateHouseholdName,
-                        width = 420.dp,
-                    )
-                    state.generalError?.let {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = it,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.testTag("household-general-error"),
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Button(
-                        onClick = { scope.launch { component.createComponent.submit() } },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("household-submit"),
-                        enabled = !state.isSubmitting,
-                    ) {
-                        Text("Create household")
-                    }
-                }
-
-                HouseholdTab.Join -> {
-                    val state by component.joinComponent.uiState.collectAsState()
-                    JoinHouseholdForm(
-                        state = state,
-                        onCodeChange = component.joinComponent::updateInviteCode,
-                        width = 420.dp,
-                    )
-                    state.generalError?.let {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = it,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.testTag("household-general-error"),
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Button(
-                        onClick = { scope.launch { component.joinComponent.submit() } },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("household-submit"),
-                        enabled = !state.isSubmitting,
-                    ) {
-                        Text("Join household")
-                    }
-                }
-            }
+          Text(
+              text = "Create",
+              color =
+                  if (activeTab == HouseholdTab.Create) MaterialTheme.colorScheme.primary
+                  else MaterialTheme.colorScheme.onSurface,
+          )
         }
+        TextButton(
+            onClick = { component.useJoin() },
+            modifier = Modifier.weight(1f).testTag("household-tab-join"),
+        ) {
+          Text(
+              text = "Join",
+              color =
+                  if (activeTab == HouseholdTab.Join) MaterialTheme.colorScheme.primary
+                  else MaterialTheme.colorScheme.onSurface,
+          )
+        }
+      }
+
+      Spacer(modifier = Modifier.height(16.dp))
+
+      when (activeTab) {
+        HouseholdTab.Create -> {
+          val state by component.createComponent.uiState.collectAsState()
+          CreateHouseholdForm(
+              state = state,
+              onNameChange = component.createComponent::updateHouseholdName,
+              width = 420.dp,
+          )
+          state.generalError?.let {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.testTag("household-general-error"),
+            )
+          }
+          Spacer(modifier = Modifier.height(20.dp))
+          Button(
+              onClick = { scope.launch { component.createComponent.submit() } },
+              modifier = Modifier.fillMaxWidth().testTag("household-submit"),
+              enabled = !state.isSubmitting,
+          ) {
+            Text("Create household")
+          }
+        }
+
+        HouseholdTab.Join -> {
+          val state by component.joinComponent.uiState.collectAsState()
+          JoinHouseholdForm(
+              state = state,
+              onCodeChange = component.joinComponent::updateInviteCode,
+              width = 420.dp,
+          )
+          state.generalError?.let {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.testTag("household-general-error"),
+            )
+          }
+          Spacer(modifier = Modifier.height(20.dp))
+          Button(
+              onClick = { scope.launch { component.joinComponent.submit() } },
+              modifier = Modifier.fillMaxWidth().testTag("household-submit"),
+              enabled = !state.isSubmitting,
+          ) {
+            Text("Join household")
+          }
+        }
+      }
     }
+  }
 }
 
 @Composable
@@ -143,26 +133,22 @@ private fun JoinHouseholdForm(
     onCodeChange: (String) -> Unit,
     width: Dp,
 ) {
-    OutlinedTextField(
-        value = state.inviteCode,
-        onValueChange = onCodeChange,
-        label = { Text("Invite code") },
-        isError = state.fieldErrors.containsKey("inviteCode"),
-        modifier = Modifier
-            .fillMaxWidth()
-            .widthIn(max = width)
-            .testTag("household-invite-code"),
-        singleLine = true,
+  OutlinedTextField(
+      value = state.inviteCode,
+      onValueChange = onCodeChange,
+      label = { Text("Invite code") },
+      isError = state.fieldErrors.containsKey("inviteCode"),
+      modifier = Modifier.fillMaxWidth().widthIn(max = width).testTag("household-invite-code"),
+      singleLine = true,
+  )
+  state.fieldErrors["inviteCode"]?.let {
+    Text(
+        text = it,
+        color = MaterialTheme.colorScheme.error,
+        modifier = Modifier.testTag("household-invite-code-error"),
     )
-    state.fieldErrors["inviteCode"]?.let {
-        Text(
-            text = it,
-            color = MaterialTheme.colorScheme.error,
-            modifier = Modifier.testTag("household-invite-code-error"),
-        )
-    }
+  }
 }
-
 
 @Composable
 private fun CreateHouseholdForm(
@@ -170,46 +156,39 @@ private fun CreateHouseholdForm(
     onNameChange: (String) -> Unit,
     width: Dp,
 ) {
-    OutlinedTextField(
-        value = state.householdName,
-        onValueChange = onNameChange,
-        label = { Text("Household name") },
-        isError = state.fieldErrors.containsKey("name"),
-        modifier = Modifier
-            .fillMaxWidth()
-            .widthIn(max = width)
-            .testTag("household-name"),
-        singleLine = true,
+  OutlinedTextField(
+      value = state.householdName,
+      onValueChange = onNameChange,
+      label = { Text("Household name") },
+      isError = state.fieldErrors.containsKey("name"),
+      modifier = Modifier.fillMaxWidth().widthIn(max = width).testTag("household-name"),
+      singleLine = true,
+  )
+  state.fieldErrors["name"]?.let {
+    Text(
+        text = it,
+        color = MaterialTheme.colorScheme.error,
+        modifier = Modifier.testTag("household-name-error"),
     )
-    state.fieldErrors["name"]?.let {
-        Text(
-            text = it,
-            color = MaterialTheme.colorScheme.error,
-            modifier = Modifier.testTag("household-name-error"),
-        )
-    }
+  }
 }
 
 @Preview
 @Composable
 private fun CreatePreview() {
-    OpenSplitTheme {
-        CreateJoinHouseholdScreen(
-            FakeCreateJoinHouseholdComponent(
-                activeTab = MutableStateFlow(HouseholdTab.Create)
-            )
-        )
-    }
+  OpenSplitTheme {
+    CreateJoinHouseholdScreen(
+        FakeCreateJoinHouseholdComponent(activeTab = MutableStateFlow(HouseholdTab.Create))
+    )
+  }
 }
 
 @Preview
 @Composable
 private fun JoinPreview() {
-    OpenSplitTheme {
-        CreateJoinHouseholdScreen(
-            FakeCreateJoinHouseholdComponent(
-                activeTab = MutableStateFlow(HouseholdTab.Join)
-            )
-        )
-    }
+  OpenSplitTheme {
+    CreateJoinHouseholdScreen(
+        FakeCreateJoinHouseholdComponent(activeTab = MutableStateFlow(HouseholdTab.Join))
+    )
+  }
 }

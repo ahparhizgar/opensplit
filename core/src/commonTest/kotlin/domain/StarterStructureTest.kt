@@ -1,21 +1,21 @@
 package domain
 
 import kotlin.test.Test
-import kotlin.test.assertTrue
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class StarterStructureTest {
-    @Test
-    fun supportsClientServerSharedLayout() {
-        val structure = StarterStructure(listOf("client", "server", "shared"))
+  @Test
+  fun supportsClientServerSharedLayout() {
+    val structure = StarterStructure(listOf("client", "server", "shared"))
 
-        assertTrue(structure.supportsSharedFoundation())
-    }
+    assertTrue(structure.supportsSharedFoundation())
+  }
 
-    @Test
-    fun rejectsIncompleteLayout() {
-        val structure = StarterStructure(listOf("client", "shared"))
+  @Test
+  fun rejectsIncompleteLayout() {
+    val structure = StarterStructure(listOf("client", "shared"))
 
-        assertFalse(structure.supportsSharedFoundation())
-    }
+    assertFalse(structure.supportsSharedFoundation())
+  }
 }

@@ -16,81 +16,92 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.core.test.testCoroutineScheduler
 import io.kotest.matchers.types.shouldBeInstanceOf
 
-class RootComponentTest : BehaviorSpec({
-    extensions(MainDispatcherExtension())
-    Given("a RootComponent with no saved token") {
+class RootComponentTest :
+    BehaviorSpec({
+      extensions(MainDispatcherExtension())
+      Given("a RootComponent with no saved token") {
         val lifecycleRegistry = LifecycleRegistry()
         val componentContext = createComponentContext(lifecycle = lifecycleRegistry)
 
-        val root = DefaultRootComponent(
-            cContext = createDefaultComponentContext(componentContext),
-            componentProvider = TestComponentProvider(
-                authFactory = FakeAuthComponentFactory(),
-                householdFactory = FakeHouseholdComponentFactory(),
-            ),
-            tokenStorage = TokenStorage { null },
-        )
+        val root =
+            DefaultRootComponent(
+                cContext = createDefaultComponentContext(componentContext),
+                componentProvider =
+                    TestComponentProvider(
+                        authFactory = FakeAuthComponentFactory(),
+                        householdFactory = FakeHouseholdComponentFactory(),
+                    ),
+                tokenStorage = TokenStorage { null },
+            )
 
         When("the component initializes") {
-            lifecycleRegistry.start()
-            testCoroutineScheduler.advanceUntilIdle()
-            Then("it shows the auth screen, not household data") {
-                val child = root.childStack.value
-                child.active.configuration.shouldBeInstanceOf<AuthComponent.Config>()
-            }
+          lifecycleRegistry.start()
+          testCoroutineScheduler.advanceUntilIdle()
+          Then("it shows the auth screen, not household data") {
+            val child = root.childStack.value
+            child.active.configuration.shouldBeInstanceOf<AuthComponent.Config>()
+          }
         }
-    }
+      }
 
-    Given("a RootComponent with a saved token") {
+      Given("a RootComponent with a saved token") {
         val lifecycleRegistry = LifecycleRegistry()
         val componentContext = createComponentContext(lifecycle = lifecycleRegistry)
 
-        val root = DefaultRootComponent(
-            cContext = createDefaultComponentContext(componentContext),
-            componentProvider = TestComponentProvider(
-                authFactory = FakeAuthComponentFactory(),
-                householdFactory = FakeHouseholdComponentFactory(),
-            ),
-            tokenStorage = TokenStorage { "test-token" },
-        )
+        val root =
+            DefaultRootComponent(
+                cContext = createDefaultComponentContext(componentContext),
+                componentProvider =
+                    TestComponentProvider(
+                        authFactory = FakeAuthComponentFactory(),
+                        householdFactory = FakeHouseholdComponentFactory(),
+                    ),
+                tokenStorage = TokenStorage { "test-token" },
+            )
 
         When("the component initializes") {
-            lifecycleRegistry.start()
-            testCoroutineScheduler.advanceUntilIdle()
-            Then("it navigates to the household screen") {
-                val child = root.childStack.value
-                child.active.configuration.shouldBeInstanceOf<RootHouseholdComponent.Config>()
-            }
+          lifecycleRegistry.start()
+          testCoroutineScheduler.advanceUntilIdle()
+          Then("it navigates to the household screen") {
+            val child = root.childStack.value
+            child.active.configuration.shouldBeInstanceOf<RootHouseholdComponent.Config>()
+          }
         }
-    }
-})
+      }
+    })
 
-private class TokenStorage(private val token: () -> String?) : com.opensplit.features.auth.TokenStorage {
-    override suspend fun saveAccessToken(token: String) {}
-    override suspend fun getAccessToken(): String? = token()
-    override suspend fun clearAccessToken() {}
+private class TokenStorage(private val token: () -> String?) :
+    com.opensplit.features.auth.TokenStorage {
+  override suspend fun saveAccessToken(token: String) {}
+
+  override suspend fun getAccessToken(): String? = token()
+
+  override suspend fun clearAccessToken() {}
 }
 
 private class FakeAuthComponentFactory : AuthComponent.Factory {
-    override fun create(cContext: CContext, config: AuthComponent.Config): AuthComponent =
-        FakeAuthComponent()
+  override fun create(cContext: CContext, config: AuthComponent.Config): AuthComponent =
+      FakeAuthComponent()
 }
 
 private class FakeHouseholdComponentFactory : RootHouseholdComponent.Factory {
-    override fun create(cContext: CContext, config: RootHouseholdComponent.Config): RootHouseholdComponent =
-        FakeRootHouseholdComponent()
+  override fun create(
+      cContext: CContext,
+      config: RootHouseholdComponent.Config,
+  ): RootHouseholdComponent = FakeRootHouseholdComponent()
 }
 
 private class TestComponentProvider(
     private val authFactory: AuthComponent.Factory,
     private val householdFactory: RootHouseholdComponent.Factory,
 ) : ComponentProvider {
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : Any> provide(kClass: kotlin.reflect.KClass<T>): T {
-        return when (kClass) {
-            AuthComponent.Factory::class -> authFactory
-            RootHouseholdComponent.Factory::class -> householdFactory
-            else -> error("Unknown factory: $kClass")
-        } as T
+  @Suppress("UNCHECKED_CAST")
+  override fun <T : Any> provide(kClass: kotlin.reflect.KClass<T>): T {
+    return when (kClass) {
+      AuthComponent.Factory::class -> authFactory
+      RootHouseholdComponent.Factory::class -> householdFactory
+      else -> error("Unknown factory: $kClass")
     }
+        as T
+  }
 }

@@ -1,35 +1,26 @@
 package com.opensplit.db
 
 import com.zaxxer.hikari.HikariDataSource
-import org.jetbrains.exposed.sql.Database
-import org.koin.dsl.module
 import javax.sql.DataSource
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+import org.jetbrains.exposed.sql.Database
+import org.koin.dsl.module
 
 @OptIn(ExperimentalUuidApi::class)
 fun databaseTestModule() = module {
+  single {
+    DatabaseConfig(
+        jdbcUrl = "jdbc:h2:mem:test-${Uuid.random()};DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        username = "sa",
+        password = "",
+        driverClassName = "org.h2.Driver",
+    )
+  }
 
-    single {
-        DatabaseConfig(
-            jdbcUrl =
-                "jdbc:h2:mem:test-${Uuid.random()};DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+  single<HikariDataSource> { createHikariDataSource(get()) }
 
-            username = "sa",
-            password = "",
-            driverClassName = "org.h2.Driver"
-        )
-    }
+  single<DataSource> { get<HikariDataSource>() }
 
-    single<HikariDataSource> {
-        createHikariDataSource(get())
-    }
-
-    single<DataSource> {
-        get<HikariDataSource>()
-    }
-
-    single<Database> {
-        Database.connect(get<DataSource>())
-    }
+  single<Database> { Database.connect(get<DataSource>()) }
 }

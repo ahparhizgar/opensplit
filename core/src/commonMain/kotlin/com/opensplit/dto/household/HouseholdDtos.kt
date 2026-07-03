@@ -12,7 +12,6 @@ data class JoinHouseholdRequest(
     val inviteCodeOrIdOrLink: String,
 )
 
-
 @Serializable
 data class HouseholdSummaryDto(
     val id: String,
@@ -33,4 +32,3 @@ data class HouseholdOverviewDto(
     val overallBalance: Double = 0.0,
     val overallCurrency: String = "IRR",
 )
-

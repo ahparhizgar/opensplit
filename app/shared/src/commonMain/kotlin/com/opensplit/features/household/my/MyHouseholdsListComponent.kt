@@ -18,20 +18,22 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 interface MyHouseholdsListComponent {
-    val overview: StateFlow<HouseholdOverviewDto>
-    val isLoading: StateFlow<Boolean>
+  val overview: StateFlow<HouseholdOverviewDto>
+  val isLoading: StateFlow<Boolean>
 
-    fun loadOverview(): Job
-    fun leaveHousehold(householdId: String): Job
-    fun onAddHouseholdClick()
-    fun onHouseholdClick(id: String) {}
+  fun loadOverview(): Job
 
-    @Serializable
-    class Config : TopLevelDestinationConfig
+  fun leaveHousehold(householdId: String): Job
 
-    interface Factory {
-        fun create(cContext: CContext): MyHouseholdsListComponent
-    }
+  fun onAddHouseholdClick()
+
+  fun onHouseholdClick(id: String) {}
+
+  @Serializable class Config : TopLevelDestinationConfig
+
+  interface Factory {
+    fun create(cContext: CContext): MyHouseholdsListComponent
+  }
 }
 
 class DefaultMyHouseholdsListComponent(
@@ -39,81 +41,83 @@ class DefaultMyHouseholdsListComponent(
     private val gateway: HouseholdService,
 ) : MyHouseholdsListComponent, CContext by context {
 
-    private val scope = componentScope()
+  private val scope = componentScope()
 
-    init {
-        doOnCreate {
-            loadOverview()
-        }
+  init {
+    doOnCreate { loadOverview() }
+  }
+
+  private val _overview = MutableStateFlow(HouseholdOverviewDto())
+  override val overview: StateFlow<HouseholdOverviewDto> = _overview
+
+  private val _isLoading = MutableStateFlow(true)
+  override val isLoading: StateFlow<Boolean> = _isLoading
+
+  override fun loadOverview() = scope.launch {
+    try {
+      val result = gateway.loadOverview()
+      _overview.value = result
+    } finally {
+      _isLoading.value = false
     }
+  }
 
-    private val _overview = MutableStateFlow(HouseholdOverviewDto())
-    override val overview: StateFlow<HouseholdOverviewDto> = _overview
+  override fun onHouseholdClick(id: String) {
+    navigation.pushNew(HouseholdDetailsComponent.Config(id))
+  }
 
-    private val _isLoading = MutableStateFlow(true)
-    override val isLoading: StateFlow<Boolean> = _isLoading
+  override fun leaveHousehold(householdId: String) = scope.launch {
+    _overview.value = gateway.leaveHousehold(householdId)
+  }
 
-    override fun loadOverview() = scope.launch {
-        try {
-            val result = gateway.loadOverview()
-            _overview.value = result
-        } finally {
-            _isLoading.value = false
-        }
-    }
+  override fun onAddHouseholdClick() {
+    navigation.pushNew(CreateJoinHouseholdComponent.Config())
+  }
 
-    override fun onHouseholdClick(id: String) {
-        navigation.pushNew(HouseholdDetailsComponent.Config(id))
-    }
-    override fun leaveHousehold(householdId: String) = scope.launch {
-        _overview.value = gateway.leaveHousehold(householdId)
-    }
-
-    override fun onAddHouseholdClick() {
-        navigation.pushNew(CreateJoinHouseholdComponent.Config())
-    }
-
-    class Factory(
-        private val gateway: HouseholdService,
-    ) : MyHouseholdsListComponent.Factory {
-        override fun create(cContext: CContext): MyHouseholdsListComponent =
-            DefaultMyHouseholdsListComponent(cContext, gateway)
-    }
+  class Factory(
+      private val gateway: HouseholdService,
+  ) : MyHouseholdsListComponent.Factory {
+    override fun create(cContext: CContext): MyHouseholdsListComponent =
+        DefaultMyHouseholdsListComponent(cContext, gateway)
+  }
 }
 
 class FakeMyHouseholdsListComponent(
-    override val overview: MutableStateFlow<HouseholdOverviewDto>
-    = MutableStateFlow(
-        HouseholdOverviewDto(
-            households = listOf(
-                HouseholdSummaryDto(
-                    id = "1",
-                    name = "Box Gym Bros",
-                    memberCount = 2,
-                    balance = 10.15,
-                    currency = "IRR",
-                    description = "Ali B. owes you IRR10.15"
-                ),
-                HouseholdSummaryDto(
-                    id = "2",
-                    name = "203.3",
-                    memberCount = 3,
-                    isSettled = true,
-                ),
-                HouseholdSummaryDto(
-                    id = "3",
-                    name = "گلابی",
-                    memberCount = 4,
-                    isSettled = true,
-                )
-            ),
-            overallBalance = 10.15,
-            overallCurrency = "IRR"
-        )
-    ),
+    override val overview: MutableStateFlow<HouseholdOverviewDto> =
+        MutableStateFlow(
+            HouseholdOverviewDto(
+                households =
+                    listOf(
+                        HouseholdSummaryDto(
+                            id = "1",
+                            name = "Box Gym Bros",
+                            memberCount = 2,
+                            balance = 10.15,
+                            currency = "IRR",
+                            description = "Ali B. owes you IRR10.15",
+                        ),
+                        HouseholdSummaryDto(
+                            id = "2",
+                            name = "203.3",
+                            memberCount = 3,
+                            isSettled = true,
+                        ),
+                        HouseholdSummaryDto(
+                            id = "3",
+                            name = "گلابی",
+                            memberCount = 4,
+                            isSettled = true,
+                        ),
+                    ),
+                overallBalance = 10.15,
+                overallCurrency = "IRR",
+            )
+        ),
     override val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false),
 ) : MyHouseholdsListComponent {
-    override fun loadOverview() = Job()
-    override fun leaveHousehold(householdId: String) = Job()
-    override fun onAddHouseholdClick() {}
+  override fun loadOverview() = Job()
+
+  override fun leaveHousehold(householdId: String) = Job()
+
+  override fun onAddHouseholdClick() {}
 }

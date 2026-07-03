@@ -11,22 +11,25 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 
-enum class HouseholdTab { Create, Join }
+enum class HouseholdTab {
+  Create,
+  Join,
+}
 
 interface CreateJoinHouseholdComponent {
-    val activeTab: StateFlow<HouseholdTab>
-    val createComponent: CreateHouseholdComponent
-    val joinComponent: JoinHouseholdComponent
+  val activeTab: StateFlow<HouseholdTab>
+  val createComponent: CreateHouseholdComponent
+  val joinComponent: JoinHouseholdComponent
 
-    fun useCreate()
-    fun useJoin()
+  fun useCreate()
 
-    @Serializable
-    class Config : TopLevelDestinationConfig
+  fun useJoin()
 
-    interface Factory {
-        fun create(cContext: CContext): CreateJoinHouseholdComponent
-    }
+  @Serializable class Config : TopLevelDestinationConfig
+
+  interface Factory {
+    fun create(cContext: CContext): CreateJoinHouseholdComponent
+  }
 }
 
 class DefaultCreateJoinHouseholdComponent(
@@ -34,36 +37,36 @@ class DefaultCreateJoinHouseholdComponent(
     gateway: HouseholdService,
 ) : CreateJoinHouseholdComponent, CContext by context {
 
-    override val createComponent: CreateHouseholdComponent =
-        DefaultCreateHouseholdComponent(
-            context = context,
-            gateway = gateway,
-            onDone = { household ->
-                navigation.navigate {
-                    it.dropLast(1) + listOf(HouseholdDetailsComponent.Config(household.id))
-                }
+  override val createComponent: CreateHouseholdComponent =
+      DefaultCreateHouseholdComponent(
+          context = context,
+          gateway = gateway,
+          onDone = { household ->
+            navigation.navigate {
+              it.dropLast(1) + listOf(HouseholdDetailsComponent.Config(household.id))
             }
-        )
-    override val joinComponent: JoinHouseholdComponent =
-        DefaultJoinHouseholdComponent(context, gateway)
+          },
+      )
+  override val joinComponent: JoinHouseholdComponent =
+      DefaultJoinHouseholdComponent(context, gateway)
 
-    private val _activeTab = MutableStateFlow(HouseholdTab.Create)
-    override val activeTab: StateFlow<HouseholdTab> = _activeTab
+  private val _activeTab = MutableStateFlow(HouseholdTab.Create)
+  override val activeTab: StateFlow<HouseholdTab> = _activeTab
 
-    override fun useCreate() {
-        _activeTab.value = HouseholdTab.Create
-    }
+  override fun useCreate() {
+    _activeTab.value = HouseholdTab.Create
+  }
 
-    override fun useJoin() {
-        _activeTab.value = HouseholdTab.Join
-    }
+  override fun useJoin() {
+    _activeTab.value = HouseholdTab.Join
+  }
 
-    class Factory(
-        private val gateway: HouseholdService,
-    ) : CreateJoinHouseholdComponent.Factory {
-        override fun create(cContext: CContext): CreateJoinHouseholdComponent =
-            DefaultCreateJoinHouseholdComponent(cContext, gateway)
-    }
+  class Factory(
+      private val gateway: HouseholdService,
+  ) : CreateJoinHouseholdComponent.Factory {
+    override fun create(cContext: CContext): CreateJoinHouseholdComponent =
+        DefaultCreateJoinHouseholdComponent(cContext, gateway)
+  }
 }
 
 class FakeCreateJoinHouseholdComponent(
@@ -71,11 +74,11 @@ class FakeCreateJoinHouseholdComponent(
     override val createComponent: CreateHouseholdComponent = FakeCreateHouseholdComponent(),
     override val joinComponent: JoinHouseholdComponent = FakeJoinHouseholdComponent(),
 ) : CreateJoinHouseholdComponent {
-    override fun useCreate() {
-        activeTab.update { HouseholdTab.Create }
-    }
+  override fun useCreate() {
+    activeTab.update { HouseholdTab.Create }
+  }
 
-    override fun useJoin() {
-        activeTab.update { HouseholdTab.Join }
-    }
+  override fun useJoin() {
+    activeTab.update { HouseholdTab.Join }
+  }
 }

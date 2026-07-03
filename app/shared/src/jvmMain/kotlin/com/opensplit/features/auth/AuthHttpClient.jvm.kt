@@ -6,17 +6,18 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-actual fun createAuthHttpClient(): HttpClient = HttpClient(OkHttp) {
-    expectSuccess = false
-    install(ContentNegotiation) {
+actual fun createAuthHttpClient(): HttpClient =
+    HttpClient(OkHttp) {
+      expectSuccess = false
+      install(ContentNegotiation) {
         json(
             Json {
-                ignoreUnknownKeys = true
-                explicitNulls = false
+              ignoreUnknownKeys = true
+              explicitNulls = false
             },
         )
+      }
     }
-}
 
 actual fun getApiBaseUrl(): String = System.getenv("API_BASE_URL") ?: "http://127.0.0.1:8080"
 

@@ -4,7 +4,6 @@ import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.router.stack.pushNew
 import com.opensplit.component.CContext
 import com.opensplit.component.navigation
-import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.root.Destination
 import com.opensplit.root.TopLevelDestinationConfig
@@ -13,11 +12,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 enum class AuthMode {
-    SignIn,
-    SignUp,
+  SignIn,
+  SignUp,
 }
 
 data class AuthViewState(
@@ -31,26 +29,27 @@ data class AuthViewState(
 )
 
 interface AuthComponent : Destination {
-    val uiState: StateFlow<AuthViewState>
-    fun useSignIn()
-    fun useSignUp()
-    fun updateEmail(email: String)
-    fun updatePassword(password: String)
-    suspend fun submit()
+  val uiState: StateFlow<AuthViewState>
 
-    @Serializable
-    data class Config(
-        val mode: AuthMode,
-    ) : TopLevelDestinationConfig
+  fun useSignIn()
 
-    interface Factory {
-        fun create(
-            cContext: CContext,
-            config: Config
-        ): AuthComponent
-    }
+  fun useSignUp()
+
+  fun updateEmail(email: String)
+
+  fun updatePassword(password: String)
+
+  suspend fun submit()
+
+  @Serializable
+  data class Config(
+      val mode: AuthMode,
+  ) : TopLevelDestinationConfig
+
+  interface Factory {
+    fun create(cContext: CContext, config: Config): AuthComponent
+  }
 }
-
 
 class DefaultAuthComponent(
     context: CContext,
@@ -58,145 +57,131 @@ class DefaultAuthComponent(
     private val gateway: AuthGateway,
     private val tokenStorage: TokenStorage,
 ) : AuthComponent, CContext by context {
-    private val _uiState = MutableStateFlow(AuthViewState(mode = config.mode))
-    override val uiState: StateFlow<AuthViewState> = _uiState
-    // apiCallScope is intentionally not used here: submit is suspend and runs on the
-    // caller coroutine so callers/tests can await completion.
+  private val _uiState = MutableStateFlow(AuthViewState(mode = config.mode))
+  override val uiState: StateFlow<AuthViewState> = _uiState
 
-    override fun useSignIn() {
-        navigation.push(AuthComponent.Config(AuthMode.SignIn))
-        _uiState.update {
-            it.copy(
-                mode = AuthMode.SignIn,
-                fieldErrors = emptyMap(),
-                generalError = null
-            )
+  // apiCallScope is intentionally not used here: submit is suspend and runs on the
+  // caller coroutine so callers/tests can await completion.
+
+  override fun useSignIn() {
+    navigation.push(AuthComponent.Config(AuthMode.SignIn))
+    _uiState.update {
+      it.copy(mode = AuthMode.SignIn, fieldErrors = emptyMap(), generalError = null)
+    }
+  }
+
+  override fun useSignUp() {
+    _uiState.update {
+      it.copy(mode = AuthMode.SignUp, fieldErrors = emptyMap(), generalError = null)
+    }
+  }
+
+  override fun updateEmail(email: String) {
+    _uiState.update {
+      it.copy(email = email, fieldErrors = it.fieldErrors - "email", generalError = null)
+    }
+  }
+
+  override fun updatePassword(password: String) {
+    _uiState.update {
+      it.copy(password = password, fieldErrors = it.fieldErrors - "password", generalError = null)
+    }
+  }
+
+  override suspend fun submit() {
+    val current = _uiState.value
+    // Run validations and network call on caller coroutine so tests can await completion
+    val validation =
+        when (current.mode) {
+          AuthMode.SignIn ->
+              com.opensplit.validation.auth.AuthValidation.validateSignIn(
+                  current.email,
+                  current.password,
+              )
+
+          AuthMode.SignUp ->
+              com.opensplit.validation.auth.AuthValidation.validateSignUp(
+                  current.email,
+                  current.password,
+              )
         }
+
+    if (!validation.isValid) {
+      _uiState.update {
+        it.copy(
+            fieldErrors = validation.errors,
+            generalError = null,
+            session = null,
+            isSubmitting = false,
+        )
+      }
+      return
     }
 
-    override fun useSignUp() {
-        _uiState.update {
-            it.copy(
-                mode = AuthMode.SignUp,
-                fieldErrors = emptyMap(),
-                generalError = null
-            )
-        }
+    _uiState.update { it.copy(fieldErrors = emptyMap(), generalError = null, isSubmitting = true) }
+
+    try {
+      val result =
+          when (current.mode) {
+            AuthMode.SignIn -> gateway.signIn(current.email, current.password)
+            AuthMode.SignUp -> gateway.signUp(current.email, current.password)
+          }
+      // Persist access token (best-effort). Swallow errors so persistence
+      // problems don't prevent successful authentication from being reported.
+      try {
+        result.session.accessToken.let { token -> tokenStorage.saveAccessToken(token) }
+      } catch (_: Throwable) {}
+      _uiState.update {
+        it.copy(
+            session = result.session,
+            fieldErrors = emptyMap(),
+            generalError = null,
+            isSubmitting = false,
+        )
+      }
+      navigation.pushNew(MyHouseholdsListComponent.Config())
+    } catch (e: com.opensplit.remote.RemoteException) {
+      _uiState.update {
+        it.copy(
+            fieldErrors = e.fieldErrors,
+            generalError = e.generalError,
+            session = null,
+            isSubmitting = false,
+        )
+      }
     }
+  }
 
-    override fun updateEmail(email: String) {
-        _uiState.update {
-            it.copy(
-                email = email,
-                fieldErrors = it.fieldErrors - "email",
-                generalError = null
-            )
-        }
-    }
-
-    override fun updatePassword(password: String) {
-        _uiState.update {
-            it.copy(
-                password = password,
-                fieldErrors = it.fieldErrors - "password",
-                generalError = null
-            )
-        }
-    }
-
-    override suspend fun submit() {
-        val current = _uiState.value
-        // Run validations and network call on caller coroutine so tests can await completion
-        val validation = when (current.mode) {
-            AuthMode.SignIn -> com.opensplit.validation.auth.AuthValidation.validateSignIn(
-                current.email,
-                current.password
-            )
-
-            AuthMode.SignUp -> com.opensplit.validation.auth.AuthValidation.validateSignUp(
-                current.email,
-                current.password
-            )
-        }
-
-        if (!validation.isValid) {
-            _uiState.update {
-                it.copy(
-                    fieldErrors = validation.errors,
-                    generalError = null,
-                    session = null,
-                    isSubmitting = false
-                )
-            }
-            return
-        }
-
-        _uiState.update {
-            it.copy(
-                fieldErrors = emptyMap(),
-                generalError = null,
-                isSubmitting = true
-            )
-        }
-
-        try {
-            val result = when (current.mode) {
-                AuthMode.SignIn -> gateway.signIn(current.email, current.password)
-                AuthMode.SignUp -> gateway.signUp(current.email, current.password)
-            }
-            // Persist access token (best-effort). Swallow errors so persistence
-            // problems don't prevent successful authentication from being reported.
-            try {
-                result.session.accessToken.let { token ->
-                    tokenStorage.saveAccessToken(token)
-                }
-            } catch (_: Throwable) {
-            }
-            _uiState.update {
-                it.copy(
-                    session = result.session,
-                    fieldErrors = emptyMap(),
-                    generalError = null,
-                    isSubmitting = false,
-                )
-            }
-            navigation.pushNew(MyHouseholdsListComponent.Config())
-        } catch (e: com.opensplit.remote.RemoteException) {
-            _uiState.update {
-                it.copy(
-                    fieldErrors = e.fieldErrors,
-                    generalError = e.generalError,
-                    session = null,
-                    isSubmitting = false,
-                )
-            }
-        }
-    }
-
-    class Factory(
-        private val gateway: AuthGateway,
-        private val tokenStorage: TokenStorage,
-    ) : AuthComponent.Factory {
-        override fun create(context: CContext, config: AuthComponent.Config): AuthComponent =
-            DefaultAuthComponent(context, config, gateway, tokenStorage)
-    }
+  class Factory(
+      private val gateway: AuthGateway,
+      private val tokenStorage: TokenStorage,
+  ) : AuthComponent.Factory {
+    override fun create(context: CContext, config: AuthComponent.Config): AuthComponent =
+        DefaultAuthComponent(context, config, gateway, tokenStorage)
+  }
 }
 
 class FakeAuthComponent(
-    uiState: AuthViewState = AuthViewState(
-        session = com.opensplit.dto.auth.AuthSessionState(
-            userId = "user-1",
-            email = "amir@example.com",
-            accessToken = "token"
+    uiState: AuthViewState =
+        AuthViewState(
+            session =
+                com.opensplit.dto.auth.AuthSessionState(
+                    userId = "user-1",
+                    email = "amir@example.com",
+                    accessToken = "token",
+                )
         )
-    )
 ) : AuthComponent {
-    private val _uiState = MutableStateFlow(uiState)
-    override val uiState: StateFlow<AuthViewState> = _uiState
-    override fun useSignIn() {}
-    override fun useSignUp() {}
-    override fun updateEmail(email: String) {}
-    override fun updatePassword(password: String) {}
-    override suspend fun submit() {}
-}
+  private val _uiState = MutableStateFlow(uiState)
+  override val uiState: StateFlow<AuthViewState> = _uiState
 
+  override fun useSignIn() {}
+
+  override fun useSignUp() {}
+
+  override fun updateEmail(email: String) {}
+
+  override fun updatePassword(password: String) {}
+
+  override suspend fun submit() {}
+}

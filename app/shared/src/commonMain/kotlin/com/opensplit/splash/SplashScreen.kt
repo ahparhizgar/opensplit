@@ -17,28 +17,20 @@ import com.opensplit.ui.OpenSplitTheme
 
 @Composable
 fun SplashScreen(modifier: Modifier = Modifier) {
-    Surface(modifier = modifier) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(
-                Modifier.size(48.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = CircleShape
-                    )
-            )
-        }
+  Surface(modifier = modifier) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+      Box(
+          Modifier.size(48.dp)
+              .background(color = MaterialTheme.colorScheme.primary, shape = CircleShape)
+      )
     }
+  }
 }
 
-data object SplashDestination: TopLevelDestinationConfig
+data object SplashDestination : TopLevelDestinationConfig
 
 @Preview
 @Composable
 fun SplashScreenPreview() {
-    OpenSplitTheme {
-        SplashScreen()
-    }
+  OpenSplitTheme { SplashScreen() }
 }

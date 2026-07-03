@@ -1,6 +1,5 @@
 package com.opensplit.features.household.details
 
-import com.arkivanov.decompose.router.stack.navigate
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.essenty.lifecycle.doOnCreate
@@ -18,25 +17,26 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 interface HouseholdDetailsComponent {
-    val householdId: String
-    val uiState: StateFlow<UiState>
+  val householdId: String
+  val uiState: StateFlow<UiState>
 
-    fun onAddMemberClicked() {}
-    fun onBack() {}
-    fun onSettingsClick() {}
+  fun onAddMemberClicked() {}
 
-    @Serializable
-    data class Config(val householdId: String) : TopLevelDestinationConfig
+  fun onBack() {}
 
-    interface Factory {
-        fun create(cContext: CContext, config: Config): HouseholdDetailsComponent
-    }
+  fun onSettingsClick() {}
 
-    data class UiState(
-        val household: HouseholdDto? = null,
-        val isLoading: Boolean = false,
-        val error: String? = null,
-    )
+  @Serializable data class Config(val householdId: String) : TopLevelDestinationConfig
+
+  interface Factory {
+    fun create(cContext: CContext, config: Config): HouseholdDetailsComponent
+  }
+
+  data class UiState(
+      val household: HouseholdDto? = null,
+      val isLoading: Boolean = false,
+      val error: String? = null,
+  )
 }
 
 class DefaultHouseholdDetailsComponent(
@@ -45,70 +45,60 @@ class DefaultHouseholdDetailsComponent(
     private val gateway: HouseholdService,
 ) : HouseholdDetailsComponent, CContext by context {
 
-    override val householdId: String = config.householdId
-    private val _uiState = MutableStateFlow(HouseholdDetailsComponent.UiState(isLoading = true))
-    override val uiState: StateFlow<HouseholdDetailsComponent.UiState> = _uiState
+  override val householdId: String = config.householdId
+  private val _uiState = MutableStateFlow(HouseholdDetailsComponent.UiState(isLoading = true))
+  override val uiState: StateFlow<HouseholdDetailsComponent.UiState> = _uiState
 
-    init {
-        doOnCreate {
-            loadDetails()
-        }
-    }
+  init {
+    doOnCreate { loadDetails() }
+  }
 
-    override fun onAddMemberClicked() {
-        TODO()
-    }
+  override fun onAddMemberClicked() {
+    TODO()
+  }
 
-    override fun onSettingsClick() {
-        navigation.pushNew(HouseholdSettingsComponent.Config(householdId))
-    }
+  override fun onSettingsClick() {
+    navigation.pushNew(HouseholdSettingsComponent.Config(householdId))
+  }
 
-    override fun onBack() {
-        navigation.pop()
-    }
+  override fun onBack() {
+    navigation.pop()
+  }
 
-    private fun loadDetails() = componentScope().launch {
+  private fun loadDetails() =
+      componentScope().launch {
         _uiState.update { it.copy(isLoading = true) }
         try {
-            val response = gateway.getHousehold(householdId)
-            _uiState.update {
-                it.copy(
-                    household = response,
-                    isLoading = false
-                )
-            }
+          val response = gateway.getHousehold(householdId)
+          _uiState.update { it.copy(household = response, isLoading = false) }
         } catch (e: Exception) {
-            _uiState.update {
-                it.copy(
-                    error = e.message ?: "Failed to load household details",
-                    isLoading = false
-                )
-            }
+          _uiState.update {
+            it.copy(error = e.message ?: "Failed to load household details", isLoading = false)
+          }
         }
-    }
+      }
 
-    class Factory(
-        private val gateway: HouseholdService,
-    ) : HouseholdDetailsComponent.Factory {
-        override fun create(
-            cContext: CContext,
-            config: HouseholdDetailsComponent.Config
-        ): HouseholdDetailsComponent = DefaultHouseholdDetailsComponent(cContext, config, gateway)
-    }
+  class Factory(
+      private val gateway: HouseholdService,
+  ) : HouseholdDetailsComponent.Factory {
+    override fun create(
+        cContext: CContext,
+        config: HouseholdDetailsComponent.Config,
+    ): HouseholdDetailsComponent = DefaultHouseholdDetailsComponent(cContext, config, gateway)
+  }
 }
 
 class FakeHouseholdDetailsComponent(
     override val householdId: String = "h12345",
-    uiState: HouseholdDetailsComponent.UiState = HouseholdDetailsComponent.UiState(
-        HouseholdDto(
-            id = householdId,
-            name = "Fake Household",
-            members = emptyList(),
-            inviteLink = "https://opensplit.com/join/fake-code"
-
-        )
-    ),
+    uiState: HouseholdDetailsComponent.UiState =
+        HouseholdDetailsComponent.UiState(
+            HouseholdDto(
+                id = householdId,
+                name = "Fake Household",
+                members = emptyList(),
+                inviteLink = "https://opensplit.com/join/fake-code",
+            )
+        ),
 ) : HouseholdDetailsComponent {
-    override val uiState: StateFlow<HouseholdDetailsComponent.UiState> =
-        MutableStateFlow(uiState)
+  override val uiState: StateFlow<HouseholdDetailsComponent.UiState> = MutableStateFlow(uiState)
 }

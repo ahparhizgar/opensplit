@@ -13,14 +13,11 @@ import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 
 fun Spec.integrationKoin() = testValue {
-    koinApplication {
-        modules(appModule(), integrationTestModule())
-    }.koin
+  koinApplication { modules(appModule(), integrationTestModule()) }.koin
 }
 
 fun integrationTestModule() = module {
-    single { FakeAuthGateway() }.bind<AuthGateway>()
-    single { NoOpTokenStorage() }.bind<TokenStorage>()
-    single { FakeHouseholdService() }.bind<HouseholdService>()
+  single { FakeAuthGateway() }.bind<AuthGateway>()
+  single { NoOpTokenStorage() }.bind<TokenStorage>()
+  single { FakeHouseholdService() }.bind<HouseholdService>()
 }
-

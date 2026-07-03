@@ -17,29 +17,31 @@ import kotlinx.coroutines.test.setMain
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainDispatcherExtension(private val dispatcher: TestDispatcher = StandardTestDispatcher()) :
     BeforeTestListener, AfterTestListener, SpecExtension {
-    constructor(testCoroutineScheduler: TestCoroutineScheduler) : this(
-        StandardTestDispatcher(
-            testCoroutineScheduler,
-        ),
-    )
+  constructor(
+      testCoroutineScheduler: TestCoroutineScheduler
+  ) : this(
+      StandardTestDispatcher(
+          testCoroutineScheduler,
+      ),
+  )
 
-    override suspend fun intercept(spec: Spec, execute: suspend (Spec) -> Unit) {
-        spec.coroutineTestScope = true
-        super.intercept(spec, execute)
-    }
+  override suspend fun intercept(spec: Spec, execute: suspend (Spec) -> Unit) {
+    spec.coroutineTestScope = true
+    super.intercept(spec, execute)
+  }
 
-    override suspend fun beforeTest(testCase: TestCase) {
-        if (testCase.parent == null) {
-            Dispatchers.setMain(dispatcher)
-        }
+  override suspend fun beforeTest(testCase: TestCase) {
+    if (testCase.parent == null) {
+      Dispatchers.setMain(dispatcher)
     }
+  }
 
-    override suspend fun afterTest(
-        testCase: TestCase,
-        result: TestResult,
-    ) {
-        if (testCase.parent == null) {
-            Dispatchers.resetMain()
-        }
+  override suspend fun afterTest(
+      testCase: TestCase,
+      result: TestResult,
+  ) {
+    if (testCase.parent == null) {
+      Dispatchers.resetMain()
     }
+  }
 }

@@ -2,117 +2,104 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidMultiplatformLibrary)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.kotest)
-    alias(libs.plugins.ksp)
+  alias(libs.plugins.kotlinMultiplatform)
+  alias(libs.plugins.androidMultiplatformLibrary)
+  alias(libs.plugins.composeMultiplatform)
+  alias(libs.plugins.composeCompiler)
+  alias(libs.plugins.kotest)
+  alias(libs.plugins.ksp)
+  alias(libs.plugins.ktfmt)
 }
 
 kotlin {
-    listOf(
-//        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
+  listOf(
+          //        iosArm64(),
+          iosSimulatorArm64()
+      )
+      .forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "Shared"
-            isStatic = true
+          baseName = "Shared"
+          isStatic = true
         }
+      }
+
+  jvm()
+
+  //    js {
+  //        browser()
+  //    }
+
+  @OptIn(ExperimentalWasmDsl::class) wasmJs { browser() }
+
+  androidLibrary {
+    namespace = "com.opensplit.app.shared"
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    minSdk = libs.versions.android.minSdk.get().toInt()
+
+    compilerOptions { jvmTarget = JvmTarget.JVM_11 }
+    androidResources { enable = true }
+    withHostTest { isIncludeAndroidResources = true }
+  }
+
+  sourceSets {
+    androidMain.dependencies {
+      implementation(libs.compose.uiToolingPreview)
+      implementation(libs.ktor.clientOkHttp)
     }
+    commonMain.dependencies {
+      api(projects.core)
+      implementation(libs.compose.runtime)
+      implementation(libs.compose.foundation)
+      implementation(libs.compose.material3)
+      implementation(libs.compose.ui)
+      implementation(libs.compose.material.icons.extended)
+      implementation(libs.compose.components.resources)
+      implementation(libs.compose.uiToolingPreview)
+      implementation(libs.androidx.lifecycle.viewmodelCompose)
+      implementation(libs.androidx.lifecycle.runtimeCompose)
 
-    jvm()
-
-//    js {
-//        browser()
-//    }
-
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
+      implementation(libs.ktor.clientCore)
+      implementation(libs.ktor.clientAuth)
+      implementation(libs.ktor.clientContentNegotiation)
+      implementation(libs.ktor.serializationKotlinxJson)
+      api(libs.decompose)
+      api(libs.lifecycle)
+      implementation(libs.decompose.compose)
+      implementation(libs.apiCallError)
+      implementation(libs.apiCallError.ktor)
+      implementation(libs.koin.core)
+      implementation(libs.androidx.datastore.core)
+      implementation(libs.androidx.datastore.preferences.core)
+      implementation(libs.androidx.datastore.core.okio)
     }
-
-    androidLibrary {
-        namespace = "com.opensplit.app.shared"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
-        }
-        androidResources {
-            enable = true
-        }
-        withHostTest {
-            isIncludeAndroidResources = true
-        }
+    commonTest.dependencies {
+      implementation(libs.kotlin.test)
+      implementation(libs.compose.test)
+      implementation(libs.kotest.framework)
+      implementation(libs.kotest.assertion)
+      implementation(libs.koin.test)
     }
-
-    sourceSets {
-        androidMain.dependencies {
-            implementation(libs.compose.uiToolingPreview)
-            implementation(libs.ktor.clientOkHttp)
-        }
-        commonMain.dependencies {
-            api(projects.core)
-            implementation(libs.compose.runtime)
-            implementation(libs.compose.foundation)
-            implementation(libs.compose.material3)
-            implementation(libs.compose.ui)
-            implementation(libs.compose.material.icons.extended)
-            implementation(libs.compose.components.resources)
-            implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
-
-            implementation(libs.ktor.clientCore)
-            implementation(libs.ktor.clientAuth)
-            implementation(libs.ktor.clientContentNegotiation)
-            implementation(libs.ktor.serializationKotlinxJson)
-            api(libs.decompose)
-            api(libs.lifecycle)
-            implementation(libs.decompose.compose)
-            implementation(libs.apiCallError)
-            implementation(libs.apiCallError.ktor)
-            implementation(libs.koin.core)
-            implementation(libs.androidx.datastore.core)
-            implementation(libs.androidx.datastore.preferences.core)
-            implementation(libs.androidx.datastore.core.okio)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.compose.test)
-            implementation(libs.kotest.framework)
-            implementation(libs.kotest.assertion)
-            implementation(libs.koin.test)
-        }
-        jvmMain.dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.kotlinx.coroutinesSwing)
-            implementation(libs.ktor.clientOkHttp)
-        }
-        jvmTest.dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.ktor.clientOkHttp)
-            implementation(projects.server)
-            implementation(libs.ktor.serverCore)
-            implementation(libs.ktor.serverNetty)
-            implementation(libs.ktor.serverTestHost)
-            implementation(libs.kotest.junit)
-        }
-        wasmJsMain.dependencies {
-            implementation(libs.androidx.datastore.core.okio)
-        }
-//        jsMain.dependencies {
-//            implementation(libs.wrappers.browser)
-//        }
+    jvmMain.dependencies {
+      implementation(compose.desktop.currentOs)
+      implementation(libs.kotlinx.coroutinesSwing)
+      implementation(libs.ktor.clientOkHttp)
     }
+    jvmTest.dependencies {
+      implementation(compose.desktop.currentOs)
+      implementation(libs.ktor.clientOkHttp)
+      implementation(projects.server)
+      implementation(libs.ktor.serverCore)
+      implementation(libs.ktor.serverNetty)
+      implementation(libs.ktor.serverTestHost)
+      implementation(libs.kotest.junit)
+    }
+    wasmJsMain.dependencies { implementation(libs.androidx.datastore.core.okio) }
+    //        jsMain.dependencies {
+    //            implementation(libs.wrappers.browser)
+    //        }
+  }
 }
 
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
-}
+tasks.withType<Test>().configureEach { useJUnitPlatform() }
 
-dependencies {
-    androidRuntimeClasspath(libs.compose.uiTooling)
-}
+dependencies { androidRuntimeClasspath(libs.compose.uiTooling) }

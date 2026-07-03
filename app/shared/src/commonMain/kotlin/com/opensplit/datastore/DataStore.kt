@@ -8,7 +8,5 @@ import okio.Path.Companion.toPath
 
 fun createDataStore(dataDir: DataDir): DataStore<Preferences> =
     PreferenceDataStoreFactory.createWithPath(
-        produceFile = {
-            "${dataDir.dir}/preferences.preferences_pb".toPath()
-        }
+        produceFile = { "${dataDir.dir}/preferences.preferences_pb".toPath() }
     )

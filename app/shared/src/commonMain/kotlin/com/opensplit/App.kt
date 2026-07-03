@@ -23,62 +23,58 @@ import com.opensplit.ui.OpenSplitTheme
 
 @Composable
 fun App(root: RootComponent, modifier: Modifier = Modifier) {
-    OpenSplitTheme {
-        Children(
-            modifier = modifier,
-            stack = root.childStack
-        ) {
-            when (val child = it.instance) {
-                is SplashDestination -> {
-                    SplashScreen()
-                }
-
-                is AuthComponent -> {
-                    AuthRootScreen(
-                        component = child,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
-
-                is CreateJoinHouseholdComponent -> {
-                    CreateJoinHouseholdScreen(
-                        component = child,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
-
-                is HouseholdSettingsComponent -> {
-                    HouseholdSettingsScreen(
-                        component = child,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
-
-                is MyHouseholdsListComponent -> {
-                    MyHouseholdsListScreen(
-                        component = child,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
-
-                is HouseholdDetailsComponent -> {
-                    HouseholdDetailsScreen(
-                        component = child,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
-
-                else -> {
-                    error("Unknown child: $child")
-                }
-            }
+  OpenSplitTheme {
+    Children(modifier = modifier, stack = root.childStack) {
+      when (val child = it.instance) {
+        is SplashDestination -> {
+          SplashScreen()
         }
+
+        is AuthComponent -> {
+          AuthRootScreen(
+              component = child,
+              modifier = Modifier.fillMaxSize(),
+          )
+        }
+
+        is CreateJoinHouseholdComponent -> {
+          CreateJoinHouseholdScreen(
+              component = child,
+              modifier = Modifier.fillMaxSize(),
+          )
+        }
+
+        is HouseholdSettingsComponent -> {
+          HouseholdSettingsScreen(
+              component = child,
+              modifier = Modifier.fillMaxSize(),
+          )
+        }
+
+        is MyHouseholdsListComponent -> {
+          MyHouseholdsListScreen(
+              component = child,
+              modifier = Modifier.fillMaxSize(),
+          )
+        }
+
+        is HouseholdDetailsComponent -> {
+          HouseholdDetailsScreen(
+              component = child,
+              modifier = Modifier.fillMaxSize(),
+          )
+        }
+
+        else -> {
+          error("Unknown child: $child")
+        }
+      }
     }
+  }
 }
 
 @Preview
 @Composable
 private fun Preview() {
-    App(FakeRootComponent())
+  App(FakeRootComponent())
 }
-
