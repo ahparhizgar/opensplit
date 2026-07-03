@@ -21,8 +21,27 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.example.project"
+            packageName = "OpenSplit"
             packageVersion = "1.0.0"
+
+            macOS {
+                bundleID = "com.opensplit.app"
+                infoPlist {
+                    extraKeysRawXml = """
+                        <key>CFBundleURLTypes</key>
+                        <array>
+                            <dict>
+                                <key>CFBundleURLName</key>
+                                <string>OpenSplit</string>
+                                <key>CFBundleURLSchemes</key>
+                                <array>
+                                    <string>opensplit</string>
+                                </array>
+                            </dict>
+                        </array>
+                    """.trimIndent()
+                }
+            }
         }
     }
 }

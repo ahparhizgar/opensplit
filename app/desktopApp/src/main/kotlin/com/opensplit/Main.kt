@@ -18,6 +18,7 @@ import com.opensplit.component.DefaultCContext
 import com.opensplit.root.RootComponent
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.dsl.module
+import java.awt.Desktop
 import javax.swing.SwingUtilities
 
 fun main(vararg args: String) {
@@ -42,6 +43,13 @@ fun main(vararg args: String) {
         koin.get<RootComponent.Factory>().create(context)
     }
     DecomposeSettings.settings = DecomposeSettings(duplicateConfigurationsEnabled = true)
+
+    Desktop.getDesktop().setOpenURIHandler { event ->
+        // doesn't work currently
+        println("Received: ${event.uri}")
+
+    }
+
     application {
         val windowState = rememberWindowState(width = 400.dp, height = 800.dp)
         LifecycleController(lifecycle, windowState)
