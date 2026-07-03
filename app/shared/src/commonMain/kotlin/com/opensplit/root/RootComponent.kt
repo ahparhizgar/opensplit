@@ -17,7 +17,6 @@ import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
-import com.opensplit.features.household.root.RootHouseholdComponent
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.splash.SplashDestination
 import kotlinx.coroutines.launch
@@ -52,7 +51,7 @@ class DefaultRootComponent(
                 val token = tokenStorage.getAccessToken()
                 if (!token.isNullOrEmpty()) {
                     navigation.navigate {
-                        listOf(RootHouseholdComponent.Config())
+                        listOf(MyHouseholdsListComponent.Config())
                     }
                 } else {
                     navigation.navigate {
@@ -79,10 +78,6 @@ class DefaultRootComponent(
             is SplashDestination -> SplashDestination
             is AuthComponent.Config ->
                 componentProvider.provide(AuthComponent.Factory::class)
-                    .create(cContext, config)
-
-            is RootHouseholdComponent.Config ->
-                componentProvider.provide(RootHouseholdComponent.Factory::class)
                     .create(cContext, config)
 
             is CreateJoinHouseholdComponent.Config ->

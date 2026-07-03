@@ -4,7 +4,8 @@ import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.router.stack.pushNew
 import com.opensplit.component.CContext
 import com.opensplit.component.navigation
-import com.opensplit.features.household.root.RootHouseholdComponent
+import com.opensplit.features.household.details.HouseholdDetailsComponent
+import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.root.Destination
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -159,7 +160,7 @@ class DefaultAuthComponent(
                     isSubmitting = false,
                 )
             }
-            navigation.pushNew(RootHouseholdComponent.Config())
+            navigation.pushNew(MyHouseholdsListComponent.Config())
         } catch (e: com.opensplit.remote.RemoteException) {
             _uiState.update {
                 it.copy(

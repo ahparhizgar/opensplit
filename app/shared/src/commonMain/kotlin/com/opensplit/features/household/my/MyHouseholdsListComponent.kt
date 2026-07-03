@@ -9,6 +9,7 @@ import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.features.household.HouseholdService
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
+import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,7 @@ interface MyHouseholdsListComponent {
     fun loadOverview(): Job
     fun leaveHousehold(householdId: String): Job
     fun onAddHouseholdClick()
+    fun onHouseholdClick(id: String) {}
 
     @Serializable
     class Config : TopLevelDestinationConfig
@@ -60,6 +62,9 @@ class DefaultMyHouseholdsListComponent(
         }
     }
 
+    override fun onHouseholdClick(id: String) {
+        navigation.pushNew(HouseholdDetailsComponent.Config(id))
+    }
     override fun leaveHousehold(householdId: String) = scope.launch {
         _overview.value = gateway.leaveHousehold(householdId)
     }

@@ -9,10 +9,8 @@ import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.auth.createAuthGateway
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.createjoin.DefaultCreateJoinHouseholdComponent
-import com.opensplit.features.household.root.DefaultRootHouseholdComponent
 import com.opensplit.features.household.details.DefaultHouseholdDetailsComponent
 import com.opensplit.features.household.my.DefaultMyHouseholdsListComponent
-import com.opensplit.features.household.root.RootHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.HouseholdService
 import com.opensplit.features.household.KtorHouseholdService
@@ -40,8 +38,6 @@ fun appModule() = module {
         .bind<RootComponent.Factory>()
     factoryOf(DefaultAuthComponent::Factory)
         .bind<AuthComponent.Factory>()
-    factoryOf(DefaultRootHouseholdComponent::Factory)
-        .bind<RootHouseholdComponent.Factory>()
     factoryOf(DefaultCreateJoinHouseholdComponent::Factory)
         .bind<CreateJoinHouseholdComponent.Factory>()
     factoryOf(DefaultCreateHouseholdComponent::Factory)

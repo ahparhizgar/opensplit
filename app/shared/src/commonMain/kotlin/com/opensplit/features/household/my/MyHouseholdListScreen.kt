@@ -56,7 +56,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun MyHouseholdsListScreen(
     component: MyHouseholdsListComponent,
-    onHouseholdClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isLoading by component.isLoading.collectAsState()
@@ -145,7 +144,7 @@ fun MyHouseholdsListScreen(
                         items(activeHouseholds) { household ->
                             HouseholdCard(
                                 household = household,
-                                onClick = { onHouseholdClick(household.id) },
+                                onClick = { component.onHouseholdClick(household.id) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("household-card-${household.id}"),
@@ -489,7 +488,6 @@ private fun MyHouseholdsListPreview() {
     OpenSplitTheme {
         MyHouseholdsListScreen(
             component = FakeMyHouseholdsListComponent(),
-            onHouseholdClick = {},
         )
     }
 }
