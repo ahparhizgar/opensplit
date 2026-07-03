@@ -3,6 +3,7 @@ package com.opensplit.features.household.createjoin
 import com.arkivanov.decompose.router.stack.navigate
 import com.opensplit.component.CContext
 import com.opensplit.component.navigation
+import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.features.household.HouseholdService
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.remote.RemoteException
@@ -16,18 +17,22 @@ data class CreateHouseholdViewState(
     val fieldErrors: Map<String, String> = emptyMap(),
     val generalError: String? = null,
     val isSubmitting: Boolean = false,
-    val householdId: String? = null,
 )
 
 interface CreateHouseholdComponent {
     val uiState: StateFlow<CreateHouseholdViewState>
     fun updateHouseholdName(name: String)
     suspend fun submit()
+
+    interface Factory {
+        fun create(cContext: CContext, onDone: (HouseholdDto) -> Unit): CreateHouseholdComponent
+    }
 }
 
 class DefaultCreateHouseholdComponent(
     context: CContext,
     private val gateway: HouseholdService,
+    private val onDone: (HouseholdDto) -> Unit,
 ) : CreateHouseholdComponent, CContext by context {
 
     private val _uiState = MutableStateFlow(CreateHouseholdViewState())
@@ -60,10 +65,8 @@ class DefaultCreateHouseholdComponent(
 
         try {
             val result = gateway.createHousehold(current.householdName)
-            _uiState.update { it.copy(householdId = result.id, isSubmitting = false) }
-            navigation.navigate {
-                it.dropLast(1) + HouseholdDetailsComponent.Config(result.id)
-            }
+            _uiState.update { it.copy(isSubmitting = false) }
+            onDone(result)
         } catch (e: RemoteException) {
             _uiState.update {
                 it.copy(
@@ -73,6 +76,13 @@ class DefaultCreateHouseholdComponent(
                 )
             }
         }
+    }
+
+    class Factory(
+        private val gateway: HouseholdService,
+    ) : CreateHouseholdComponent.Factory {
+        override fun create(cContext: CContext, onDone: (HouseholdDto) -> Unit): CreateHouseholdComponent =
+            DefaultCreateHouseholdComponent(cContext, gateway, onDone)
     }
 }
 

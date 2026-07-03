@@ -16,6 +16,8 @@ import com.opensplit.features.household.root.RootHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.HouseholdService
 import com.opensplit.features.household.KtorHouseholdService
+import com.opensplit.features.household.createjoin.CreateHouseholdComponent
+import com.opensplit.features.household.createjoin.DefaultCreateHouseholdComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.root.ComponentProvider
 import com.opensplit.root.DefaultRootComponent
@@ -42,6 +44,8 @@ fun appModule() = module {
         .bind<RootHouseholdComponent.Factory>()
     factoryOf(DefaultCreateJoinHouseholdComponent::Factory)
         .bind<CreateJoinHouseholdComponent.Factory>()
+    factoryOf(DefaultCreateHouseholdComponent::Factory)
+        .bind<CreateHouseholdComponent.Factory>()
     factoryOf(DefaultMyHouseholdsListComponent::Factory)
         .bind<MyHouseholdsListComponent.Factory>()
     factoryOf(DefaultHouseholdDetailsComponent::Factory)

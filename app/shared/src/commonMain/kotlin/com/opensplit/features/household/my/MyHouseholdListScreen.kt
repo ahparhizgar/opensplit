@@ -27,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -37,8 +38,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -105,26 +106,22 @@ fun MyHouseholdsListScreen(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-
-                        // Todo make it icon button
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clickable { }
-                                .testTag("header-search"),
-                        )
-                        Spacer(Modifier.width(20.dp))
-                        // Todo make it icon button
-                        Icon(
-                            imageVector = Icons.Default.GroupAdd,
-                            contentDescription = "Add Household",
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clickable { component.onAddHouseholdClick() }
-                                .testTag("header-add-group"),
-                        )
+                        IconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search",
+                                modifier = Modifier
+                                    .testTag("header-search"),
+                            )
+                        }
+                        IconButton(onClick = { component.onAddHouseholdClick() }) {
+                            Icon(
+                                imageVector = Icons.Default.GroupAdd,
+                                contentDescription = "Add Household",
+                                modifier = Modifier
+                                    .testTag("header-add-group"),
+                            )
+                        }
                     }
 
                     // Balance Summary Row

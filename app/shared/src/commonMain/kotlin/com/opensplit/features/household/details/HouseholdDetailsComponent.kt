@@ -102,7 +102,9 @@ class FakeHouseholdDetailsComponent(
         HouseholdDto(
             id = householdId,
             name = "Fake Household",
-            members = emptyList()
+            members = emptyList(),
+            inviteLink = "https://opensplit.com/join/fake-code"
+
         )
     ),
 ) : HouseholdDetailsComponent {

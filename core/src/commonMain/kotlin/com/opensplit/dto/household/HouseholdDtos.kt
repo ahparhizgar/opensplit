@@ -7,17 +7,9 @@ data class CreateHouseholdRequest(
     val name: String,
 )
 
-// To be replaced with household overview dto
-@Serializable
-data class NewHouseholdDto(
-    val id: String,
-    val name: String,
-    val inviteCode: String? = null,
-)
-
 @Serializable
 data class JoinHouseholdRequest(
-    val inviteCodeOrId: String,
+    val inviteCodeOrIdOrLink: String,
 )
 
 

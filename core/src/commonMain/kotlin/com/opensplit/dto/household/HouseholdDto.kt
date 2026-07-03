@@ -7,6 +7,7 @@ data class HouseholdDto(
     val id: String,
     val name: String,
     val members: List<HouseholdMemberDto>,
+    val inviteLink: String,
 )
 
 object FakeHouseholdDtoFactory {
@@ -18,5 +19,6 @@ object FakeHouseholdDtoFactory {
         id = id,
         name = name,
         members = members,
+        inviteLink = "https://opensplit.com/invite/85243892"
     )
 }

@@ -10,7 +10,6 @@ import com.opensplit.dto.household.HouseholdMemberDto
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.dto.household.JoinHouseholdRequest
-import com.opensplit.dto.household.NewHouseholdDto
 import com.opensplit.features.auth.JwtTokenService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
@@ -27,6 +26,7 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import java.net.URLDecoder
 import java.util.UUID
 
 fun Application.householdRoutes() {
@@ -57,7 +57,7 @@ fun Application.householdRoutes() {
 
             val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ")
                 ?: call.request.cookies["opensplit-auth-session"]
-            val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+            val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
             val userId = resolveUserIdFromToken(token)
 
             if (userId == null) {
@@ -88,12 +88,34 @@ fun Application.householdRoutes() {
                 }
             }
 
-            call.respond(HttpStatusCode.Created, NewHouseholdDto(householdId, req.name, inviteCode))
+            call.respond(
+                status = HttpStatusCode.Created,
+                message = HouseholdDto(
+                    id = householdId,
+                    name = req.name,
+                    members = listOf(
+                        HouseholdMemberDto(
+                            userId = userId,
+                            name = transaction {
+                                Users.select { Users.id eq userId }.first()[Users.name]
+                            },
+                            email = transaction {
+                                Users.select { Users.id eq userId }.first()[Users.email]
+                            },
+                            isOwner = true,
+                            isCurrentUser = true,
+                            balance = 0.0,
+                            balanceCurrency = "IRR"
+                        )
+                    ),
+                    inviteLink = "https://opensplit.com/join/$inviteCode"
+                )
+            )
         }
 
         post("/households/join") {
             val req = call.receive<JoinHouseholdRequest>()
-            if (req.inviteCodeOrId.isBlank()) {
+            if (req.inviteCodeOrIdOrLink.isBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
                     ErrorResponse(
@@ -106,7 +128,7 @@ fun Application.householdRoutes() {
 
             val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ")
                 ?: call.request.cookies["opensplit-auth-session"]
-            val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+            val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
             val userId = resolveUserIdFromToken(token)
 
             if (userId == null) {
@@ -121,11 +143,15 @@ fun Application.householdRoutes() {
             }
 
             val byInvite = transaction {
-                Households.select { Households.inviteCode eq req.inviteCodeOrId }.limit(1)
+                Households.select {
+                    Households.inviteCode eq req.inviteCodeOrIdOrLink
+                        .removePrefix("https://opensplit.com/join/")
+                }
+                    .limit(1)
                     .firstOrNull()
             }
             val byId = if (byInvite == null) transaction {
-                Households.select { Households.id eq req.inviteCodeOrId }.limit(1).firstOrNull()
+                Households.select { Households.id eq req.inviteCodeOrIdOrLink }.limit(1).firstOrNull()
             } else null
             val householdRow = byInvite ?: byId
 
@@ -192,7 +218,8 @@ fun Application.householdRoutes() {
                                 balanceCurrency = "IRR"
                             )
                         }
-                    }
+                    },
+                    inviteLink = "https://opensplit.com/join/${householdRow[Households.inviteCode]}"
                 )
             )
         }
@@ -202,7 +229,7 @@ fun Application.householdRoutes() {
                 call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
 
             val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ")
-            val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+            val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
             val userId = resolveUserIdFromToken(token)
 
             if (userId == null) {
@@ -247,7 +274,8 @@ fun Application.householdRoutes() {
                 HouseholdDto(
                     id = householdRow[Households.id],
                     name = householdRow[Households.name],
-                    members = members
+                    members = members,
+                    inviteLink = "https://opensplit.com/join/${householdRow[Households.inviteCode]}"
                 )
             }
 
@@ -267,7 +295,7 @@ fun Application.householdRoutes() {
         get("/households/overview") {
             val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ")
                 ?: call.request.cookies["opensplit-auth-session"]
-            val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+            val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
             val userId = resolveUserIdFromToken(token)
             if (userId == null) {
                 call.respond(
@@ -287,7 +315,7 @@ fun Application.householdRoutes() {
             val householdId = call.parameters["householdId"]
             val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ")
                 ?: call.request.cookies["opensplit-auth-session"]
-            val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+            val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
             val userId = resolveUserIdFromToken(token)
             if (userId == null) {
                 call.respond(

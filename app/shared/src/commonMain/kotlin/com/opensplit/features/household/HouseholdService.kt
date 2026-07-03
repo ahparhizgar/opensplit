@@ -3,7 +3,6 @@ package com.opensplit.features.household
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.household.CreateHouseholdRequest
 import com.opensplit.dto.household.HouseholdDto
-import com.opensplit.dto.household.NewHouseholdDto
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.features.auth.TokenStorage
@@ -26,7 +25,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
 interface HouseholdService {
-    suspend fun createHousehold(name: String): NewHouseholdDto
+    suspend fun createHousehold(name: String): HouseholdDto
     suspend fun joinHousehold(inviteCode: String)
     suspend fun loadOverview(): HouseholdOverviewDto
     suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto
@@ -59,7 +58,7 @@ class KtorHouseholdService(
         throw RemoteException(generalError = "Session expired. Please sign in again.")
     }
 
-    override suspend fun createHousehold(name: String): NewHouseholdDto {
+    override suspend fun createHousehold(name: String): HouseholdDto {
         if (checkTokenExpired()) handleUnauthorized()
         val response = client.post("$baseUrl/households") {
             contentType(ContentType.Application.Json)
@@ -73,7 +72,7 @@ class KtorHouseholdService(
         if (checkTokenExpired()) handleUnauthorized()
         val response = client.post("$baseUrl/households/join") {
             contentType(ContentType.Application.Json)
-            setBody(JoinHouseholdRequest(inviteCodeOrId = inviteCode))
+            setBody(JoinHouseholdRequest(inviteCodeOrIdOrLink = inviteCode))
         }
         if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
         return parseResponse(response)

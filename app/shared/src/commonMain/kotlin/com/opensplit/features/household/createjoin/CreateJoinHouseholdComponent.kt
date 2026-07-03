@@ -1,7 +1,10 @@
 package com.opensplit.features.household.createjoin
 
+import com.arkivanov.decompose.router.stack.navigate
 import com.opensplit.component.CContext
+import com.opensplit.component.navigation
 import com.opensplit.features.household.HouseholdService
+import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +35,15 @@ class DefaultCreateJoinHouseholdComponent(
 ) : CreateJoinHouseholdComponent, CContext by context {
 
     override val createComponent: CreateHouseholdComponent =
-        DefaultCreateHouseholdComponent(context, gateway)
+        DefaultCreateHouseholdComponent(
+            context = context,
+            gateway = gateway,
+            onDone = { household ->
+                navigation.navigate {
+                    it.dropLast(1) + listOf(HouseholdDetailsComponent.Config(household.id))
+                }
+            }
+        )
     override val joinComponent: JoinHouseholdComponent =
         DefaultJoinHouseholdComponent(context, gateway)
 
