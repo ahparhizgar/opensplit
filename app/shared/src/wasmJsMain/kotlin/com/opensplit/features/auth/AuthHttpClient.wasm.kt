@@ -1,29 +1,11 @@
 package com.opensplit.features.auth
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.js.Js
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
+import kotlin.js.ExperimentalWasmJsInterop
 
-actual fun createAuthHttpClient(): HttpClient =
-    HttpClient(Js) {
-      expectSuccess = false
-      install(ContentNegotiation) {
-        json(
-            Json {
-              ignoreUnknownKeys = true
-              explicitNulls = false
-            },
-        )
-      }
-    }
+@OptIn(ExperimentalWasmJsInterop::class)
+internal actual fun platformDecodeBase64(input: String): String = js("atob(input)")
 
-actual fun getApiBaseUrl(): String = "http://127.0.0.1:8080"
+@OptIn(ExperimentalWasmJsInterop::class)
+private fun jsCurrentTimeSeconds(): Double = js("Math.floor(Date.now() / 1000)")
 
-actual fun platformDecodeBase64(input: String): String {
-  val binaryStr = js("atob(input)")
-  return binaryStr as String
-}
-
-actual fun currentTimeSeconds(): Long = (js("Math.floor(Date.now() / 1000)") as Double).toLong()
+internal actual fun currentTimeSeconds(): Long = jsCurrentTimeSeconds().toLong()

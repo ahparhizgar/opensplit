@@ -5,8 +5,8 @@ import com.opensplit.db.databaseModule
 import com.opensplit.db.databaseTestModule
 import com.opensplit.features.auth.authModule
 import com.opensplit.features.auth.authRoutes
-import com.opensplit.routes.healthRoute
-import com.opensplit.routes.householdRoutes
+import com.opensplit.features.health.healthRoute
+import com.opensplit.features.household.householdRoutes
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install

@@ -30,7 +30,7 @@ class HouseholdScenarios {
             .body<HouseholdDto>()
 
     client
-        .post("/households/join") { setBody(JoinHouseholdRequest(created.inviteLink)) }
+        .post("/households/memberships") { setBody(JoinHouseholdRequest(created.inviteLink)) }
         .also { assertEquals(HttpStatusCode.OK, it.status) }
   }
 
@@ -70,7 +70,7 @@ class HouseholdScenarios {
   @Test
   fun joinReturnsClearErrorForInvalidInviteCode() = testOpenSplit {
     val response =
-        client.post("/households/join") { setBody(JoinHouseholdRequest("not-a-real-code")) }
+        client.post("/households/memberships") { setBody(JoinHouseholdRequest("not-a-real-code")) }
 
     assertEquals(HttpStatusCode.NotFound, response.status)
     val error = response.body<ErrorResponse>()
@@ -91,10 +91,10 @@ class HouseholdScenarios {
     val otherClient = createAuthenticatedClient(otherUser.accessToken)
 
     otherClient
-        .post("/households/join") { setBody(JoinHouseholdRequest(created.inviteLink)) }
+        .post("/households/memberships") { setBody(JoinHouseholdRequest(created.inviteLink)) }
         .also { assertEquals(HttpStatusCode.OK, it.status) }
 
-    val leaveResponse = otherClient.delete("/households/${created.id}/memberships/me")
+    val leaveResponse = otherClient.delete("/households/${created.id}/memberships")
     assertEquals(HttpStatusCode.OK, leaveResponse.status)
     val afterLeave = leaveResponse.body<HouseholdOverviewDto>()
     assertEquals(0, afterLeave.households.size)
@@ -114,7 +114,7 @@ class HouseholdScenarios {
     val otherClient = createAuthenticatedClient(otherUser.accessToken)
 
     val joinById =
-        otherClient.post("/households/join") { setBody(JoinHouseholdRequest(created.id)) }
+        otherClient.post("/households/memberships") { setBody(JoinHouseholdRequest(created.id)) }
 
     assertEquals(HttpStatusCode.Forbidden, joinById.status)
     val error = joinById.body<ErrorResponse>()
@@ -128,7 +128,7 @@ class HouseholdScenarios {
             .post("/households") { setBody(CreateHouseholdRequest("Family Home")) }
             .body<HouseholdDto>()
 
-    val overview = client.get("/households/overview").body<HouseholdOverviewDto>()
+    val overview = client.get("/households").body<HouseholdOverviewDto>()
 
     assertEquals(1, overview.households.size)
     val household = overview.households.first()
@@ -148,16 +148,16 @@ class HouseholdScenarios {
     val otherClient = createAuthenticatedClient(otherUser.accessToken)
 
     otherClient
-        .post("/households/join") { setBody(JoinHouseholdRequest(created.inviteLink)) }
+        .post("/households/memberships") { setBody(JoinHouseholdRequest(created.inviteLink)) }
         .also { assertEquals(HttpStatusCode.OK, it.status) }
 
     // Owner leaves, ownership should transfer
-    client.delete("/households/${created.id}/memberships/me").also {
+    client.delete("/households/${created.id}/memberships").also {
       assertEquals(HttpStatusCode.OK, it.status)
     }
 
     // Verify other user is still in the household
-    val overview = otherClient.get("/households/overview").body<HouseholdOverviewDto>()
+    val overview = otherClient.get("/households").body<HouseholdOverviewDto>()
     assertEquals(1, overview.households.size)
     assertTrue(overview.households.first().isOwner, "Ownership should have been transferred")
   }
@@ -169,12 +169,12 @@ class HouseholdScenarios {
             .post("/households") { setBody(CreateHouseholdRequest("Solo Home")) }
             .body<HouseholdDto>()
 
-    client.delete("/households/${created.id}/memberships/me").also {
+    client.delete("/households/${created.id}/memberships").also {
       assertEquals(HttpStatusCode.OK, it.status)
     }
 
     // Verify safe landing
-    val overview = client.get("/households/overview").body<HouseholdOverviewDto>()
+    val overview = client.get("/households").body<HouseholdOverviewDto>()
     assertEquals(0, overview.households.size, "Should have no households")
   }
 }

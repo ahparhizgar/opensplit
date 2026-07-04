@@ -1,6 +1,6 @@
 package com.opensplit.component
 
-import com.ahparhizgar.apicallerror.ApiCallError
+import com.ahparhizgar.katch.ApiCallError
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.ComponentContextFactory
 import com.arkivanov.decompose.GenericComponentContext

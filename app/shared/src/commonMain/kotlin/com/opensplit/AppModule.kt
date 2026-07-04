@@ -5,8 +5,8 @@ import com.opensplit.datastore.createDataStore
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthGateway
 import com.opensplit.features.auth.DefaultAuthComponent
+import com.opensplit.features.auth.KtorAuthGateway
 import com.opensplit.features.auth.TokenStorage
-import com.opensplit.features.auth.createAuthGateway
 import com.opensplit.features.household.HouseholdService
 import com.opensplit.features.household.KtorHouseholdService
 import com.opensplit.features.household.createjoin.CreateHouseholdComponent
@@ -17,6 +17,7 @@ import com.opensplit.features.household.details.DefaultHouseholdDetailsComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.my.DefaultMyHouseholdsListComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
+import com.opensplit.ktor.createHttpClient
 import com.opensplit.root.ComponentProvider
 import com.opensplit.root.DefaultRootComponent
 import com.opensplit.root.KoinComponentProvider
@@ -27,10 +28,11 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 fun appModule() = module {
+  factoryOf(::createHttpClient)
   factory { KoinComponentProvider(this) }.bind<ComponentProvider>()
   singleOf(::createDataStore)
   singleOf(::DataStoreTokenStorage).bind<TokenStorage>()
-  factory { createAuthGateway() }.bind<AuthGateway>()
+  factoryOf(::KtorAuthGateway).bind<AuthGateway>()
   factoryOf(::KtorHouseholdService).bind<HouseholdService>()
   factoryOf(DefaultRootComponent::Factory).bind<RootComponent.Factory>()
   factoryOf(DefaultAuthComponent::Factory).bind<AuthComponent.Factory>()

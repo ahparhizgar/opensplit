@@ -1,30 +1,13 @@
 package com.opensplit.features.auth
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.darwin.Darwin
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
+import kotlinx.cinterop.BetaInteropApi
 import platform.Foundation.NSData
 import platform.Foundation.create
+import platform.Foundation.timeIntervalSince1970
 
-actual fun createAuthHttpClient(): HttpClient =
-    HttpClient(Darwin) {
-      expectSuccess = false
-      install(ContentNegotiation) {
-        json(
-            Json {
-              ignoreUnknownKeys = true
-              explicitNulls = false
-            },
-        )
-      }
-    }
-
-actual fun getApiBaseUrl(): String = "http://127.0.0.1:8080"
-
+@OptIn(BetaInteropApi::class)
 actual fun platformDecodeBase64(input: String): String {
-  val nsData = NSData.create(base64Encoded = input, options = 0) ?: return ""
+  val nsData = NSData.create(input, 0.toULong()) ?: return ""
   return nsData.toString()
 }
 

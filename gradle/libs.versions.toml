@@ -23,7 +23,7 @@ lifecycle = "2.5.0"
 kotlinx-serialization = "1.11.0"
 koin = "4.2.2"
 koinCompose = "4.2.2"
-apiCallError = "0.1.0"
+katch = "0.2.0"
 kotest = "6.2.1"
 ksp = "2.3.8"
 datastorePreferences = "1.3.0-alpha09"
@@ -62,14 +62,15 @@ ktor-serverAuth = { module = "io.ktor:ktor-server-auth-jvm", version.ref = "ktor
 ktor-serverAuthJwt = { module = "io.ktor:ktor-server-auth-jwt-jvm", version.ref = "ktor" }
 ktor-jwt = { module = "com.auth0:java-jwt", version = "4.4.0" }
 ktor-clientCore = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-clientLogging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-clientAuth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-clientContentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-clientOkHttp = { module = "io.ktor:ktor-client-okhttp-jvm", version.ref = "ktor" }
 ktor-clientDarwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-clientJs = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 wrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
-apiCallError = { module = "io.github.ahparhizgar:api-call-error", version.ref = "apiCallError" }
-apiCallError-ktor = { module = "io.github.ahparhizgar:api-call-error-ktor", version.ref = "apiCallError" }
+katch = { module = "io.github.ahparhizgar:katch", version.ref = "katch" }
+katch-ktor = { module = "io.github.ahparhizgar:katch-ktor", version.ref = "katch" }
 decompose-compose = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
 decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
 lifecycle = { module = "com.arkivanov.essenty:lifecycle", version.ref = "lifecycle" }

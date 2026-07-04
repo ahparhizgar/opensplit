@@ -29,7 +29,6 @@ interface AuthGateway {
 
 class KtorAuthGateway(
     private val client: HttpClient,
-    private val baseUrl: String,
 ) : AuthGateway {
   override suspend fun signUp(email: String, password: String): AuthSubmissionResult =
       submit(
@@ -46,7 +45,7 @@ class KtorAuthGateway(
   private suspend fun submit(path: String, request: Any): AuthSubmissionResult {
     return try {
       val response =
-          client.post("$baseUrl$path") {
+          client.post("path") {
             contentType(ContentType.Application.Json)
             setBody(request)
           }
@@ -62,9 +61,7 @@ class KtorAuthGateway(
       val session = response.body<AuthSessionState>()
       val householdContext =
           client
-              .get("$baseUrl/household-context") {
-                header("Authorization", "Bearer ${session.accessToken}")
-              }
+              .get("household-context") { header("Authorization", "Bearer ${session.accessToken}") }
               .body<HouseholdContextState>()
       AuthSubmissionResult(session = session, householdContext = householdContext)
     } catch (e: RemoteException) {
@@ -76,9 +73,3 @@ class KtorAuthGateway(
     }
   }
 }
-
-fun createAuthGateway(): AuthGateway = KtorAuthGateway(createAuthHttpClient(), getApiBaseUrl())
-
-expect fun createAuthHttpClient(): HttpClient
-
-expect fun getApiBaseUrl(): String

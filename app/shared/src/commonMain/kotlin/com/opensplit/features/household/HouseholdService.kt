@@ -6,15 +6,10 @@ import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.features.auth.TokenStorage
-import com.opensplit.features.auth.createAuthHttpClient
-import com.opensplit.features.auth.getApiBaseUrl
 import com.opensplit.features.auth.isJwtExpired
 import com.opensplit.remote.RemoteException
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.auth.Auth
-import io.ktor.client.plugins.auth.providers.BearerTokens
-import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -37,18 +32,9 @@ interface HouseholdService {
 }
 
 class KtorHouseholdService(
+    private val client: HttpClient,
     private val tokenStorage: TokenStorage,
 ) : HouseholdService {
-
-  private val baseUrl = getApiBaseUrl()
-
-  private val client: HttpClient =
-      createAuthHttpClient().config {
-        install(Auth) {
-          bearer { loadTokens { BearerTokens(tokenStorage.getAccessToken() ?: "", "") } }
-        }
-      }
-
   private suspend fun checkTokenExpired(): Boolean {
     val token = tokenStorage.getAccessToken() ?: return false
     return isJwtExpired(token)
@@ -62,7 +48,7 @@ class KtorHouseholdService(
   override suspend fun createHousehold(name: String): HouseholdDto {
     if (checkTokenExpired()) handleUnauthorized()
     val response =
-        client.post("$baseUrl/households") {
+        client.post("households") {
           contentType(ContentType.Application.Json)
           setBody(CreateHouseholdRequest(name = name))
         }
@@ -73,7 +59,7 @@ class KtorHouseholdService(
   override suspend fun joinHousehold(inviteCode: String): HouseholdDto {
     if (checkTokenExpired()) handleUnauthorized()
     val response =
-        client.post("$baseUrl/households/join") {
+        client.post("households/memberships") {
           contentType(ContentType.Application.Json)
           setBody(JoinHouseholdRequest(inviteCodeOrIdOrLink = inviteCode))
         }
@@ -83,21 +69,21 @@ class KtorHouseholdService(
 
   override suspend fun loadOverview(): HouseholdOverviewDto {
     if (checkTokenExpired()) handleUnauthorized()
-    val response = client.get("$baseUrl/households/overview")
+    val response = client.get("households")
     if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
     return parseResponse(response)
   }
 
   override suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto {
     if (checkTokenExpired()) handleUnauthorized()
-    val response = client.delete("$baseUrl/households/$householdId/memberships/me")
+    val response = client.delete("households/$householdId/memberships")
     if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
     return parseResponse(response)
   }
 
   override suspend fun getHousehold(id: String): HouseholdDto {
     if (checkTokenExpired()) handleUnauthorized()
-    val response = client.get("$baseUrl/households/$id")
+    val response = client.get("households/$id")
     if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
     return parseResponse(response)
   }
