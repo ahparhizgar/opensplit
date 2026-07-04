@@ -5,8 +5,16 @@ import com.opensplit.datastore.createDataStore
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthGateway
 import com.opensplit.features.auth.DefaultAuthComponent
+import com.opensplit.features.auth.DefaultLoginComponent
+import com.opensplit.features.auth.DefaultResetPasswordComponent
+import com.opensplit.features.auth.DefaultSignUpComponent
+import com.opensplit.features.auth.DefaultWelcomeComponent
 import com.opensplit.features.auth.KtorAuthGateway
+import com.opensplit.features.auth.LoginComponent
+import com.opensplit.features.auth.ResetPasswordComponent
+import com.opensplit.features.auth.SignUpComponent
 import com.opensplit.features.auth.TokenStorage
+import com.opensplit.features.auth.WelcomeComponent
 import com.opensplit.features.household.HouseholdService
 import com.opensplit.features.household.KtorHouseholdService
 import com.opensplit.features.household.createjoin.CreateHouseholdComponent
@@ -36,6 +44,10 @@ fun appModule() = module {
   factoryOf(::KtorHouseholdService).bind<HouseholdService>()
   factoryOf(DefaultRootComponent::Factory).bind<RootComponent.Factory>()
   factoryOf(DefaultAuthComponent::Factory).bind<AuthComponent.Factory>()
+  factoryOf(DefaultWelcomeComponent::Factory).bind<WelcomeComponent.Factory>()
+  factoryOf(DefaultLoginComponent::Factory).bind<LoginComponent.Factory>()
+  factoryOf(DefaultSignUpComponent::Factory).bind<SignUpComponent.Factory>()
+  factoryOf(DefaultResetPasswordComponent::Factory).bind<ResetPasswordComponent.Factory>()
   factoryOf(DefaultCreateJoinHouseholdComponent::Factory)
       .bind<CreateJoinHouseholdComponent.Factory>()
   factoryOf(DefaultCreateHouseholdComponent::Factory).bind<CreateHouseholdComponent.Factory>()

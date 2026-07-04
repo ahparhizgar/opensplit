@@ -4,16 +4,13 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
-import com.arkivanov.decompose.router.stack.navigate
 import com.arkivanov.decompose.router.stack.replaceAll
-import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.opensplit.component.CContext
 import com.opensplit.component.CallBackNavigationOwner
 import com.opensplit.component.componentScope
 import com.opensplit.features.auth.AuthComponent
-import com.opensplit.features.auth.AuthMode
 import com.opensplit.features.auth.FakeAuthComponent
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
@@ -54,7 +51,7 @@ class DefaultRootComponent(
         if (!token.isNullOrEmpty()) {
           navigation.replaceAll(MyHouseholdsListComponent.Config())
         } else {
-          navigation.replaceAll(AuthComponent.Config(AuthMode.SignUp))
+          navigation.replaceAll(AuthComponent.Config)
         }
       } catch (_: Throwable) {
         // Swallow any persistence errors; default to auth flow.
@@ -75,7 +72,7 @@ class DefaultRootComponent(
     return when (config) {
       is SplashDestination -> SplashDestination
       is AuthComponent.Config ->
-          componentProvider.provide(AuthComponent.Factory::class).create(cContext, config)
+          componentProvider.provide(AuthComponent.Factory::class).create(cContext)
 
       is CreateJoinHouseholdComponent.Config ->
           componentProvider.provide(CreateJoinHouseholdComponent.Factory::class).create(cContext)
@@ -110,7 +107,7 @@ class FakeRootComponent : RootComponent {
   override val childStack: Value<ChildStack<*, Any>> =
       MutableValue(
           ChildStack(
-              active = Child.Created(AuthComponent.Config(AuthMode.SignUp), FakeAuthComponent()),
+              active = Child.Created(AuthComponent.Config, FakeAuthComponent()),
               backStack = emptyList(),
           )
       )

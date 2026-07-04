@@ -1,188 +1,115 @@
 package com.opensplit.features.auth
 
-import com.arkivanov.decompose.router.stack.push
-import com.arkivanov.decompose.router.stack.pushNew
+import com.arkivanov.decompose.router.stack.ChildStack
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.replaceCurrent
+import com.arkivanov.decompose.value.MutableValue
+import com.arkivanov.decompose.value.Value
 import com.opensplit.component.CContext
 import com.opensplit.component.navigation
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.root.Destination
 import com.opensplit.root.TopLevelDestinationConfig
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class AuthMode {
-  SignIn,
-  SignUp,
+sealed interface AuthConfig {
+  @Serializable data object Welcome : AuthConfig
+
+  @Serializable data object Login : AuthConfig
+
+  @Serializable data object SignUp : AuthConfig
+
+  @Serializable data object ResetPassword : AuthConfig
 }
 
-data class AuthViewState(
-    val mode: AuthMode = AuthMode.SignIn,
-    val email: String = "",
-    val password: String = "",
-    val fieldErrors: Map<String, String> = emptyMap(),
-    val generalError: String? = null,
-    val session: com.opensplit.dto.auth.AuthSessionState? = null,
-    val isSubmitting: Boolean = false,
-)
-
 interface AuthComponent : Destination {
-  val uiState: StateFlow<AuthViewState>
+  val stack: Value<ChildStack<AuthConfig, Child>>
 
-  fun useSignIn()
+  sealed class Child {
+    class Welcome(val component: WelcomeComponent) : Child()
 
-  fun useSignUp()
+    class Login(val component: LoginComponent) : Child()
 
-  fun updateEmail(email: String)
+    class SignUp(val component: SignUpComponent) : Child()
 
-  fun updatePassword(password: String)
+    class ResetPassword(val component: ResetPasswordComponent) : Child()
+  }
 
-  suspend fun submit()
-
-  @Serializable
-  data class Config(
-      val mode: AuthMode,
-  ) : TopLevelDestinationConfig
+  @Serializable data object Config : TopLevelDestinationConfig
 
   interface Factory {
-    fun create(cContext: CContext, config: Config): AuthComponent
+    fun create(cContext: CContext): AuthComponent
   }
 }
 
 class DefaultAuthComponent(
     context: CContext,
-    config: AuthComponent.Config,
-    private val gateway: AuthGateway,
-    private val tokenStorage: TokenStorage,
+    private val welcomeFactory: WelcomeComponent.Factory,
+    private val loginFactory: LoginComponent.Factory,
+    private val signUpFactory: SignUpComponent.Factory,
+    private val resetPasswordFactory: ResetPasswordComponent.Factory,
 ) : AuthComponent, CContext by context {
-  private val _uiState = MutableStateFlow(AuthViewState(mode = config.mode))
-  override val uiState: StateFlow<AuthViewState> = _uiState
 
-  // apiCallScope is intentionally not used here: submit is suspend and runs on the
-  // caller coroutine so callers/tests can await completion.
+  private val navigation = StackNavigation<AuthConfig>()
 
-  override fun useSignIn() {
-    navigation.push(AuthComponent.Config(AuthMode.SignIn))
-    _uiState.update {
-      it.copy(mode = AuthMode.SignIn, fieldErrors = emptyMap(), generalError = null)
+  override val stack: Value<ChildStack<AuthConfig, AuthComponent.Child>> =
+      childStack(
+          source = navigation,
+          serializer = null,
+          initialConfiguration = AuthConfig.Welcome,
+          handleBackButton = true,
+          childFactory = ::createChild,
+      )
+
+  private fun createChild(config: AuthConfig, context: CContext): AuthComponent.Child {
+    return when (config) {
+      AuthConfig.Welcome -> AuthComponent.Child.Welcome(welcomeFactory.create(navigation))
+      AuthConfig.Login ->
+          AuthComponent.Child.Login(loginFactory.create(context, navigation, ::onAuthenticated))
+      AuthConfig.SignUp ->
+          AuthComponent.Child.SignUp(signUpFactory.create(context, navigation, ::onAuthenticated))
+      AuthConfig.ResetPassword ->
+          AuthComponent.Child.ResetPassword(resetPasswordFactory.create(navigation))
     }
   }
 
-  override fun useSignUp() {
-    _uiState.update {
-      it.copy(mode = AuthMode.SignUp, fieldErrors = emptyMap(), generalError = null)
-    }
-  }
-
-  override fun updateEmail(email: String) {
-    _uiState.update {
-      it.copy(email = email, fieldErrors = it.fieldErrors - "email", generalError = null)
-    }
-  }
-
-  override fun updatePassword(password: String) {
-    _uiState.update {
-      it.copy(password = password, fieldErrors = it.fieldErrors - "password", generalError = null)
-    }
-  }
-
-  override suspend fun submit() {
-    val current = _uiState.value
-    // Run validations and network call on caller coroutine so tests can await completion
-    val validation =
-        when (current.mode) {
-          AuthMode.SignIn ->
-              com.opensplit.validation.auth.AuthValidation.validateSignIn(
-                  current.email,
-                  current.password,
-              )
-
-          AuthMode.SignUp ->
-              com.opensplit.validation.auth.AuthValidation.validateSignUp(
-                  current.email,
-                  current.password,
-              )
-        }
-
-    if (!validation.isValid) {
-      _uiState.update {
-        it.copy(
-            fieldErrors = validation.errors,
-            generalError = null,
-            session = null,
-            isSubmitting = false,
-        )
-      }
-      return
-    }
-
-    _uiState.update { it.copy(fieldErrors = emptyMap(), generalError = null, isSubmitting = true) }
-
-    try {
-      val result =
-          when (current.mode) {
-            AuthMode.SignIn -> gateway.signIn(current.email, current.password)
-            AuthMode.SignUp -> gateway.signUp(current.email, current.password)
-          }
-      // Persist access token (best-effort). Swallow errors so persistence
-      // problems don't prevent successful authentication from being reported.
-      try {
-        result.session.accessToken.let { token -> tokenStorage.saveAccessToken(token) }
-      } catch (_: Throwable) {}
-      _uiState.update {
-        it.copy(
-            session = result.session,
-            fieldErrors = emptyMap(),
-            generalError = null,
-            isSubmitting = false,
-        )
-      }
-      navigation.replaceCurrent(MyHouseholdsListComponent.Config())
-    } catch (e: com.opensplit.remote.RemoteException) {
-      _uiState.update {
-        it.copy(
-            fieldErrors = e.fieldErrors,
-            generalError = e.generalError,
-            session = null,
-            isSubmitting = false,
-        )
-      }
-    }
+  private fun onAuthenticated() {
+    (this as CContext).navigation.replaceCurrent(MyHouseholdsListComponent.Config())
   }
 
   class Factory(
-      private val gateway: AuthGateway,
-      private val tokenStorage: TokenStorage,
+      private val welcomeFactory: WelcomeComponent.Factory,
+      private val loginFactory: LoginComponent.Factory,
+      private val signUpFactory: SignUpComponent.Factory,
+      private val resetPasswordFactory: ResetPasswordComponent.Factory,
   ) : AuthComponent.Factory {
-    override fun create(context: CContext, config: AuthComponent.Config): AuthComponent =
-        DefaultAuthComponent(context, config, gateway, tokenStorage)
+    override fun create(cContext: CContext): AuthComponent =
+        DefaultAuthComponent(
+            cContext,
+            welcomeFactory,
+            loginFactory,
+            signUpFactory,
+            resetPasswordFactory,
+        )
   }
 }
 
 class FakeAuthComponent(
-    uiState: AuthViewState =
-        AuthViewState(
-            session =
-                com.opensplit.dto.auth.AuthSessionState(
-                    userId = "user-1",
-                    email = "amir@example.com",
-                    accessToken = "token",
-                )
+    override val stack: Value<ChildStack<AuthConfig, AuthComponent.Child>> =
+        MutableValue(
+            ChildStack(
+                active =
+                    com.arkivanov.decompose.Child.Created(
+                        AuthConfig.Welcome,
+                        AuthComponent.Child.Welcome(FakeWelcomeComponent()),
+                    ),
+                backStack = emptyList(),
+            )
         )
 ) : AuthComponent {
-  private val _uiState = MutableStateFlow(uiState)
-  override val uiState: StateFlow<AuthViewState> = _uiState
-
-  override fun useSignIn() {}
-
-  override fun useSignUp() {}
-
-  override fun updateEmail(email: String) {}
-
-  override fun updatePassword(password: String) {}
-
-  override suspend fun submit() {}
+  class Factory : AuthComponent.Factory {
+    override fun create(cContext: CContext): AuthComponent = FakeAuthComponent()
+  }
 }
