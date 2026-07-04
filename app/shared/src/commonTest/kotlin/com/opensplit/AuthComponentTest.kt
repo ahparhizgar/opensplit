@@ -2,7 +2,6 @@ package com.opensplit
 
 import com.opensplit.component.createDefaultComponentContext
 import com.opensplit.features.auth.AuthComponent
-import com.opensplit.features.auth.AuthMode
 import com.opensplit.util.And
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.When
@@ -11,8 +10,6 @@ import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.maps.beEmpty
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
 
@@ -21,66 +18,49 @@ class AuthComponentTest :
       extensions(MainDispatcherExtension())
       Given("an Auth component") {
         val koin by integrationKoin()
-
         var component by testValue {
           koin
               .get<AuthComponent.Factory>()
-              .create(
-                  createDefaultComponentContext(createComponentContext()),
-                  AuthComponent.Config(AuthMode.SignUp),
-              )
+              .create(createDefaultComponentContext(createComponentContext()))
         }
 
         When(
-            "using sign up with invalid input",
+            "navigating to sign up and using invalid input",
             {
-              component.useSignUp()
-              component.updateEmail("bad-email")
-              component.updatePassword("short")
-              component.submit()
+              component.welcome().onSignUpClicked()
+
+              with(component.signUp()) {
+                onEmailChanged("bad-email")
+                onPasswordChanged("short")
+                onDoneClicked()
+              }
             },
         ) {
-          Then("uses shared validation and routes on success") {
-            component.uiState.value.let { state ->
-              state.fieldErrors shouldNot beEmpty()
-              state.mode shouldBe AuthMode.SignUp
-              state.session shouldBe null
-            }
+          Then("shows validation errors") {
+            component.signUp().state.value.let { state -> state.fieldErrors shouldNot beEmpty() }
           }
 
           And(
               "providing valid credentials",
               {
-                component.updateEmail("valid@example.com")
-                component.updatePassword("password123")
-                component.submit()
+                with(component.signUp()) {
+                  onEmailChanged("valid@example.com")
+                  onPasswordChanged("password123")
+                  onDoneClicked()
+                }
               },
           ) {
-            Then("routes to authenticated session") {
-              component.uiState.value.let { state ->
-                state.fieldErrors should beEmpty()
-                val session = state.session.shouldNotBeNull()
-                session.email shouldBe "valid@example.com"
-              }
-            }
-          }
-        }
-
-        When(
-            "submitting valid credentials",
-            {
-              component.updateEmail("amir@example.com")
-              component.updatePassword("password123")
-              component.submit()
-            },
-        ) {
-          Then("routes to household context after valid submission") {
-            component.uiState.value.let { state ->
-              val session = state.session.shouldNotBeNull()
-              session.email shouldBe "amir@example.com"
-              koin.get<FakeAuthGateway>().signUpCalls shouldBe 1
-            }
+            Then("calls gateway") { koin.get<FakeAuthGateway>().signUpCalls shouldBe 1 }
           }
         }
       }
     })
+
+fun AuthComponent.welcome() = (stack.value.active.instance as AuthComponent.Child.Welcome).component
+
+fun AuthComponent.signUp() = (stack.value.active.instance as AuthComponent.Child.SignUp).component
+
+fun AuthComponent.login() = (stack.value.active.instance as AuthComponent.Child.Login).component
+
+fun AuthComponent.resetPassword() =
+    (stack.value.active.instance as AuthComponent.Child.ResetPassword).component
