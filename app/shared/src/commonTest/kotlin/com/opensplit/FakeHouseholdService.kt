@@ -5,38 +5,11 @@ import com.opensplit.dto.household.HouseholdMemberDto
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.features.household.HouseholdService
+import com.opensplit.util.FakeService
 
-class FakeHouseholdService : HouseholdService {
-  var createCalls = 0
-  var joinCalls = 0
-  var loadOverviewCalls = 0
-  var leaveCalls = 0
-
-  fun withSingleHousehold(): FakeHouseholdService {
-    overview =
-        HouseholdOverviewDto(
-            households =
-                listOf(
-                    HouseholdSummaryDto(
-                        id = "household-1",
-                        name = "Solo House",
-                        memberCount = 1,
-                        inviteCode = "invite-abc123",
-                    ),
-                ),
-            members =
-                listOf(
-                    HouseholdMemberDto(
-                        userId = "user-1",
-                        email = "amir@example.com",
-                        isOwner = true,
-                    )
-                ),
-        )
-    return this
-  }
-
-  private var overview =
+class FakeHouseholdService : HouseholdService, FakeService {
+  override var errorToThrow: Exception? = null
+  var overview =
       HouseholdOverviewDto(
           households =
               listOf(
@@ -59,8 +32,7 @@ class FakeHouseholdService : HouseholdService {
               ),
       )
 
-  override suspend fun createHousehold(name: String): HouseholdDto {
-    createCalls++
+  override suspend fun createHousehold(name: String): HouseholdDto = fakeApiCall {
     overview =
         HouseholdOverviewDto(
             households =
@@ -81,7 +53,7 @@ class FakeHouseholdService : HouseholdService {
                     )
                 ),
         )
-    return HouseholdDto(
+    HouseholdDto(
         id = "household-1",
         name = name,
         inviteLink = "https://opensplit.com/join/invite-abc123",
@@ -89,8 +61,7 @@ class FakeHouseholdService : HouseholdService {
     )
   }
 
-  override suspend fun joinHousehold(inviteCode: String): HouseholdDto {
-    joinCalls++
+  override suspend fun joinHousehold(inviteCode: String): HouseholdDto = fakeApiCall {
     overview =
         overview.copy(
             households =
@@ -111,7 +82,7 @@ class FakeHouseholdService : HouseholdService {
                     )
                 ),
         )
-    return HouseholdDto(
+    HouseholdDto(
         id = "household-2",
         name = "Joined House",
         inviteLink = "https://opensplit.com/join/invite-def456",
@@ -119,24 +90,20 @@ class FakeHouseholdService : HouseholdService {
     )
   }
 
-  override suspend fun loadOverview(): HouseholdOverviewDto {
-    loadOverviewCalls++
-    return overview
-  }
+  override suspend fun loadOverview(): HouseholdOverviewDto = fakeApiCall { overview }
 
-  override suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto {
-    leaveCalls++
+  override suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto = fakeApiCall {
     val remaining = overview.households.filterNot { it.id == householdId }
     overview =
         overview.copy(
             households = remaining,
             members = if (remaining.isEmpty()) emptyList() else overview.members,
         )
-    return overview
+    overview
   }
 
-  override suspend fun getHousehold(id: String): HouseholdDto {
-    return HouseholdDto(
+  override suspend fun getHousehold(id: String): HouseholdDto = fakeApiCall {
+    HouseholdDto(
         id = id,
         name = "Household ${id.take(5)}",
         inviteLink = "https://opensplit.com/join/invite-abc123",

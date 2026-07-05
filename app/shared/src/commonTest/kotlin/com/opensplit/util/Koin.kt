@@ -13,7 +13,13 @@ import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 
 fun Spec.integrationKoin() = testValue {
-  koinApplication { modules(appModule(), integrationTestModule()) }.koin
+  koinApplication {
+        modules(
+            appModule(),
+            integrationTestModule(),
+        )
+      }
+      .koin
 }
 
 fun integrationTestModule() = module {

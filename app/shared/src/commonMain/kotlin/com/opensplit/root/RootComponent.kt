@@ -49,7 +49,7 @@ class DefaultRootComponent(
       try {
         val token = tokenStorage.getAccessToken()
         if (!token.isNullOrEmpty()) {
-          navigation.replaceAll(MyHouseholdsListComponent.Config())
+          navigation.replaceAll(MyHouseholdsListComponent.Config)
         } else {
           navigation.replaceAll(AuthComponent.Config)
         }

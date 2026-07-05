@@ -13,7 +13,9 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-fun appModule() = module {
+fun appModule() = module { includes(othersModule(), decomposeModule()) }
+
+fun othersModule() = module {
   factoryOf(::createHttpClient)
   singleOf(::createDataStore)
   singleOf(::DataStoreTokenStorage).bind<TokenStorage>()

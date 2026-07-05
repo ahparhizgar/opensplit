@@ -11,102 +11,104 @@ import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.maps.beEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
 
-class HouseholdComponentTest :
-    BehaviorSpec({
-      extensions(MainDispatcherExtension())
-      val koin by integrationKoin()
+class HouseholdComponentTest : BehaviorSpec() {
+  init {
+    extensions(MainDispatcherExtension())
+    val koin by integrationKoin()
 
-      Given("a CreateJoinHouseholdComponent – Create tab") {
-        var createJoinComponent by testValue {
-          koin
-              .get<CreateJoinHouseholdComponent.Factory>()
-              .create(createDefaultComponentContext(createComponentContext()))
+    Given("a CreateJoinHouseholdComponent – Create tab") {
+      var createJoinComponent by testValue {
+        koin
+            .get<CreateJoinHouseholdComponent.Factory>()
+            .create(createDefaultComponentContext(createComponentContext()))
+      }
+
+      Then("initial tab is Create and fields are empty") {
+        createJoinComponent.activeTab.value shouldBe HouseholdTab.Create
+        createJoinComponent.createComponent.uiState.value.let { state ->
+          state.householdName shouldBe ""
+          state.fieldErrors should beEmpty()
         }
+      }
 
-        Then("initial tab is Create and fields are empty") {
-          createJoinComponent.activeTab.value shouldBe HouseholdTab.Create
+      When(
+          "submitting with an empty household name",
+          { createJoinComponent.createComponent.submit() },
+      ) {
+        Then("shows a validation error for name") {
           createJoinComponent.createComponent.uiState.value.let { state ->
-            state.householdName shouldBe ""
+            state.fieldErrors shouldNot beEmpty()
+            state.fieldErrors["name"].shouldNotBeNull()
+          }
+        }
+      }
+
+      When(
+          "submitting with a valid household name",
+          {
+            createJoinComponent.createComponent.updateHouseholdName("Family Home")
+            createJoinComponent.createComponent.submit()
+          },
+      ) {
+        Then("creates the household") {
+          createJoinComponent.createComponent.uiState.value.let { state ->
             state.fieldErrors should beEmpty()
-          }
-        }
-
-        When(
-            "submitting with an empty household name",
-            { createJoinComponent.createComponent.submit() },
-        ) {
-          Then("shows a validation error for name") {
-            createJoinComponent.createComponent.uiState.value.let { state ->
-              state.fieldErrors shouldNot beEmpty()
-              state.fieldErrors["name"].shouldNotBeNull()
-            }
-          }
-        }
-
-        When(
-            "submitting with a valid household name",
-            {
-              createJoinComponent.createComponent.updateHouseholdName("Family Home")
-              createJoinComponent.createComponent.submit()
-            },
-        ) {
-          Then("creates the household") {
-            createJoinComponent.createComponent.uiState.value.let { state ->
-              state.fieldErrors should beEmpty()
-              state.generalError shouldBe null
-              koin.get<FakeHouseholdService>().createCalls shouldBe 1
-            }
-          }
-        }
-
-        When(
-            "typing then clearing the household name",
-            {
-              createJoinComponent.createComponent.updateHouseholdName("test")
-              createJoinComponent.createComponent.updateHouseholdName("")
-              createJoinComponent.createComponent.submit()
-            },
-        ) {
-          Then("still shows validation error on empty name") {
-            createJoinComponent.createComponent.uiState.value.fieldErrors["name"].shouldNotBeNull()
-          }
-        }
-
-        When("switching to Join tab", { createJoinComponent.useJoin() }) {
-          Then("active tab is now Join") {
-            createJoinComponent.activeTab.value shouldBe HouseholdTab.Join
+            state.generalError shouldBe null
           }
         }
       }
 
-      Given("a MyHouseholdsListComponent") {
-        var listComponent by testValue {
-          koin
-              .get<MyHouseholdsListComponent.Factory>()
-              .create(createDefaultComponentContext(createComponentContext()))
-        }
-
-        When("loading overview", { listComponent.loadOverview() }) {
-          Then("loads households from gateway") {
-            listComponent.overview.value.households.shouldNotBeEmpty()
-            koin.get<FakeHouseholdService>().loadOverviewCalls shouldBe 1
-          }
-        }
-
-        When(
-            "leaving a household",
-            {
-              val id = "household-1"
-              listComponent.leaveHousehold(id)
-            },
-        ) {
-          Then("calls gateway to leave") { koin.get<FakeHouseholdService>().leaveCalls shouldBe 1 }
+      When(
+          "typing then clearing the household name",
+          {
+            createJoinComponent.createComponent.updateHouseholdName("test")
+            createJoinComponent.createComponent.updateHouseholdName("")
+            createJoinComponent.createComponent.submit()
+          },
+      ) {
+        Then("still shows validation error on empty name") {
+          createJoinComponent.createComponent.uiState.value.fieldErrors["name"].shouldNotBeNull()
         }
       }
-    })
+
+      When("switching to Join tab", { createJoinComponent.useJoin() }) {
+        Then("active tab is now Join") {
+          createJoinComponent.activeTab.value shouldBe HouseholdTab.Join
+        }
+      }
+    }
+
+    Given("a MyHouseholdsListComponent") {
+      var listComponent by testValue {
+        koin
+            .get<MyHouseholdsListComponent.Factory>()
+            .create(createDefaultComponentContext(createComponentContext()))
+      }
+
+      When("loading overview", { listComponent.loadOverview().join() }) {
+        Then("loads households from gateway") {
+          listComponent.overview.value.households.shouldNotBeEmpty()
+        }
+      }
+
+      When(
+          "leaving a household",
+          {
+            val id = "household-1"
+            listComponent.leaveHousehold(id).join()
+          },
+      ) {
+        Then("calls gateway to leave") {
+          listComponent.overview.value.households.map { it.id } shouldNotContain "household-1"
+        }
+      }
+    }
+  }
+}

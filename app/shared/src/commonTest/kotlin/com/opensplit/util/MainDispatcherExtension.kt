@@ -1,11 +1,9 @@
 package com.opensplit.util
 
 import io.kotest.core.extensions.SpecExtension
-import io.kotest.core.listeners.AfterTestListener
-import io.kotest.core.listeners.BeforeTestListener
+import io.kotest.core.listeners.AfterSpecListener
+import io.kotest.core.listeners.BeforeSpecListener
 import io.kotest.core.spec.Spec
-import io.kotest.core.test.TestCase
-import io.kotest.engine.test.TestResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -16,7 +14,7 @@ import kotlinx.coroutines.test.setMain
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainDispatcherExtension(private val dispatcher: TestDispatcher = StandardTestDispatcher()) :
-    BeforeTestListener, AfterTestListener, SpecExtension {
+    BeforeSpecListener, AfterSpecListener, SpecExtension {
   constructor(
       testCoroutineScheduler: TestCoroutineScheduler
   ) : this(
@@ -30,18 +28,11 @@ class MainDispatcherExtension(private val dispatcher: TestDispatcher = StandardT
     super.intercept(spec, execute)
   }
 
-  override suspend fun beforeTest(testCase: TestCase) {
-    if (testCase.parent == null) {
-      Dispatchers.setMain(dispatcher)
-    }
+  override suspend fun beforeSpec(spec: Spec) {
+    Dispatchers.setMain(dispatcher)
   }
 
-  override suspend fun afterTest(
-      testCase: TestCase,
-      result: TestResult,
-  ) {
-    if (testCase.parent == null) {
-      Dispatchers.resetMain()
-    }
+  override suspend fun afterSpec(spec: Spec) {
+    Dispatchers.resetMain()
   }
 }

@@ -76,7 +76,7 @@ class DefaultAuthComponent(
   }
 
   private fun onAuthenticated() {
-    (this as CContext).navigation.replaceCurrent(MyHouseholdsListComponent.Config())
+    (this as CContext).navigation.replaceCurrent(MyHouseholdsListComponent.Config)
   }
 
   class Factory(

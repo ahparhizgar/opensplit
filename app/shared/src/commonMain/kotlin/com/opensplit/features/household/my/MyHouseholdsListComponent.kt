@@ -29,7 +29,7 @@ interface MyHouseholdsListComponent {
 
   fun onHouseholdClick(id: String) {}
 
-  @Serializable class Config : TopLevelDestinationConfig
+  @Serializable data object Config : TopLevelDestinationConfig
 
   interface Factory {
     fun create(cContext: CContext): MyHouseholdsListComponent

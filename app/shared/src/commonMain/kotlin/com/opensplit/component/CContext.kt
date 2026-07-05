@@ -1,6 +1,7 @@
 package com.opensplit.component
 
 import com.ahparhizgar.katch.ApiCallError
+import com.arkivanov.decompose.Cancellation
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.ComponentContextFactory
 import com.arkivanov.decompose.GenericComponentContext
@@ -32,7 +33,7 @@ val CContext.navigation
   get() = stackNavigationOwner.navigation
 
 class CallBackNavigationOwner : StackNavigationOwner {
-  override var navigation: StackNavigation<Any> = StackNavigation()
+  override var navigation: StackNavigation<Any> = FakeStackNavigation()
 }
 
 class DefaultCContext(
@@ -100,3 +101,30 @@ fun CContext.apiCallScope(): CoroutineScope {
   }
   return componentScope() + coroutineExceptionHandler
 }
+
+class FakeStackNavigation<C : Any> : StackNavigation<C> {
+  private val _stack = mutableListOf<C>()
+  val stack: List<C>
+    get() = _stack
+
+  override fun navigate(
+      transformer: (stack: List<C>) -> List<C>,
+      onComplete: (newStack: List<C>, oldStack: List<C>) -> Unit,
+  ) {
+    val oldStack = _stack.toList()
+    _stack.clear()
+    _stack.addAll(transformer(oldStack))
+    onComplete(_stack, oldStack)
+  }
+
+  override fun subscribe(observer: (StackNavigation.Event<C>) -> Unit): Cancellation {
+    // For testing purposes, we can ignore subscriptions
+    return Cancellation {}
+  }
+}
+
+fun CContext.fakeStack() =
+    (stackNavigationOwner.navigation as? FakeStackNavigation<Any>)?.stack
+        ?: error(
+            "stack navigation owner by default has a FakeStackNavigation unless is set by specific test!"
+        )

@@ -1,7 +1,7 @@
 package com.opensplit.features.auth
 
 import com.arkivanov.decompose.router.stack.StackNavigation
-import com.arkivanov.decompose.router.stack.push
+import com.arkivanov.decompose.router.stack.pushNew
 
 interface WelcomeComponent {
   fun onSignUpClicked()
@@ -16,11 +16,11 @@ interface WelcomeComponent {
 class DefaultWelcomeComponent(private val navigation: StackNavigation<AuthConfig>) :
     WelcomeComponent {
   override fun onSignUpClicked() {
-    navigation.push(AuthConfig.SignUp)
+    navigation.pushNew(AuthConfig.SignUp)
   }
 
   override fun onLoginClicked() {
-    navigation.push(AuthConfig.Login)
+    navigation.pushNew(AuthConfig.Login)
   }
 
   class Factory : WelcomeComponent.Factory {
