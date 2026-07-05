@@ -5,7 +5,6 @@ import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.createjoin.HouseholdTab
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.util.MainDispatcherExtension
-import com.opensplit.util.When
 import com.opensplit.util.createComponentContext
 import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
@@ -38,10 +37,8 @@ class HouseholdComponentTest : BehaviorSpec() {
         }
       }
 
-      When(
-          "submitting with an empty household name",
-          { createJoinComponent.createComponent.submit() },
-      ) {
+      When("submitting with an empty household name") {
+        beforeEach { createJoinComponent.createComponent.submit() }
         Then("shows a validation error for name") {
           createJoinComponent.createComponent.uiState.value.let { state ->
             state.fieldErrors shouldNot beEmpty()
@@ -50,13 +47,11 @@ class HouseholdComponentTest : BehaviorSpec() {
         }
       }
 
-      When(
-          "submitting with a valid household name",
-          {
-            createJoinComponent.createComponent.updateHouseholdName("Family Home")
-            createJoinComponent.createComponent.submit()
-          },
-      ) {
+      When("submitting with a valid household name") {
+        beforeEach {
+          createJoinComponent.createComponent.updateHouseholdName("Family Home")
+          createJoinComponent.createComponent.submit()
+        }
         Then("creates the household") {
           createJoinComponent.createComponent.uiState.value.let { state ->
             state.fieldErrors should beEmpty()
@@ -65,20 +60,19 @@ class HouseholdComponentTest : BehaviorSpec() {
         }
       }
 
-      When(
-          "typing then clearing the household name",
-          {
-            createJoinComponent.createComponent.updateHouseholdName("test")
-            createJoinComponent.createComponent.updateHouseholdName("")
-            createJoinComponent.createComponent.submit()
-          },
-      ) {
+      When("typing then clearing the household name") {
+        beforeEach {
+          createJoinComponent.createComponent.updateHouseholdName("test")
+          createJoinComponent.createComponent.updateHouseholdName("")
+          createJoinComponent.createComponent.submit()
+        }
         Then("still shows validation error on empty name") {
           createJoinComponent.createComponent.uiState.value.fieldErrors["name"].shouldNotBeNull()
         }
       }
 
-      When("switching to Join tab", { createJoinComponent.useJoin() }) {
+      When("switching to Join tab") {
+        beforeEach { createJoinComponent.useJoin() }
         Then("active tab is now Join") {
           createJoinComponent.activeTab.value shouldBe HouseholdTab.Join
         }
@@ -92,19 +86,18 @@ class HouseholdComponentTest : BehaviorSpec() {
             .create(createDefaultComponentContext(createComponentContext()))
       }
 
-      When("loading overview", { listComponent.loadOverview().join() }) {
+      When("loading overview") {
+        beforeEach { listComponent.loadOverview().join() }
         Then("loads households from gateway") {
           listComponent.overview.value.households.shouldNotBeEmpty()
         }
       }
 
-      When(
-          "leaving a household",
-          {
-            val id = "household-1"
-            listComponent.leaveHousehold(id).join()
-          },
-      ) {
+      When("leaving a household") {
+        beforeEach {
+          val id = "household-1"
+          listComponent.leaveHousehold(id).join()
+        }
         Then("calls gateway to leave") {
           listComponent.overview.value.households.map { it.id } shouldNotContain "household-1"
         }

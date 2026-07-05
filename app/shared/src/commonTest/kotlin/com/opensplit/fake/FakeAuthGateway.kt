@@ -1,4 +1,4 @@
-package com.opensplit
+package com.opensplit.fake
 
 import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.dto.auth.HouseholdContextState

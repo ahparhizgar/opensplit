@@ -2,8 +2,6 @@ package com.opensplit.util
 
 import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.core.spec.style.scopes.BehaviorSpecGivenContainerScope
-import io.kotest.core.spec.style.scopes.BehaviorSpecWhenContainerScope
 import io.kotest.matchers.shouldBe
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -14,7 +12,8 @@ class SampleTest :
     BehaviorSpec({
       Given("my var") {
         var myVar by testValue { 1 }
-        When("set it to 2", { myVar = 2 }) {
+        When("set it to 2") {
+          beforeEach { myVar = 2 }
           Then("should be 2") { myVar shouldBe 2 }
           And("adding 3 more") {
             beforeEach { myVar += 3 }
@@ -31,30 +30,6 @@ class SampleTest :
         }
       }
     })
-
-@Suppress("TestFunctionName")
-suspend fun BehaviorSpecGivenContainerScope.When(
-    name: String,
-    action: suspend BehaviorSpecWhenContainerScope.() -> Unit,
-    test: suspend BehaviorSpecWhenContainerScope.() -> Unit,
-) {
-  When(name) {
-    beforeEach { action() }
-    test()
-  }
-}
-
-@Suppress("TestFunctionName")
-suspend fun BehaviorSpecWhenContainerScope.And(
-    name: String,
-    action: suspend BehaviorSpecWhenContainerScope.() -> Unit,
-    test: suspend BehaviorSpecWhenContainerScope.() -> Unit,
-) {
-  And(name) {
-    beforeEach { action() }
-    test()
-  }
-}
 
 class SampleTestWrong :
     BehaviorSpec({

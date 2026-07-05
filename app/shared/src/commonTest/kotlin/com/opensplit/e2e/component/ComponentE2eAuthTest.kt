@@ -8,9 +8,7 @@ import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.root.RootComponent
 import com.opensplit.splash.SplashDestination
-import com.opensplit.util.And
 import com.opensplit.util.MainDispatcherExtension
-import com.opensplit.util.When
 import com.opensplit.util.createComponentContext
 import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
@@ -38,27 +36,21 @@ class ComponentE2eAuthTest : BehaviorSpec() {
         println(coroutineContext[ContinuationInterceptor.Key])
         root.assertSplash()
       }
-      When(
-          "waiting",
-          { testCoroutineScheduler.advanceUntilIdle() },
-      ) {
+      When("waiting") {
+        beforeEach { testCoroutineScheduler.advanceUntilIdle() }
         Then("shows auth screen") { root.assertAuth().assertWelcome() }
-        And(
-            "click on login",
-            { root.assertAuth().assertWelcome().onLoginClicked() },
-        ) {
+        And("click on login") {
+          beforeEach { root.assertAuth().assertWelcome().onLoginClicked() }
           Then("shows login screen") { root.assertAuth().assertLogin() }
-          And(
-              "entering valid credentials",
-              {
-                root.assertAuth().assertLogin().let {
-                  it.onEmailChanged("valid@example.com")
-                  it.onPasswordChanged("password123")
-                  it.onLoginClicked()
-                }
-                testCoroutineScheduler.advanceUntilIdle()
-              },
-          ) {
+          And("entering valid credentials") {
+            beforeEach {
+              root.assertAuth().assertLogin().let {
+                it.onEmailChanged("valid@example.com")
+                it.onPasswordChanged("password123")
+                it.onLoginClicked()
+              }
+              testCoroutineScheduler.advanceUntilIdle()
+            }
             Then("navigates to MyHouseholdsListComponent") { root.assertMyHouseholdsList() }
           }
         }

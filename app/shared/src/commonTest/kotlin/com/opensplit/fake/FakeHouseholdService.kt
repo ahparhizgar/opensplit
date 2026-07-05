@@ -1,4 +1,4 @@
-package com.opensplit
+package com.opensplit.fake
 
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.HouseholdMemberDto

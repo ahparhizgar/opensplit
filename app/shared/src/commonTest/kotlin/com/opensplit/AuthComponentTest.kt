@@ -4,9 +4,7 @@ import com.opensplit.component.createDefaultComponentContext
 import com.opensplit.component.fakeStack
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
-import com.opensplit.util.And
 import com.opensplit.util.MainDispatcherExtension
-import com.opensplit.util.When
 import com.opensplit.util.createComponentContext
 import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
@@ -25,35 +23,31 @@ class AuthComponentTest : BehaviorSpec() {
       val cContext by testValue { createDefaultComponentContext(createComponentContext()) }
       var component by testValue { koin.get<AuthComponent.Factory>().create(cContext) }
 
-      When(
-          "navigating to sign up and using invalid input",
-          {
-            component.assertWelcome().onSignUpClicked()
+      When("navigating to sign up and using invalid input") {
+        beforeEach {
+          component.assertWelcome().onSignUpClicked()
 
-            with(component.assertSignUp()) {
-              onEmailChanged("bad-email")
-              onPasswordChanged("short")
-              onDoneClicked()
-            }
-          },
-      ) {
+          with(component.assertSignUp()) {
+            onEmailChanged("bad-email")
+            onPasswordChanged("short")
+            onDoneClicked()
+          }
+        }
         Then("shows validation errors") {
           component.assertSignUp().state.value.let { state ->
             state.fieldErrors shouldNot beEmpty()
           }
         }
 
-        And(
-            "providing valid credentials",
-            {
-              with(component.assertSignUp()) {
-                onEmailChanged("valid@example.com")
-                onPasswordChanged("password123")
-                onDoneClicked()
-                testCoroutineScheduler.advanceUntilIdle()
-              }
-            },
-        ) {
+        And("providing valid credentials") {
+          beforeEach {
+            with(component.assertSignUp()) {
+              onEmailChanged("valid@example.com")
+              onPasswordChanged("password123")
+              onDoneClicked()
+              testCoroutineScheduler.advanceUntilIdle()
+            }
+          }
           Then("calls gateway") {
             cContext.fakeStack() shouldContainExactly listOf(MyHouseholdsListComponent.Config)
           }
