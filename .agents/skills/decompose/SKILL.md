@@ -5,23 +5,19 @@ description: Decompose readme page
 
 ## Why Decompose?
 Decompose breaks the code down into small and independent components and organizes them into trees. Each parent component is only aware of its immediate children.
-Decompose draws clear boundaries between UI and non-UI code, which gives the following benefits:
-Better separation of concerns
-Pluggable platform-specific UI (Compose, SwiftUI, Kotlin/React, etc.)
-Business logic code is testable with pure multiplatform unit tests
-Navigation state is fully exposed - plug any UI you want, animate as you like using your favourite UI framework's API or use predefined API.
+Business logic code is testable with pure multiplatform unit tests.
+Navigation state is fully exposed.
 Navigation is a pure function from the old state to a new one - navigate without limits.
-Proper dependency injection (DI) and inversion of control (IoC) via constructor, including but not limited to type-safe arguments.
+Proper dependency injection (DI) and inversion of control (IoC) via constructor.
 Shared navigation logic
-Lifecycle-aware components
+Lifecycle-aware components.
 Components in the back stack are not destroyed, they continue working in background without UI
-State preservation (automatically on Android, manually on all other targets via kotlinx-serialization)
-Instances retaining (aka ViewModels) over configuration changes (mostly useful in Android)
+State preservation.
 
 ## Decompose components
 
 for each screen create a Decompose component like this for feature "Fx":
-file path: `src/commonMain/kotlin/screens/FxComponent.kt`
+file path: `src/commonMain/kotlin/feature/FxComponent.kt`
 Imports:
 
 - import com.arkivanov.essenty.lifecycle.doOnResume
@@ -31,13 +27,12 @@ Imports:
 - import io.ktor.client.call.body
 - import io.ktor.client.request.get
 - import korlibs.io.async.launch
-- import kotlinx.coroutines.flow.MutableStateFlow
-- import kotlinx.coroutines.flow.StateFlow
-- import kotlinx.coroutines.flow.update
+- import com.arkivanov.decompose.value.MutableValue
+- import com.arkivanov.decompose.value.Value
 
 ```kotlin
     interface FxComponent {
-    val uiState: StateFlow<FxUiState>
+    val uiState: Value<FxUiState>
     fun clickOnXxButton() {}
     interface Factory {
         fun create(context: CContext): FxComponent
@@ -45,15 +40,16 @@ Imports:
 }
 
 data class FxUiState(
-    val isLoading: Boolean = true,
+    val data1: String = "Hello!",
+    val data2: Boolean = true,
 )
 
 class DefaultFxComponent(
     context: CContext,
     val httpClient: HttpClient,
 ) : FxComponent, CContext by context {
-    private val _uiState = MutableStateFlow(FxUiState())
-    override val uiState: StateFlow<FxUiState> = _uiState
+    private val _uiState = MutableValue(FxUiState())
+    override val uiState: Value<FxUiState> = _uiState
     private val scope = apiCallScope()
 
     init {
@@ -95,12 +91,12 @@ class DefaultFxComponent(
 
 class FakeFxComponent(
     uiState: FxUiState = FxUiState(
-        plans = FakeFxDtoFactory.createList()
+        data1 = "Hello!",
+        data2 = true
     )
 ) : FxComponent {
-    override val uiState: StateFlow<FxUiState> = MutableStateFlow(uiState)
+    override val uiState: Value<FxUiState> = MutableValue(uiState)
 }
 ```
 
-If a component needs initial data,
-Provide Koin bindings in `src/commonMain/kotlin/di/ViewModelModule.kt`
+Always provide Koin bindings in `DecompoesModule.kt`
