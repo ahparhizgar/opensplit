@@ -7,9 +7,5 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 
 fun Application.healthRoute() {
-  routing {
-    get("/health") {
-      call.respondText("OK", status = HttpStatusCode.OK)
-    }
-  }
+  routing { get("/health") { call.respondText("OK", status = HttpStatusCode.OK) } }
 }

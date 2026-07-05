@@ -1,6 +1,5 @@
 package com.opensplit.features.household.createjoin
 
-import com.arkivanov.decompose.router.stack.navigate
 import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.opensplit.component.CContext
 import com.opensplit.component.navigation

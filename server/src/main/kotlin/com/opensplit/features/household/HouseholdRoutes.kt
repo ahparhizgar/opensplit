@@ -19,6 +19,8 @@ import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import java.net.URLDecoder
+import java.util.UUID
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
@@ -26,8 +28,6 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import java.net.URLDecoder
-import java.util.UUID
 
 fun Application.householdRoutes() {
   routing {
@@ -263,59 +263,59 @@ fun Application.householdRoutes() {
       )
     }
 
-      delete("/households/{householdId}/memberships") {
-          val householdId = call.parameters["householdId"]
-          val raw =
-              call.request.headers["Authorization"]?.removePrefix("Bearer ")
-                  ?: call.request.cookies["opensplit-auth-session"]
-          val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
-          val userId = resolveUserIdFromToken(token)
-          if (userId == null) {
-              call.respond(
-                  HttpStatusCode.Unauthorized,
-                  ErrorResponse(
-                      generalError = "Authentication required",
-                      errors = mapOf("token" to "Authentication required"),
-                  ),
-              )
-              return@delete
-          }
-          if (householdId.isNullOrBlank()) {
-              call.respond(
-                  HttpStatusCode.BadRequest,
-                  ErrorResponse(
-                      generalError = "Household id is required",
-                      errors = mapOf("householdId" to "Household id is required"),
-                  ),
-              )
-              return@delete
-          }
-
-          transaction {
-              val household = Households.select { Households.id eq householdId }.limit(1).firstOrNull()
-              if (household != null && household[Households.ownerId] == userId) {
-                  val nextOwnerQuery =
-                      Memberships.select {
-                          (Memberships.householdId eq householdId) and (Memberships.userId neq userId)
-                      }
-                          .limit(1)
-                          .firstOrNull()
-                  if (nextOwnerQuery != null) {
-                      val nextUserId = nextOwnerQuery[Memberships.userId]
-                      Households.update({ Households.id eq householdId }) {
-                          it[Households.ownerId] = nextUserId
-                      }
-                  }
-              }
-
-              Memberships.deleteWhere {
-                  (Memberships.householdId eq householdId) and (Memberships.userId eq userId)
-              }
-          }
-
-          call.respond(HttpStatusCode.OK, loadHouseholds(userId))
+    delete("/households/{householdId}/memberships") {
+      val householdId = call.parameters["householdId"]
+      val raw =
+          call.request.headers["Authorization"]?.removePrefix("Bearer ")
+              ?: call.request.cookies["opensplit-auth-session"]
+      val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
+      val userId = resolveUserIdFromToken(token)
+      if (userId == null) {
+        call.respond(
+            HttpStatusCode.Unauthorized,
+            ErrorResponse(
+                generalError = "Authentication required",
+                errors = mapOf("token" to "Authentication required"),
+            ),
+        )
+        return@delete
       }
-      
+      if (householdId.isNullOrBlank()) {
+        call.respond(
+            HttpStatusCode.BadRequest,
+            ErrorResponse(
+                generalError = "Household id is required",
+                errors = mapOf("householdId" to "Household id is required"),
+            ),
+        )
+        return@delete
+      }
+
+      transaction {
+        val household = Households.select { Households.id eq householdId }.limit(1).firstOrNull()
+        if (household != null && household[Households.ownerId] == userId) {
+          val nextOwnerQuery =
+              Memberships.select {
+                    (Memberships.householdId eq householdId) and (Memberships.userId neq userId)
+                  }
+                  .limit(1)
+                  .firstOrNull()
+          if (nextOwnerQuery != null) {
+            val nextUserId = nextOwnerQuery[Memberships.userId]
+            Households.update({ Households.id eq householdId }) {
+              it[Households.ownerId] = nextUserId
+            }
+          }
+        }
+
+        Memberships.deleteWhere {
+          (Memberships.householdId eq householdId) and (Memberships.userId eq userId)
+        }
+      }
+
+      call.respond(HttpStatusCode.OK, loadHouseholds(userId))
+    }
+
     get("/households/{id}") {
       val householdId = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
 

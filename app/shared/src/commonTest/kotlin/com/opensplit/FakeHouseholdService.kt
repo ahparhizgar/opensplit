@@ -111,12 +111,12 @@ class FakeHouseholdService : HouseholdService {
                     )
                 ),
         )
-      return HouseholdDto(
-          id = "household-2",
-          name = "Joined House",
-          inviteLink = "https://opensplit.com/join/invite-def456",
-          members = overview.members,
-      )
+    return HouseholdDto(
+        id = "household-2",
+        name = "Joined House",
+        inviteLink = "https://opensplit.com/join/invite-def456",
+        members = overview.members,
+    )
   }
 
   override suspend fun loadOverview(): HouseholdOverviewDto {
