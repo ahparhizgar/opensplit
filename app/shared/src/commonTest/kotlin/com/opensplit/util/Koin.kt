@@ -2,7 +2,7 @@ package com.opensplit.util
 
 import com.opensplit.FakeAuthGateway
 import com.opensplit.FakeHouseholdService
-import com.opensplit.appModule
+import com.opensplit.di.appModule
 import com.opensplit.features.auth.AuthGateway
 import com.opensplit.features.auth.NoOpTokenStorage
 import com.opensplit.features.auth.TokenStorage

@@ -15,6 +15,7 @@ import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.opensplit.component.DefaultCContext
+import com.opensplit.di.appModule
 import com.opensplit.root.RootComponent
 import java.awt.Desktop
 import javax.swing.SwingUtilities
