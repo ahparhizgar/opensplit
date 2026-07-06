@@ -2,7 +2,7 @@ package com.opensplit.features.auth
 
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.pop
-import com.arkivanov.decompose.router.stack.push
+import com.arkivanov.decompose.router.stack.pushNew
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.remote.RemoteException
@@ -93,7 +93,7 @@ class DefaultLoginComponent(
   }
 
   override fun onForgotPasswordClicked() {
-    navigation.push(AuthConfig.ResetPassword)
+    navigation.pushNew(AuthConfig.ResetPassword)
   }
 
   override fun onBackClicked() {

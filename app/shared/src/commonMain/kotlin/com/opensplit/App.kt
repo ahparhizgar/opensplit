@@ -5,7 +5,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.stack.Children
+import com.arkivanov.decompose.extensions.compose.stack.animation.fade
+import com.arkivanov.decompose.extensions.compose.stack.animation.plus
+import com.arkivanov.decompose.extensions.compose.stack.animation.predictiveback.predictiveBackAnimation
+import com.arkivanov.decompose.extensions.compose.stack.animation.scale
+import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthRootScreen
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
@@ -22,10 +28,20 @@ import com.opensplit.splash.SplashDestination
 import com.opensplit.splash.SplashScreen
 import com.opensplit.ui.OpenSplitTheme
 
+@OptIn(ExperimentalDecomposeApi::class)
 @Composable
 fun App(root: RootComponent, modifier: Modifier = Modifier) {
   OpenSplitTheme {
-    Children(modifier = modifier, stack = root.childStack) {
+    Children(
+        modifier = modifier,
+        stack = root.childStack,
+        animation =
+            predictiveBackAnimation(
+                backHandler = root.backHandler,
+                onBack = root::onBack,
+                fallbackAnimation = stackAnimation(fade() + scale()),
+            ),
+    ) {
       when (val child = it.instance) {
         is SplashDestination -> {
           SplashScreen(modifier = Modifier.testTag("splash-screen"))

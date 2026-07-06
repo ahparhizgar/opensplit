@@ -57,7 +57,7 @@ fun CContext.componentScope(): CoroutineScope {
   }
 }
 
-fun createDefaultCContext(componentContext: ComponentContext) =
+fun defaultCContext(componentContext: ComponentContext) =
     DefaultCContext(
         lifecycle = componentContext.lifecycle,
         stateKeeper = componentContext.stateKeeper,

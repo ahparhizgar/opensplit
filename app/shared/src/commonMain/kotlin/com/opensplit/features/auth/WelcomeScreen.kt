@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.opensplit.ui.OpenSplitTheme
 
 @Composable
 fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
@@ -59,8 +60,8 @@ fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
     Spacer(modifier = Modifier.weight(1f))
 
     Button(
-        onClick = component::onSignUpClicked,
         modifier = Modifier.fillMaxWidth().height(56.dp),
+        onClick = component::onSignUpClicked,
         shape = RoundedCornerShape(8.dp),
     ) {
       Text("Sign up", style = MaterialTheme.typography.titleMedium)
@@ -69,8 +70,8 @@ fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
     Spacer(modifier = Modifier.height(12.dp))
 
     OutlinedButton(
-        onClick = component::onLoginClicked,
         modifier = Modifier.fillMaxWidth().height(56.dp),
+        onClick = component::onLoginClicked,
         shape = RoundedCornerShape(8.dp),
     ) {
       Text("Log in", style = MaterialTheme.typography.titleMedium)
@@ -103,7 +104,7 @@ fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
 @Composable
 @Preview
 fun WelcomeScreenPreview() {
-  MaterialTheme {
+  OpenSplitTheme {
     Surface {
       WelcomeScreen(
           FakeWelcomeComponent(),

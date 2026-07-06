@@ -4,14 +4,16 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
+import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.backhandler.BackDispatcher
+import com.arkivanov.essenty.backhandler.BackHandler
 import com.opensplit.component.CContext
 import com.opensplit.component.CallBackNavigationOwner
 import com.opensplit.component.componentScope
 import com.opensplit.features.auth.AuthComponent
-import com.opensplit.features.auth.FakeAuthComponent
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
@@ -24,7 +26,10 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 
 interface RootComponent {
+  val backHandler: BackHandler
   val childStack: Value<ChildStack<*, Any>>
+
+  fun onBack()
 
   interface Factory {
     fun create(context: CContext): RootComponent
@@ -39,6 +44,11 @@ class DefaultRootComponent(
   val scope = componentScope()
 
   private val navigation = StackNavigation<TopLevelDestinationConfig>()
+  override val backHandler: BackHandler = cContext.backHandler
+
+  override fun onBack() {
+    navigation.pop()
+  }
 
   init {
     val navOwner = cContext.stackNavigationOwner as CallBackNavigationOwner
@@ -104,10 +114,14 @@ class DefaultRootComponent(
 }
 
 class FakeRootComponent : RootComponent {
+  override val backHandler: BackHandler = BackDispatcher()
+
+  override fun onBack() {}
+
   override val childStack: Value<ChildStack<*, Any>> =
       MutableValue(
           ChildStack(
-              active = Child.Created(AuthComponent.Config, FakeAuthComponent()),
+              active = Child.Created(SplashDestination, SplashDestination),
               backStack = emptyList(),
           )
       )

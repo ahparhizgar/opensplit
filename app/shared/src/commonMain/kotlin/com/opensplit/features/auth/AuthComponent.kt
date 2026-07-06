@@ -3,9 +3,12 @@ package com.opensplit.features.auth
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
+import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.backhandler.BackDispatcher
+import com.arkivanov.essenty.backhandler.BackHandler
 import com.opensplit.component.CContext
 import com.opensplit.component.navigation
 import com.opensplit.features.household.my.MyHouseholdsListComponent
@@ -26,6 +29,9 @@ sealed interface AuthConfig {
 
 interface AuthComponent : Destination {
   val stack: Value<ChildStack<AuthConfig, Child>>
+  val backHandler: BackHandler
+
+  fun onBack() {}
 
   sealed class Child {
     class Welcome(val component: WelcomeComponent) : Child()
@@ -53,6 +59,11 @@ class DefaultAuthComponent(
 ) : AuthComponent, CContext by context {
 
   private val navigation = StackNavigation<AuthConfig>()
+  override val backHandler: BackHandler = context.backHandler
+
+  override fun onBack() {
+    navigation.pop()
+  }
 
   override val stack: Value<ChildStack<AuthConfig, AuthComponent.Child>> =
       childStack(
@@ -109,6 +120,8 @@ class FakeAuthComponent(
             )
         )
 ) : AuthComponent {
+  override val backHandler: BackHandler = BackDispatcher()
+
   class Factory : AuthComponent.Factory {
     override fun create(cContext: CContext): AuthComponent = FakeAuthComponent()
   }

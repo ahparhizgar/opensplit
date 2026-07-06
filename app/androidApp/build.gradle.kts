@@ -12,6 +12,8 @@ kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_11 } }
 dependencies {
   implementation(projects.app.shared)
 
+  implementation(libs.koin.core)
+  implementation(libs.koin.android)
   implementation(libs.androidx.activity.compose)
 
   implementation(libs.compose.uiToolingPreview)

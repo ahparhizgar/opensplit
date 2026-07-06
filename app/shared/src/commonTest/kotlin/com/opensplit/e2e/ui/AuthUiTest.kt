@@ -1,8 +1,10 @@
 package com.opensplit.e2e.ui
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasRequestFocusAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isFocusable
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.opensplit.App
@@ -13,9 +15,9 @@ import com.opensplit.util.waitForExistence
 import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
-class SampleUiTest {
+class AuthUiTest {
   @Test
-  fun testUi() = runComposeUiTest {
+  fun testAuthUi() = runComposeUiTest {
     val context = TestCContext()
     val koin = uiKoin()
     val root = koin.injectUiRoot(context)
@@ -24,5 +26,6 @@ class SampleUiTest {
     onNode(hasTestTag("welcome-screen")).waitForExistence().assertExists()
     onNode(hasText("Log in", ignoreCase = true)).performClick()
     onNode(hasTestTag("login-screen")).assertExists()
+    onNode(isFocusable())
   }
 }

@@ -18,9 +18,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Person
@@ -61,7 +61,7 @@ fun HouseholdSettingsScreen(component: HouseholdSettingsComponent, modifier: Mod
             title = { Text("Group settings") },
             navigationIcon = {
               IconButton(onClick = component::onBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
               }
             },
         )
@@ -102,6 +102,8 @@ fun HouseholdSettingsScreen(component: HouseholdSettingsComponent, modifier: Mod
             }
 
             item {
+              @Suppress("DEPRECATION")
+              // LocalClipboard is not working in KMP yet
               val clipboard = LocalClipboardManager.current
               SettingsActionItem(
                   modifier = Modifier.padding(horizontal = 16.dp),
@@ -128,7 +130,7 @@ fun HouseholdSettingsScreen(component: HouseholdSettingsComponent, modifier: Mod
             item {
               SettingsActionItem(
                   modifier = Modifier.padding(horizontal = 16.dp),
-                  icon = Icons.Default.ExitToApp,
+                  icon = Icons.AutoMirrored.Default.ExitToApp,
                   text = "Leave group",
                   description =
                       "You can't leave this group because you have outstanding debts with other group members. Please make sure all of your debts have been settled up, and try again.",

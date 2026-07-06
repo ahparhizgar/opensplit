@@ -1,6 +1,6 @@
 package com.opensplit
 
-import com.opensplit.component.createDefaultCContext
+import com.opensplit.component.defaultCContext
 import com.opensplit.component.fakeStack
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
@@ -20,7 +20,7 @@ class AuthComponentTest : BehaviorSpec() {
     extensions(MainDispatcherExtension())
     Given("an Auth component") {
       val koin by integrationKoin()
-      val cContext by testValue { createDefaultCContext(createComponentContext()) }
+      val cContext by testValue { defaultCContext(createComponentContext()) }
       var component by testValue { koin.get<AuthComponent.Factory>().create(cContext) }
 
       When("navigating to sign up and using invalid input") {

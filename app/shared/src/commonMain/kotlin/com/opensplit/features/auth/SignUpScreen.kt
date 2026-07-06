@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
@@ -60,7 +61,7 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
             title = {},
             navigationIcon = {
               IconButton(onClick = component::onBackClicked) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
               }
             },
         )
@@ -132,7 +133,7 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
             onValueChange = {},
             readOnly = true,
             modifier = Modifier.width(100.dp),
-            trailingIcon = { Icon(Icons.Default.ArrowBack, null) }, // Mock dropdown
+            trailingIcon = { Icon(Icons.AutoMirrored.Default.ArrowBack, null) }, // Mock dropdown
         )
         Spacer(modifier = Modifier.width(8.dp))
         OutlinedTextField(
