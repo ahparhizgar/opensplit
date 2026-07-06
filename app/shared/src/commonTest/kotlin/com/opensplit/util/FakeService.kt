@@ -2,6 +2,9 @@ package com.opensplit.util
 
 import com.ahparhizgar.katch.NetworkError
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 
 interface FakeService {
@@ -32,3 +35,5 @@ suspend fun <T> fakeApiCall(block: suspend () -> T): T {
   delay(100.milliseconds)
   return block()
 }
+
+fun fakeServiceScope() = CoroutineScope(Dispatchers.Main + SupervisorJob())

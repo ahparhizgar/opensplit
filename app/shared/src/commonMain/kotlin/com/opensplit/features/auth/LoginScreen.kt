@@ -42,11 +42,12 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(component: LoginComponent) {
+fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
   val state by component.state.collectAsState()
   var passwordVisible by remember { mutableStateOf(false) }
 
   Scaffold(
+      modifier = modifier,
       topBar = {
         TopAppBar(
             title = {},
@@ -56,7 +57,7 @@ fun LoginScreen(component: LoginComponent) {
               }
             },
         )
-      }
+      },
   ) { padding ->
     Column(
         modifier =
@@ -148,5 +149,11 @@ fun LoginScreen(component: LoginComponent) {
 @Composable
 @Preview
 fun LoginScreenPreview() {
-  MaterialTheme { Surface { LoginScreen(FakeLoginComponent()) } }
+  MaterialTheme {
+    Surface {
+      LoginScreen(
+          FakeLoginComponent(),
+      )
+    }
+  }
 }

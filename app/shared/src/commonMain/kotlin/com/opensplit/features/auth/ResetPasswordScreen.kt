@@ -35,10 +35,11 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ResetPasswordScreen(component: ResetPasswordComponent) {
+fun ResetPasswordScreen(component: ResetPasswordComponent, modifier: Modifier = Modifier) {
   val state by component.state.collectAsState()
 
   Scaffold(
+      modifier = modifier,
       topBar = {
         TopAppBar(
             title = { Text("Reset password") },
@@ -48,7 +49,7 @@ fun ResetPasswordScreen(component: ResetPasswordComponent) {
               }
             },
         )
-      }
+      },
   ) { padding ->
     Column(
         modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp),
@@ -112,5 +113,11 @@ fun ResetPasswordScreen(component: ResetPasswordComponent) {
 @Composable
 @Preview
 fun ResetPasswordScreenPreview() {
-  MaterialTheme { Surface { ResetPasswordScreen(FakeResetPasswordComponent()) } }
+  MaterialTheme {
+    Surface {
+      ResetPasswordScreen(
+          FakeResetPasswordComponent(),
+      )
+    }
+  }
 }

@@ -99,6 +99,7 @@ kotlin {
     //            implementation(libs.wrappers.browser)
     //        }
   }
+  compilerOptions { freeCompilerArgs.add("-Xcontext-parameters") }
 }
 
 tasks.withType<Test>().configureEach { useJUnitPlatform() }

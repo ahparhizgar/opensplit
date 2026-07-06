@@ -1,6 +1,6 @@
 package com.opensplit
 
-import com.opensplit.component.createDefaultComponentContext
+import com.opensplit.component.createDefaultCContext
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.createjoin.HouseholdTab
 import com.opensplit.features.household.my.MyHouseholdsListComponent
@@ -26,7 +26,7 @@ class HouseholdComponentTest : BehaviorSpec() {
       var createJoinComponent by testValue {
         koin
             .get<CreateJoinHouseholdComponent.Factory>()
-            .create(createDefaultComponentContext(createComponentContext()))
+            .create(createDefaultCContext(createComponentContext()))
       }
 
       Then("initial tab is Create and fields are empty") {
@@ -83,7 +83,7 @@ class HouseholdComponentTest : BehaviorSpec() {
       var listComponent by testValue {
         koin
             .get<MyHouseholdsListComponent.Factory>()
-            .create(createDefaultComponentContext(createComponentContext()))
+            .create(createDefaultCContext(createComponentContext()))
       }
 
       When("loading overview") {

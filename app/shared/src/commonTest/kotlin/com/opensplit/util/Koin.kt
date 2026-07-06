@@ -22,6 +22,15 @@ fun Spec.integrationKoin() = testValue {
       .koin
 }
 
+fun uiKoin() =
+    koinApplication {
+          modules(
+              appModule(),
+              integrationTestModule(),
+          )
+        }
+        .koin
+
 fun integrationTestModule() = module {
   single { FakeAuthGateway() }.bind<AuthGateway>()
   single { NoOpTokenStorage() }.bind<TokenStorage>()

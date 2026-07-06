@@ -3,6 +3,7 @@ package com.opensplit
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.opensplit.features.auth.AuthComponent
@@ -27,7 +28,7 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
     Children(modifier = modifier, stack = root.childStack) {
       when (val child = it.instance) {
         is SplashDestination -> {
-          SplashScreen()
+          SplashScreen(modifier = Modifier.testTag("splash-screen"))
         }
 
         is AuthComponent -> {

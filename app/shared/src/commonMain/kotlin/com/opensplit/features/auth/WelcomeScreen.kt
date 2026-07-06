@@ -28,9 +28,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun WelcomeScreen(component: WelcomeComponent) {
+fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
   Column(
-      modifier = Modifier.fillMaxSize().padding(24.dp),
+      modifier = modifier.fillMaxSize().padding(24.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     Spacer(modifier = Modifier.weight(1f))
@@ -103,5 +103,11 @@ fun WelcomeScreen(component: WelcomeComponent) {
 @Composable
 @Preview
 fun WelcomeScreenPreview() {
-  MaterialTheme { Surface { WelcomeScreen(FakeWelcomeComponent()) } }
+  MaterialTheme {
+    Surface {
+      WelcomeScreen(
+          FakeWelcomeComponent(),
+      )
+    }
+  }
 }
