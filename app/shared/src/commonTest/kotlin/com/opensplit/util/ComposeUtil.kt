@@ -6,8 +6,10 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.printToLog
+import com.arkivanov.decompose.DecomposeSettings
 import com.arkivanov.essenty.lifecycle.resume
 import com.opensplit.component.TestCContext
+import com.opensplit.component.TestDecomposeSettings
 import com.opensplit.root.RootComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -34,6 +36,7 @@ fun SemanticsNodeInteraction.waitForExistence(
 
 suspend fun Koin.injectUiRoot(context: TestCContext, resume: Boolean = true): RootComponent =
     withContext(Dispatchers.Main) {
+      DecomposeSettings.settings = TestDecomposeSettings
       val root = get<RootComponent.Factory>().create(context)
       if (resume) {
         context.lifecycleRegistry.resume()

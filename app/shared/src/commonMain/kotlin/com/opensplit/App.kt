@@ -73,8 +73,8 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
 
         is MyHouseholdsListComponent -> {
           MyHouseholdsListScreen(
+              modifier = Modifier.fillMaxSize().testTag("household-list"),
               component = child,
-              modifier = Modifier.fillMaxSize(),
           )
         }
 
