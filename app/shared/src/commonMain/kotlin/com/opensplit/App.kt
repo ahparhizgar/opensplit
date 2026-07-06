@@ -1,6 +1,8 @@
 package com.opensplit
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -33,7 +35,8 @@ import com.opensplit.ui.OpenSplitTheme
 fun App(root: RootComponent, modifier: Modifier = Modifier) {
   OpenSplitTheme {
     Children(
-        modifier = modifier,
+        // The background is to prevent a flicker when animating children
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         stack = root.childStack,
         animation =
             predictiveBackAnimation(

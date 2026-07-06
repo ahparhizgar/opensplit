@@ -30,73 +30,81 @@ import com.opensplit.ui.OpenSplitTheme
 
 @Composable
 fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
-  Column(
-      modifier = modifier.fillMaxSize().padding(24.dp),
-      horizontalAlignment = Alignment.CenterHorizontally,
-  ) {
-    Spacer(modifier = Modifier.weight(1f))
-
-    // Logo Placeholder
-    Box(
-        modifier =
-            Modifier.size(150.dp).clip(RoundedCornerShape(24.dp)).background(Color(0xFFE0E0E0)),
-        contentAlignment = Alignment.Center,
+  Surface {
+    Column(
+        modifier = modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-      Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier =
-                Modifier.size(80.dp)
-                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.weight(1f))
+
+      // Logo Placeholder
+      Box(
+          modifier =
+              Modifier.size(150.dp).clip(RoundedCornerShape(24.dp)).background(Color(0xFFE0E0E0)),
+          contentAlignment = Alignment.Center,
+      ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+          Box(
+              modifier =
+                  Modifier.size(80.dp)
+                      .background(
+                          MaterialTheme.colorScheme.primary,
+                          RoundedCornerShape(12.dp),
+                      )
+          )
+          Spacer(modifier = Modifier.height(8.dp))
+          Text(
+              "OpenSplit",
+              fontWeight = FontWeight.Bold,
+              style = MaterialTheme.typography.headlineSmall,
+          )
+        }
+      }
+
+      Spacer(modifier = Modifier.weight(1f))
+
+      Button(
+          modifier = Modifier.fillMaxWidth().height(56.dp),
+          onClick = component::onSignUpClicked,
+          shape = RoundedCornerShape(8.dp),
+      ) {
+        Text("Sign up", style = MaterialTheme.typography.titleMedium)
+      }
+
+      Spacer(modifier = Modifier.height(12.dp))
+
+      OutlinedButton(
+          modifier = Modifier.fillMaxWidth().height(56.dp),
+          onClick = component::onLoginClicked,
+          shape = RoundedCornerShape(8.dp),
+      ) {
+        Text("Log in", style = MaterialTheme.typography.titleMedium)
+      }
+
+      Spacer(modifier = Modifier.height(48.dp))
+
+      Row(
+          modifier = Modifier.padding(bottom = 16.dp),
+          horizontalArrangement = Arrangement.Center,
+      ) {
         Text(
-            "OpenSplit",
-            fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.headlineSmall,
+            "Terms",
+            style = MaterialTheme.typography.bodySmall,
+            textDecoration = TextDecoration.Underline,
+        )
+        Text(" | ", style = MaterialTheme.typography.bodySmall)
+        Text(
+            "Privacy Policy",
+            style = MaterialTheme.typography.bodySmall,
+            textDecoration = TextDecoration.Underline,
+        )
+        Text(" | ", style = MaterialTheme.typography.bodySmall)
+        Text(
+            "Contact us",
+            style = MaterialTheme.typography.bodySmall,
+            textDecoration = TextDecoration.Underline,
         )
       }
-    }
-
-    Spacer(modifier = Modifier.weight(1f))
-
-    Button(
-        modifier = Modifier.fillMaxWidth().height(56.dp),
-        onClick = component::onSignUpClicked,
-        shape = RoundedCornerShape(8.dp),
-    ) {
-      Text("Sign up", style = MaterialTheme.typography.titleMedium)
-    }
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    OutlinedButton(
-        modifier = Modifier.fillMaxWidth().height(56.dp),
-        onClick = component::onLoginClicked,
-        shape = RoundedCornerShape(8.dp),
-    ) {
-      Text("Log in", style = MaterialTheme.typography.titleMedium)
-    }
-
-    Spacer(modifier = Modifier.height(48.dp))
-
-    Row(modifier = Modifier.padding(bottom = 16.dp), horizontalArrangement = Arrangement.Center) {
-      Text(
-          "Terms",
-          style = MaterialTheme.typography.bodySmall,
-          textDecoration = TextDecoration.Underline,
-      )
-      Text(" | ", style = MaterialTheme.typography.bodySmall)
-      Text(
-          "Privacy Policy",
-          style = MaterialTheme.typography.bodySmall,
-          textDecoration = TextDecoration.Underline,
-      )
-      Text(" | ", style = MaterialTheme.typography.bodySmall)
-      Text(
-          "Contact us",
-          style = MaterialTheme.typography.bodySmall,
-          textDecoration = TextDecoration.Underline,
-      )
     }
   }
 }
