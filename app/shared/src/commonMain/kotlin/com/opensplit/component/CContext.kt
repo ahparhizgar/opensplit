@@ -11,6 +11,7 @@ import com.arkivanov.essenty.backhandler.BackHandler
 import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.arkivanov.essenty.instancekeeper.InstanceKeeperDispatcher
 import com.arkivanov.essenty.lifecycle.Lifecycle
+import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.statekeeper.StateKeeper
 import com.arkivanov.essenty.statekeeper.StateKeeperDispatcher
@@ -56,7 +57,7 @@ fun CContext.componentScope(): CoroutineScope {
   }
 }
 
-fun createDefaultComponentContext(componentContext: ComponentContext) =
+fun createDefaultCContext(componentContext: ComponentContext) =
     DefaultCContext(
         lifecycle = componentContext.lifecycle,
         stateKeeper = componentContext.stateKeeper,
@@ -128,3 +129,25 @@ fun CContext.fakeStack() =
         ?: error(
             "stack navigation owner by default has a FakeStackNavigation unless is set by specific test!"
         )
+
+class TestCContext : CContext {
+  val lifecycleRegistry = LifecycleRegistry()
+  val fakeStackNavigation = FakeStackNavigation<Any>()
+  val backDispatcher = BackDispatcher()
+
+  override val stackNavigationOwner: StackNavigationOwner =
+      CallBackNavigationOwner().apply { this.navigation = fakeStackNavigation }
+  override val lifecycle: Lifecycle = lifecycleRegistry
+
+  override val stateKeeper: StateKeeper = StateKeeperDispatcher()
+
+  override val instanceKeeper: InstanceKeeper =
+      InstanceKeeperDispatcher().also { lifecycle.doOnDestroy(it::destroy) }
+
+  override val backHandler: BackHandler = backDispatcher
+
+  override val componentContextFactory: ComponentContextFactory<CContext> =
+      ComponentContextFactory { lifecycle, stateKeeper, instanceKeeper, backHandler ->
+        DefaultCContext(lifecycle, stateKeeper, instanceKeeper, backHandler, stackNavigationOwner)
+      }
+}
