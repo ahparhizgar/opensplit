@@ -2,14 +2,12 @@ package com.opensplit.features.auth
 
 import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.dto.auth.ErrorResponse
-import com.opensplit.dto.auth.HouseholdContextState
 import com.opensplit.dto.auth.SignInRequest
 import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.remote.RemoteException
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -18,7 +16,6 @@ import io.ktor.http.contentType
 
 data class AuthSubmissionResult(
     val session: AuthSessionState,
-    val householdContext: HouseholdContextState,
 )
 
 interface AuthGateway {
@@ -45,7 +42,7 @@ class KtorAuthGateway(
   private suspend fun submit(path: String, request: Any): AuthSubmissionResult {
     return try {
       val response =
-          client.post("path") {
+          client.post(path) {
             contentType(ContentType.Application.Json)
             setBody(request)
           }
@@ -59,11 +56,7 @@ class KtorAuthGateway(
       }
 
       val session = response.body<AuthSessionState>()
-      val householdContext =
-          client
-              .get("household-context") { header("Authorization", "Bearer ${session.accessToken}") }
-              .body<HouseholdContextState>()
-      AuthSubmissionResult(session = session, householdContext = householdContext)
+      AuthSubmissionResult(session = session)
     } catch (e: RemoteException) {
       throw e
     } catch (e: Throwable) {

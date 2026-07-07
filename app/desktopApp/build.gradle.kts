@@ -14,6 +14,7 @@ dependencies {
   implementation(libs.compose.uiToolingPreview)
   implementation(libs.koin.core)
   implementation(libs.decompose.compose)
+  implementation(libs.logback)
 }
 
 compose.desktop {

@@ -78,9 +78,7 @@ class DefaultLoginComponent(
     scope.launch {
       try {
         val result = gateway.signIn(current.email, current.password)
-        try {
-          tokenStorage.saveAccessToken(result.session.accessToken)
-        } catch (_: Throwable) {}
+        tokenStorage.saveAccessToken(result.session.accessToken)
         onAuthenticated()
       } catch (e: RemoteException) {
         _state.update {

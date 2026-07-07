@@ -5,6 +5,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isFocused
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTextInput
@@ -30,9 +31,9 @@ class AuthUiTest {
     onNode(hasText("Log in", ignoreCase = true)).performClick()
     onNode(hasTestTag("login-screen")).assertExists()
     onNode(isFocused()).performTextInput("user1@example.com")
-    onNode(isFocused()).performKeyInput { pressKey(Key.Tab) }
+    onNode(isRoot()).performKeyInput { pressKey(Key.Tab) }
     onNode(isFocused()).performTextInput("password1234")
-    onNode(isFocused()).performKeyInput { pressKey(Key.Enter) }
+    onNode(isRoot()).performKeyInput { pressKey(Key.Enter) }
     onNode(hasTestTag("household-list")).waitForExistence().assertExists()
   }
 }
