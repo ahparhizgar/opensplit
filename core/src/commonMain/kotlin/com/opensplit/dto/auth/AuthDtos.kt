@@ -26,7 +26,7 @@ data class AuthSessionState(
 
 @Serializable
 data class ErrorResponse(
-    val generalError: String? = null,
+    val generalError: String,
     val errors: Map<String, String> = emptyMap(),
 )
 

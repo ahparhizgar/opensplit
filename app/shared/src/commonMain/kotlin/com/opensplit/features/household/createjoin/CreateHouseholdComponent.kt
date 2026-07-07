@@ -1,9 +1,11 @@
 package com.opensplit.features.household.createjoin
 
+import com.ahparhizgar.katch.ApiCallError
 import com.opensplit.component.CContext
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.features.household.HouseholdService
-import com.opensplit.remote.RemoteException
+import com.opensplit.remote.fieldErrors
+import com.opensplit.remote.userMessage
 import com.opensplit.validation.household.HouseholdValidation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -64,11 +66,11 @@ class DefaultCreateHouseholdComponent(
       val result = gateway.createHousehold(current.householdName)
       _uiState.update { it.copy(isSubmitting = false) }
       onDone(result)
-    } catch (e: RemoteException) {
+    } catch (e: ApiCallError) {
       _uiState.update {
         it.copy(
             fieldErrors = e.fieldErrors,
-            generalError = e.generalError,
+            generalError = e.userMessage,
             isSubmitting = false,
         )
       }

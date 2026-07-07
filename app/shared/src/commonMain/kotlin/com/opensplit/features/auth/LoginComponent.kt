@@ -1,11 +1,12 @@
 package com.opensplit.features.auth
 
+import com.ahparhizgar.katch.ClientError
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.pushNew
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
-import com.opensplit.remote.RemoteException
+import com.opensplit.remote.fieldErrors
 import com.opensplit.validation.auth.AuthValidation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -80,12 +81,10 @@ class DefaultLoginComponent(
         val result = gateway.signIn(current.email, current.password)
         tokenStorage.saveAccessToken(result.session.accessToken)
         onAuthenticated()
-      } catch (e: RemoteException) {
+      } catch (e: ClientError) {
         _state.update {
-          it.copy(fieldErrors = e.fieldErrors, generalError = e.generalError, isSubmitting = false)
+          it.copy(fieldErrors = e.fieldErrors, generalError = e.userMessage, isSubmitting = false)
         }
-      } catch (e: Exception) {
-        _state.update { it.copy(generalError = e.message ?: "Unknown error", isSubmitting = false) }
       }
     }
   }

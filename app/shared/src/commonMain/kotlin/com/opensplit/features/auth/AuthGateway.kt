@@ -4,10 +4,8 @@ import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.auth.SignInRequest
 import com.opensplit.dto.auth.SignUpRequest
-import com.opensplit.remote.RemoteException
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -40,29 +38,17 @@ class KtorAuthGateway(
       )
 
   private suspend fun submit(path: String, request: Any): AuthSubmissionResult {
-    return try {
-      val response =
-          client.post(path) {
-            contentType(ContentType.Application.Json)
-            setBody(request)
-          }
+    val response =
+        client.post(path) {
+          contentType(ContentType.Application.Json)
+          setBody(request)
+        }
 
-      if (response.status != HttpStatusCode.OK && response.status != HttpStatusCode.Created) {
-        val error = runCatching { response.body<ErrorResponse>() }.getOrNull()
-        throw RemoteException(
-            fieldErrors = error?.errors ?: emptyMap(),
-            generalError = error?.errors?.values?.firstOrNull() ?: "Authentication failed",
-        )
-      }
-
-      val session = response.body<AuthSessionState>()
-      AuthSubmissionResult(session = session)
-    } catch (e: RemoteException) {
-      throw e
-    } catch (e: Throwable) {
-      // Transport-level error (network, timeouts, etc.). Convert to RemoteException so
-      // higher layers can display a user-friendly message.
-      throw RemoteException(generalError = e.message ?: "Network error")
+    if (response.status != HttpStatusCode.OK && response.status != HttpStatusCode.Created) {
+      response.body<ErrorResponse>()
     }
+
+    val session = response.body<AuthSessionState>()
+    return AuthSubmissionResult(session = session)
   }
 }

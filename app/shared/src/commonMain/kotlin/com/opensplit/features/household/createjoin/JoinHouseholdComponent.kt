@@ -1,11 +1,13 @@
 package com.opensplit.features.household.createjoin
 
+import com.ahparhizgar.katch.ApiCallError
 import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.opensplit.component.CContext
 import com.opensplit.component.navigation
 import com.opensplit.features.household.HouseholdService
 import com.opensplit.features.household.details.HouseholdDetailsComponent
-import com.opensplit.remote.RemoteException
+import com.opensplit.remote.fieldErrors
+import com.opensplit.remote.userMessage
 import com.opensplit.validation.household.HouseholdValidation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -61,11 +63,11 @@ class DefaultJoinHouseholdComponent(
       val a = gateway.joinHousehold(current.inviteCode)
       _uiState.update { it.copy(isSubmitting = false) }
       navigation.replaceCurrent(HouseholdDetailsComponent.Config(a.id))
-    } catch (e: RemoteException) {
+    } catch (e: ApiCallError) {
       _uiState.update {
         it.copy(
             fieldErrors = e.fieldErrors,
-            generalError = e.generalError,
+            generalError = e.userMessage,
             isSubmitting = false,
         )
       }

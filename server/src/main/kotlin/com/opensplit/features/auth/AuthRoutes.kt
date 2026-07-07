@@ -13,7 +13,6 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -23,7 +22,10 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
       val request = call.receive<SignUpRequest>()
       val validation = AuthValidation.validateSignUp(request.email, request.password)
       if (!validation.isValid) {
-        call.respond(HttpStatusCode.BadRequest, ErrorResponse(errors = validation.errors))
+        call.respond(
+            HttpStatusCode.BadRequest,
+            ErrorResponse(generalError = "Invalid sign up request", errors = validation.errors),
+        )
         return@post
       }
 
@@ -33,7 +35,10 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
           } catch (_: IllegalArgumentException) {
             call.respond(
                 HttpStatusCode.Conflict,
-                ErrorResponse(errors = mapOf("email" to "Account already exists")),
+                ErrorResponse(
+                    generalError = "Account already exists",
+                    errors = mapOf("email" to "This email already exists"),
+                ),
             )
             return@post
           }
@@ -54,7 +59,13 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
       val request = call.receive<SignInRequest>()
       val validation = AuthValidation.validateSignIn(request.email, request.password)
       if (!validation.isValid) {
-        call.respond(HttpStatusCode.BadRequest, ErrorResponse(errors = validation.errors))
+        call.respond(
+            HttpStatusCode.BadRequest,
+            ErrorResponse(
+                generalError = "Invalid email or password",
+                errors = validation.errors,
+            ),
+        )
         return@post
       }
 
@@ -64,7 +75,7 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
           } catch (_: IllegalArgumentException) {
             call.respond(
                 HttpStatusCode.Unauthorized,
-                ErrorResponse(errors = mapOf("password" to "Invalid email or password")),
+                ErrorResponse("Invalid email or password"),
             )
             return@post
           }
@@ -82,14 +93,14 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
     }
 
     get("/household-context") {
-      var raw =
+      val raw =
           call.request.headers["Authorization"]?.removePrefix("Bearer ")
               ?: call.request.cookies["opensplit-auth-session"]
       val token = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
       if (token.isNullOrBlank()) {
         call.respond(
             HttpStatusCode.Unauthorized,
-            ErrorResponse(errors = mapOf("token" to "Sign in required")),
+            ErrorResponse("Sign in required"),
         )
         return@get
       }
@@ -104,7 +115,7 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
       if (email == null) {
         call.respond(
             HttpStatusCode.Unauthorized,
-            ErrorResponse(errors = mapOf("token" to "Sign in required")),
+            ErrorResponse("Sign in required"),
         )
         return@get
       }
