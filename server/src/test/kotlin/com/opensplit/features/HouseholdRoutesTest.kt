@@ -74,7 +74,8 @@ class HouseholdScenarios {
 
     assertEquals(HttpStatusCode.NotFound, response.status)
     val error = response.body<ErrorResponse>()
-    assertEquals("Invalid invite code or household id", error.errors["inviteCodeOrId"])
+    assertEquals("Invalid invite code", error.generalError)
+    assertEquals("Invalid invite code.", error.errors["inviteCode"])
   }
 
   @Test

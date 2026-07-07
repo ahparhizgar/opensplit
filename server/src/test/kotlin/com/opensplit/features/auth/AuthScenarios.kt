@@ -48,7 +48,7 @@ class AuthScenarios {
 
     assertEquals(HttpStatusCode.Unauthorized, signIn.status)
     val error: ErrorResponse = signIn.body()
-    assertNotNull(error.errors["password"])
+    assertEquals("Invalid email or password", error.generalError)
   }
 
   @Test

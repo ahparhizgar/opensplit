@@ -143,10 +143,7 @@ fun Application.householdRoutes() {
       if (req.inviteCodeOrIdOrLink.isBlank()) {
         call.respond(
             HttpStatusCode.BadRequest,
-            ErrorResponse(
-                generalError = "Invite code is required",
-                errors = mapOf("inviteCodeOrIdOrLink" to "Invite code is required"),
-            ),
+            ErrorResponse(generalError = "Invite code is required"),
         )
         return@post
       }
@@ -190,8 +187,8 @@ fun Application.householdRoutes() {
         call.respond(
             HttpStatusCode.NotFound,
             ErrorResponse(
-                generalError = "Invalid invite code or household id",
-                errors = mapOf("inviteCodeOrIdOrLink" to "Invalid invite code or household id"),
+                generalError = "Invalid invite code",
+                errors = mapOf("inviteCode" to "Invalid invite code."),
             ),
         )
         return@post

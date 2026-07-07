@@ -12,6 +12,6 @@ class ApplicationTest {
   fun healthEndpointReturnsOk() = testOpenSplit {
     val response = client.get("/health")
     assertEquals(HttpStatusCode.OK, response.status)
-    assertEquals("ok", response.bodyAsText())
+    assertEquals("OK", response.bodyAsText())
   }
 }
