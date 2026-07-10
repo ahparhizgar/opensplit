@@ -1,7 +1,6 @@
 package com.opensplit.fake
 
 import com.opensplit.dto.auth.AuthSessionState
-import com.opensplit.dto.auth.HouseholdContextState
 import com.opensplit.features.auth.AuthGateway
 import com.opensplit.features.auth.AuthSubmissionResult
 import com.opensplit.util.FakeService
@@ -13,12 +12,6 @@ class FakeAuthGateway : AuthGateway, FakeService {
     AuthSubmissionResult(
         session =
             AuthSessionState(userId = "user-1", email = email, accessToken = "token-user-1-$email"),
-        householdContext =
-            HouseholdContextState(
-                authenticated = true,
-                email = email,
-                message = "Authenticated household context",
-            ),
     )
   }
 
