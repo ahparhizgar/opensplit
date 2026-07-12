@@ -20,6 +20,7 @@ import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.splash.SplashDestination
+import com.opensplit.usermessage.MessageHolder
 import kotlin.reflect.KClass
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -28,6 +29,7 @@ import org.koin.core.scope.Scope
 interface RootComponent {
   val backHandler: BackHandler
   val childStack: Value<ChildStack<*, Any>>
+  val messageHolder: MessageHolder
 
   fun onBack()
 
@@ -45,6 +47,7 @@ class DefaultRootComponent(
 
   private val navigation = StackNavigation<TopLevelDestinationConfig>()
   override val backHandler: BackHandler = cContext.backHandler
+  override val messageHolder: MessageHolder = MessageHolder()
 
   override fun onBack() {
     navigation.pop()
@@ -54,6 +57,7 @@ class DefaultRootComponent(
     val navOwner = cContext.stackNavigationOwner as CallBackNavigationOwner
     @Suppress("UNCHECKED_CAST")
     navOwner.navigation = navigation as StackNavigation<Any>
+    messageShower = messageHolder
 
     scope.launch {
       try {
@@ -70,7 +74,7 @@ class DefaultRootComponent(
   }
 
   override val childStack: Value<ChildStack<*, Any>> =
-      childStack(
+      cContext.childStack(
           source = navigation,
           serializer = null,
           initialConfiguration = SplashDestination,
@@ -115,6 +119,7 @@ class DefaultRootComponent(
 
 class FakeRootComponent : RootComponent {
   override val backHandler: BackHandler = BackDispatcher()
+  override val messageHolder: MessageHolder = MessageHolder()
 
   override fun onBack() {}
 

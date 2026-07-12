@@ -15,6 +15,8 @@ import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.statekeeper.StateKeeper
 import com.arkivanov.essenty.statekeeper.StateKeeperDispatcher
+import com.opensplit.usermessage.MessageHolder
+import com.opensplit.usermessage.MessageShower
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +25,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.plus
 
 interface CContext : GenericComponentContext<CContext> {
-  val stackNavigationOwner: StackNavigationOwner
+  var stackNavigationOwner: StackNavigationOwner
+  var messageShower: MessageShower
 }
 
 interface StackNavigationOwner {
@@ -43,11 +46,19 @@ class DefaultCContext(
     override val instanceKeeper: InstanceKeeper =
         InstanceKeeperDispatcher().also { lifecycle.doOnDestroy(it::destroy) },
     override val backHandler: BackHandler = BackDispatcher(),
-    override val stackNavigationOwner: StackNavigationOwner = CallBackNavigationOwner(),
+    override var stackNavigationOwner: StackNavigationOwner = CallBackNavigationOwner(),
+    override var messageShower: MessageShower = MessageHolder(),
 ) : CContext {
   override val componentContextFactory: ComponentContextFactory<CContext> =
       ComponentContextFactory { lifecycle, stateKeeper, instanceKeeper, backHandler ->
-        DefaultCContext(lifecycle, stateKeeper, instanceKeeper, backHandler, stackNavigationOwner)
+        DefaultCContext(
+            lifecycle = lifecycle,
+            stateKeeper = stateKeeper,
+            instanceKeeper = instanceKeeper,
+            backHandler = backHandler,
+            stackNavigationOwner = stackNavigationOwner,
+            messageShower = messageShower,
+        )
       }
 }
 
@@ -134,9 +145,8 @@ class TestCContext : CContext {
   val lifecycleRegistry = LifecycleRegistry()
   val fakeStackNavigation = FakeStackNavigation<Any>()
   val backDispatcher = BackDispatcher()
+  val messageHolder = MessageHolder()
 
-  override val stackNavigationOwner: StackNavigationOwner =
-      CallBackNavigationOwner().apply { this.navigation = fakeStackNavigation }
   override val lifecycle: Lifecycle = lifecycleRegistry
 
   override val stateKeeper: StateKeeper = StateKeeperDispatcher()
@@ -150,4 +160,7 @@ class TestCContext : CContext {
       ComponentContextFactory { lifecycle, stateKeeper, instanceKeeper, backHandler ->
         DefaultCContext(lifecycle, stateKeeper, instanceKeeper, backHandler, stackNavigationOwner)
       }
+  override var stackNavigationOwner: StackNavigationOwner =
+      CallBackNavigationOwner().apply { this.navigation = fakeStackNavigation }
+  override var messageShower: MessageShower = messageHolder
 }

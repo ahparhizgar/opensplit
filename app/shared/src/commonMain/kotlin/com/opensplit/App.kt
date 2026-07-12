@@ -3,7 +3,11 @@ package com.opensplit
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,6 +38,14 @@ import com.opensplit.ui.OpenSplitTheme
 @Composable
 fun App(root: RootComponent, modifier: Modifier = Modifier) {
   OpenSplitTheme {
+    val hostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+      while (true) {
+        root.messageHolder.showOne { hostState.showSnackbar(it) }
+      }
+    }
+
     Children(
         // The background is to prevent a flicker when animating children
         modifier = modifier.background(MaterialTheme.colorScheme.background),
@@ -90,6 +102,7 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
         }
       }
     }
+    SnackbarHost(hostState = hostState)
   }
 }
 
