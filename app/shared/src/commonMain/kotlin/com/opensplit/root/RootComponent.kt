@@ -11,7 +11,6 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.backhandler.BackHandler
 import com.opensplit.component.CContext
-import com.opensplit.component.CallBackNavigationOwner
 import com.opensplit.component.componentScope
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.TokenStorage
@@ -45,27 +44,26 @@ class DefaultRootComponent(
 ) : RootComponent, CContext by cContext {
   val scope = componentScope()
 
-  private val navigation = StackNavigation<TopLevelDestinationConfig>()
+  private val rootNavigation = StackNavigation<TopLevelDestinationConfig>()
   override val backHandler: BackHandler = cContext.backHandler
   override val messageHolder: MessageHolder = MessageHolder()
 
   override fun onBack() {
-    navigation.pop()
+    rootNavigation.pop()
   }
 
   init {
-    val navOwner = cContext.stackNavigationOwner as CallBackNavigationOwner
     @Suppress("UNCHECKED_CAST")
-    navOwner.navigation = navigation as StackNavigation<Any>
+    cContext.navigation = rootNavigation as StackNavigation<Any>
     messageShower = messageHolder
 
     scope.launch {
       try {
         val token = tokenStorage.getAccessToken()
         if (!token.isNullOrEmpty()) {
-          navigation.replaceAll(MyHouseholdsListComponent.Config)
+          rootNavigation.replaceAll(MyHouseholdsListComponent.Config)
         } else {
-          navigation.replaceAll(AuthComponent.Config)
+          rootNavigation.replaceAll(AuthComponent.Config)
         }
       } catch (_: Throwable) {
         // Swallow any persistence errors; default to auth flow.
@@ -75,7 +73,7 @@ class DefaultRootComponent(
 
   override val childStack: Value<ChildStack<*, Any>> =
       cContext.childStack(
-          source = navigation,
+          source = rootNavigation,
           serializer = null,
           initialConfiguration = SplashDestination,
           handleBackButton = true,

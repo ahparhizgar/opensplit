@@ -10,7 +10,6 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.backhandler.BackHandler
 import com.opensplit.component.CContext
-import com.opensplit.component.navigation
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.root.Destination
 import com.opensplit.root.TopLevelDestinationConfig
@@ -58,16 +57,16 @@ class DefaultAuthComponent(
     private val resetPasswordFactory: ResetPasswordComponent.Factory,
 ) : AuthComponent, CContext by context {
 
-  private val navigation = StackNavigation<AuthConfig>()
+  private val authNavigation = StackNavigation<AuthConfig>()
   override val backHandler: BackHandler = context.backHandler
 
   override fun onBack() {
-    navigation.pop()
+    authNavigation.pop()
   }
 
   override val stack: Value<ChildStack<AuthConfig, AuthComponent.Child>> =
       childStack(
-          source = navigation,
+          source = authNavigation,
           serializer = null,
           initialConfiguration = AuthConfig.Welcome,
           handleBackButton = true,
@@ -76,18 +75,20 @@ class DefaultAuthComponent(
 
   private fun createChild(config: AuthConfig, context: CContext): AuthComponent.Child {
     return when (config) {
-      AuthConfig.Welcome -> AuthComponent.Child.Welcome(welcomeFactory.create(navigation))
+      AuthConfig.Welcome -> AuthComponent.Child.Welcome(welcomeFactory.create(authNavigation))
       AuthConfig.Login ->
-          AuthComponent.Child.Login(loginFactory.create(context, navigation, ::onAuthenticated))
+          AuthComponent.Child.Login(loginFactory.create(context, authNavigation, ::onAuthenticated))
       AuthConfig.SignUp ->
-          AuthComponent.Child.SignUp(signUpFactory.create(context, navigation, ::onAuthenticated))
+          AuthComponent.Child.SignUp(
+              signUpFactory.create(context, authNavigation, ::onAuthenticated)
+          )
       AuthConfig.ResetPassword ->
-          AuthComponent.Child.ResetPassword(resetPasswordFactory.create(navigation))
+          AuthComponent.Child.ResetPassword(resetPasswordFactory.create(authNavigation))
     }
   }
 
   private fun onAuthenticated() {
-    (this as CContext).navigation.replaceCurrent(MyHouseholdsListComponent.Config)
+    navigation.replaceCurrent(MyHouseholdsListComponent.Config)
   }
 
   class Factory(

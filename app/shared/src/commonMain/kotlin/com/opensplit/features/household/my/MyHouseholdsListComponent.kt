@@ -4,7 +4,6 @@ import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
-import com.opensplit.component.navigation
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.features.household.HouseholdService

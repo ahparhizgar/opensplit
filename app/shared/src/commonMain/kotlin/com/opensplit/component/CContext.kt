@@ -15,29 +15,22 @@ import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.statekeeper.StateKeeper
 import com.arkivanov.essenty.statekeeper.StateKeeperDispatcher
+import com.opensplit.remote.userMessage
 import com.opensplit.usermessage.MessageHolder
 import com.opensplit.usermessage.MessageShower
+import com.opensplit.usermessage.SnackbarMessage
+import com.opensplit.usermessage.UserMessage
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 
 interface CContext : GenericComponentContext<CContext> {
-  var stackNavigationOwner: StackNavigationOwner
+  var navigation: StackNavigation<Any>
   var messageShower: MessageShower
-}
-
-interface StackNavigationOwner {
-  val navigation: StackNavigation<Any>
-}
-
-val CContext.navigation
-  get() = stackNavigationOwner.navigation
-
-class CallBackNavigationOwner : StackNavigationOwner {
-  override var navigation: StackNavigation<Any> = FakeStackNavigation()
 }
 
 class DefaultCContext(
@@ -46,7 +39,7 @@ class DefaultCContext(
     override val instanceKeeper: InstanceKeeper =
         InstanceKeeperDispatcher().also { lifecycle.doOnDestroy(it::destroy) },
     override val backHandler: BackHandler = BackDispatcher(),
-    override var stackNavigationOwner: StackNavigationOwner = CallBackNavigationOwner(),
+    override var navigation: StackNavigation<Any> = FakeStackNavigation(),
     override var messageShower: MessageShower = MessageHolder(),
 ) : CContext {
   override val componentContextFactory: ComponentContextFactory<CContext> =
@@ -56,17 +49,39 @@ class DefaultCContext(
             stateKeeper = stateKeeper,
             instanceKeeper = instanceKeeper,
             backHandler = backHandler,
-            stackNavigationOwner = stackNavigationOwner,
+            navigation = navigation,
             messageShower = messageShower,
         )
       }
 }
 
 fun CContext.componentScope(): CoroutineScope {
-  return CoroutineScope(Dispatchers.Main + SupervisorJob()).also {
-    lifecycle.doOnDestroy { it.cancel("Component was destroyed.") }
-  }
+  return CoroutineScope(
+          Dispatchers.Main +
+              SupervisorJob() +
+              snackbarExceptionHandler(
+                  messageShower,
+                  CoroutineScope(Dispatchers.Main + SupervisorJob()),
+              )
+      )
+      .also { lifecycle.doOnDestroy { it.cancel("Component was destroyed.") } }
 }
+
+fun snackbarExceptionHandler(messageShower: MessageShower, scope: CoroutineScope) =
+    CoroutineExceptionHandler { _, exception ->
+      if (exception is ApiCallError) {
+        scope.launch {
+          messageShower.showSnackbar(
+              SnackbarMessage(
+                  content = exception.userMessage ?: "An error occurred",
+                  tone = UserMessage.Tone.Error,
+              )
+          )
+        }
+      } else {
+        throw exception
+      }
+    }
 
 fun defaultCContext(componentContext: ComponentContext) =
     DefaultCContext(
@@ -136,10 +151,8 @@ class FakeStackNavigation<C : Any> : StackNavigation<C> {
 }
 
 fun CContext.fakeStack() =
-    (stackNavigationOwner.navigation as? FakeStackNavigation<Any>)?.stack
-        ?: error(
-            "stack navigation owner by default has a FakeStackNavigation unless is set by specific test!"
-        )
+    (navigation as? FakeStackNavigation<Any>)?.stack
+        ?: error("navigation by default has a FakeStackNavigation unless is set by specific test!")
 
 class TestCContext : CContext {
   val lifecycleRegistry = LifecycleRegistry()
@@ -158,9 +171,8 @@ class TestCContext : CContext {
 
   override val componentContextFactory: ComponentContextFactory<CContext> =
       ComponentContextFactory { lifecycle, stateKeeper, instanceKeeper, backHandler ->
-        DefaultCContext(lifecycle, stateKeeper, instanceKeeper, backHandler, stackNavigationOwner)
+        DefaultCContext(lifecycle, stateKeeper, instanceKeeper, backHandler, navigation)
       }
-  override var stackNavigationOwner: StackNavigationOwner =
-      CallBackNavigationOwner().apply { this.navigation = fakeStackNavigation }
+  override var navigation: StackNavigation<Any> = fakeStackNavigation
   override var messageShower: MessageShower = messageHolder
 }
