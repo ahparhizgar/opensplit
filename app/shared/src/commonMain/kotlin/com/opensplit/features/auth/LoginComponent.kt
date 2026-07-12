@@ -85,6 +85,8 @@ class DefaultLoginComponent(
         _state.update {
           it.copy(fieldErrors = e.fieldErrors, generalError = e.userMessage, isSubmitting = false)
         }
+      } finally {
+        _state.update { it.copy(isSubmitting = false) }
       }
     }
   }
