@@ -8,16 +8,22 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 
+interface MessageShower {
+  suspend fun showSnackbarForResult(message: SnackbarMessage): SnackbarResult
+
+  suspend fun showSnackbar(message: SnackbarMessage)
+}
+
 class MessageHolder : MessageShower {
   private val messages: Channel<Request> = Channel(capacity = Channel.RENDEZVOUS)
 
   override suspend fun showSnackbarForResult(message: SnackbarMessage): SnackbarResult {
     val request =
-        Request(
-            input = message,
-            response = CompletableDeferred(),
-            job = currentCoroutineContext()[Job],
-        )
+      Request(
+        input = message,
+        response = CompletableDeferred(),
+        job = currentCoroutineContext()[Job],
+      )
     messages.send(request)
     return request.response.await()
   }
@@ -43,7 +49,7 @@ class MessageHolder : MessageShower {
 }
 
 data class Request(
-    val input: SnackbarMessage,
-    val response: CompletableDeferred<SnackbarResult>,
-    val job: Job?,
+  val input: SnackbarMessage,
+  val response: CompletableDeferred<SnackbarResult>,
+  val job: Job?,
 )

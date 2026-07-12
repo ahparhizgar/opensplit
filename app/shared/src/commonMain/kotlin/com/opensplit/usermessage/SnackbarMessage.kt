@@ -1,7 +1,6 @@
 package com.opensplit.usermessage
 
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SnackbarVisuals
 import com.opensplit.usermessage.UserMessage.DismissMode
 import com.opensplit.usermessage.UserMessage.DismissMode.AutoAndManual
@@ -40,9 +39,3 @@ private fun UserMessage.Duration.toSnackbarDuration(): SnackbarDuration =
       UserMessage.Duration.Short -> SnackbarDuration.Short
       UserMessage.Duration.Long -> SnackbarDuration.Long
     }
-
-interface MessageShower {
-  suspend fun showSnackbarForResult(message: SnackbarMessage): SnackbarResult
-
-  suspend fun showSnackbar(message: SnackbarMessage)
-}
