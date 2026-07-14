@@ -39,21 +39,6 @@ class MessageHolder : MessageShower {
     messages.send(Request(input = message, response = CompletableDeferred(), job = null))
   }
 
-  suspend fun showOne(block: suspend (SnackbarMessage) -> SnackbarResult) {
-    val message = messages.receive()
-    if (message.job != null) {
-      val scope = CoroutineScope(message.job)
-      val worker = scope.launch {
-        val result = block(message.input)
-        message.response.complete(result)
-      }
-      worker.join()
-    } else {
-      val result = block(message.input)
-      message.response.complete(result)
-    }
-  }
-
   suspend fun showAll(block: suspend (SnackbarMessage) -> SnackbarResult) {
     coroutineScope {
       var message: Request? = null
