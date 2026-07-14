@@ -61,7 +61,9 @@ fun CContext.componentScope(): CoroutineScope {
               SupervisorJob() +
               snackbarExceptionHandler(
                   messageShower,
-                  CoroutineScope(Dispatchers.Main + SupervisorJob()),
+                  CoroutineScope(Dispatchers.Main + SupervisorJob()).also {
+                    lifecycle.doOnDestroy { it.cancel("Component was destroyed.") }
+                  },
               )
       )
       .also { lifecycle.doOnDestroy { it.cancel("Component was destroyed.") } }

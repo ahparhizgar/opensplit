@@ -33,6 +33,7 @@ import com.opensplit.root.RootComponent
 import com.opensplit.splash.SplashDestination
 import com.opensplit.splash.SplashScreen
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.usermessage.CustomSnackbar
 
 @OptIn(ExperimentalDecomposeApi::class)
 @Composable
@@ -42,7 +43,7 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
 
     LaunchedEffect(Unit) {
       while (true) {
-        root.messageHolder.showOne { hostState.showSnackbar(it) }
+        root.messageHolder.showAll { hostState.showSnackbar(it) }
       }
     }
 
@@ -102,7 +103,7 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
         }
       }
     }
-    SnackbarHost(hostState = hostState)
+    SnackbarHost(hostState = hostState) { CustomSnackbar(snackbarData = it) }
   }
 }
 
