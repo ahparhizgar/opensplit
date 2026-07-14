@@ -82,7 +82,7 @@ class MessageHolder : MessageShower {
                   worker.cancelAndJoin()
                 } finally {
                   log("messages becomes next")
-                  message = next
+                  message = next.apply { input.shouldShake = true }
                 }
               }
             }

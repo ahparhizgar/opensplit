@@ -12,6 +12,7 @@ data class SnackbarMessage(
     val tone: UserMessage.Tone = UserMessage.Tone.Info,
     val dismissMode: DismissMode = AutoAndManual(),
     val actionLabel2: UiString? = null,
+    var shouldShake: Boolean = false,
     override var actionLabel: String? = null,
 ) : SnackbarVisuals {
   override val message: String

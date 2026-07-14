@@ -1,17 +1,24 @@
 package com.opensplit.usermessage
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntOffset
 import com.opensplit.ui.colorSchemeExtended
 import com.opensplit.usermessage.UserMessage.Tone.Error
 import com.opensplit.usermessage.UserMessage.Tone.Info
 import com.opensplit.usermessage.UserMessage.Tone.Success
 import com.opensplit.usermessage.UserMessage.Tone.Warning
+import kotlin.math.roundToInt
 
 @Composable
 fun CustomSnackbar(
@@ -20,6 +27,18 @@ fun CustomSnackbar(
 ) {
   val visuals = snackbarData.visuals as SnackbarMessage
   visuals.actionLabel = visuals.actionLabel2?.content()
+  val offsetX = remember { Animatable(0f) }
+
+  if (visuals.shouldShake) {
+    LaunchedEffect(Unit) {
+      repeat(3) {
+        offsetX.animateTo(10f, tween(durationMillis = 80))
+        offsetX.animateTo(-10f, tween(durationMillis = 80))
+      }
+      offsetX.animateTo(0f)
+    }
+  }
+
   val colors = getColors(visuals.tone)
   val actionLabel = visuals.actionLabel2?.content()
   val data2 =
@@ -36,7 +55,7 @@ fun CustomSnackbar(
         }
       }
   Snackbar(
-      modifier = modifier,
+      modifier = modifier.offset { IntOffset(offsetX.value.roundToInt(), 0) },
       snackbarData = snackbarData,
       containerColor = colors.containerColor,
       contentColor = colors.contentColor,
