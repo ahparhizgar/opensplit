@@ -1,5 +1,6 @@
 package com.opensplit.dto.household
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -8,9 +9,15 @@ data class CreateHouseholdRequest(
 )
 
 @Serializable
-data class JoinHouseholdRequest(
-    val inviteCodeOrIdOrLink: String,
-)
+sealed interface JoinHouseholdRequest {
+  @Serializable
+  @SerialName("invite")
+  data class ByInvite(val inviteCodeOrIdOrLink: String) : JoinHouseholdRequest
+
+  @Serializable
+  @SerialName("email")
+  data class ByEmail(val email: String, val householdId: String) : JoinHouseholdRequest
+}
 
 @Serializable
 data class HouseholdSummaryDto(

@@ -50,7 +50,9 @@ class KtorHouseholdService(
     val response =
         client.post("households/memberships") {
           contentType(ContentType.Application.Json)
-          setBody(JoinHouseholdRequest(inviteCodeOrIdOrLink = inviteCode))
+          setBody<JoinHouseholdRequest>(
+              JoinHouseholdRequest.ByInvite(inviteCodeOrIdOrLink = inviteCode)
+          )
         }
     if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
     return response.body<HouseholdDto>()
