@@ -22,7 +22,7 @@ Imports:
 
 - import com.arkivanov.essenty.lifecycle.doOnResume
 - import component.CContext
-- import component.apiCallScope
+- import component.componentScope
 - import io.ktor.client.HttpClient
 - import io.ktor.client.call.body
 - import io.ktor.client.request.get
@@ -50,7 +50,7 @@ class DefaultFxComponent(
 ) : FxComponent, CContext by context {
     private val _uiState = MutableValue(FxUiState())
     override val uiState: Value<FxUiState> = _uiState
-    private val scope = apiCallScope()
+    private val scope = componentScope()
 
     init {
         lifecycle.doOnResume {
@@ -100,3 +100,24 @@ class FakeFxComponent(
 ```
 
 Always provide Koin bindings in `DecompoesModule.kt`
+
+## Error Handling
+
+By default, when using componentScope, a snackbar is shown when a ApiCallError occurs.
+Field errors should be handled separately if they are returned from the backend.
+example: 
+
+```kotlin
+fun getItems(): Job = apiCallScope.launch {
+    _uiState.update { it.copy(isLoading = true) }
+    try {
+        service.getItems()
+        _uiState.update { it.copy(items = items) }
+    } catch (e: ApiCallError) {
+        _uiState.update { it.copy(fieldErrors = e.fieldErrors) }
+        throw e // To show snack-bars
+    } finally {
+        _uiState.update { it.copy(isLoading = false) }
+    }
+}
+```
