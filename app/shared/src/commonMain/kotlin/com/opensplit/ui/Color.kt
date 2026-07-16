@@ -2,7 +2,6 @@ package com.opensplit.ui
 
 import androidx.compose.ui.graphics.Color
 
-// ── Light theme ── (from Penpot M3/Light tokens)
 val LightPrimary = Color(0xFF006A60)
 val LightOnPrimary = Color(0xFFFFFFFF)
 val LightPrimaryContainer = Color(0xFF9EF2E4)
