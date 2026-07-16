@@ -50,7 +50,7 @@ data class SignUpViewState(
 class DefaultSignUpComponent(
     private val context: CContext,
     private val navigation: StackNavigation<AuthConfig>,
-    private val gateway: AuthGateway,
+    private val gateway: AuthService,
     private val tokenStorage: TokenStorage,
     private val onAuthenticated: () -> Unit,
 ) : SignUpComponent {
@@ -102,7 +102,7 @@ class DefaultSignUpComponent(
   }
 
   class Factory(
-      private val gateway: AuthGateway,
+      private val gateway: AuthService,
       private val tokenStorage: TokenStorage,
   ) : SignUpComponent.Factory {
     override fun create(

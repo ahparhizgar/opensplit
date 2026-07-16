@@ -2,8 +2,8 @@ package com.opensplit.di
 
 import com.opensplit.datastore.DataStoreTokenStorage
 import com.opensplit.datastore.createDataStore
-import com.opensplit.features.auth.AuthGateway
-import com.opensplit.features.auth.KtorAuthGateway
+import com.opensplit.features.auth.AuthService
+import com.opensplit.features.auth.KtorAuthService
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.household.HouseholdService
 import com.opensplit.features.household.KtorHouseholdService
@@ -19,6 +19,6 @@ fun othersModule() = module {
   factoryOf(::createHttpClient)
   singleOf(::createDataStore)
   singleOf(::DataStoreTokenStorage).bind<TokenStorage>()
-  factoryOf(::KtorAuthGateway).bind<AuthGateway>()
+  factoryOf(::KtorAuthService).bind<AuthService>()
   factoryOf(::KtorHouseholdService).bind<HouseholdService>()
 }

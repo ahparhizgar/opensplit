@@ -16,15 +16,15 @@ data class AuthSubmissionResult(
     val session: AuthSessionState,
 )
 
-interface AuthGateway {
+interface AuthService{
   suspend fun signUp(email: String, password: String): AuthSubmissionResult
 
   suspend fun signIn(email: String, password: String): AuthSubmissionResult
 }
 
-class KtorAuthGateway(
+class KtorAuthService(
     private val client: HttpClient,
-) : AuthGateway {
+) : AuthService {
   override suspend fun signUp(email: String, password: String): AuthSubmissionResult =
       submit(
           path = "/users",
