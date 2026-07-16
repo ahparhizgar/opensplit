@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.opensplit.ui.OpenSplitTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +95,10 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
             singleLine = true,
             isError = state.fieldErrors.containsKey("fullName"),
             keyboardOptions =
-                KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next,
+                ),
             keyboardActions =
                 KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
         )
@@ -145,7 +150,10 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
           isError = state.fieldErrors.containsKey("password"),
           supportingText = { Text("Minimum 8 characters") },
           keyboardOptions =
-              KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+              KeyboardOptions(
+                  keyboardType = KeyboardType.Password,
+                  imeAction = ImeAction.Next,
+              ),
           keyboardActions =
               KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
       )
@@ -158,7 +166,7 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
             onValueChange = {},
             readOnly = true,
             modifier = Modifier.width(100.dp),
-            trailingIcon = { Icon(Icons.AutoMirrored.Default.ArrowBack, null) }, // Mock dropdown
+            trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) }, // Mock dropdown
         )
         Spacer(modifier = Modifier.width(8.dp))
         OutlinedTextField(
@@ -168,7 +176,10 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
             modifier = Modifier.weight(1f),
             singleLine = true,
             keyboardOptions =
-                KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Phone,
+                    imeAction = ImeAction.Done,
+                ),
             keyboardActions = KeyboardActions(onDone = { component.onDoneClicked() }),
         )
       }
@@ -177,22 +188,13 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
 
       Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Text(
-            text = "I use GBP (£) as my currency. Change »",
+            text = "I use USD ($) as my currency. Change »",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
       }
 
-      Spacer(modifier = Modifier.height(48.dp))
-
-      Text(
-          text = "By signing up, you accept the OpenSplit Terms of Service and Privacy Policy.",
-          style = MaterialTheme.typography.bodySmall,
-          textAlign = TextAlign.Center,
-          modifier = Modifier.fillMaxWidth(),
-      )
-
-      Spacer(modifier = Modifier.height(16.dp))
+      Spacer(modifier = Modifier.weight(1f))
 
       Button(
           onClick = component::onDoneClicked,
@@ -202,6 +204,14 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
       ) {
         Text("Done", style = MaterialTheme.typography.titleMedium)
       }
+      Spacer(modifier = Modifier.height(16.dp))
+      Text(
+          text = "By signing up, you accept the OpenSplit Terms of Service and Privacy Policy.",
+          style = MaterialTheme.typography.bodySmall,
+          textAlign = TextAlign.Center,
+          modifier = Modifier.fillMaxWidth(),
+      )
+      Spacer(modifier = Modifier.height(16.dp))
     }
   }
 }
@@ -209,11 +219,5 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
 @Composable
 @Preview
 fun SignUpScreenPreview() {
-  MaterialTheme {
-    Surface {
-      SignUpScreen(
-          FakeSignUpComponent(),
-      )
-    }
-  }
+  OpenSplitTheme { Surface { SignUpScreen(FakeSignUpComponent()) } }
 }
