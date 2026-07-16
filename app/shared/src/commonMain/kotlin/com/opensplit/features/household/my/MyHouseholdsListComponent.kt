@@ -1,6 +1,8 @@
 package com.opensplit.features.household.my
 
 import com.arkivanov.decompose.router.stack.pushNew
+import com.arkivanov.decompose.value.MutableValue
+import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
@@ -11,14 +13,13 @@ import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 interface MyHouseholdsListComponent {
-  val overview: StateFlow<HouseholdOverviewDto>
-  val isLoading: StateFlow<Boolean>
+  val overview: Value<HouseholdOverviewDto>
+  val isLoading: Value<Boolean>
+  val isSettledExpanded: Value<Boolean>
 
   fun loadOverview(): Job
 
@@ -27,6 +28,8 @@ interface MyHouseholdsListComponent {
   fun onAddHouseholdClick()
 
   fun onHouseholdClick(id: String) {}
+
+  fun onToggleSettledExpanded()
 
   @Serializable data object Config : TopLevelDestinationConfig
 
@@ -46,11 +49,14 @@ class DefaultMyHouseholdsListComponent(
     doOnCreate { loadOverview() }
   }
 
-  private val _overview = MutableStateFlow(HouseholdOverviewDto())
-  override val overview: StateFlow<HouseholdOverviewDto> = _overview
+  private val _overview = MutableValue(HouseholdOverviewDto())
+  override val overview: Value<HouseholdOverviewDto> = _overview
 
-  private val _isLoading = MutableStateFlow(true)
-  override val isLoading: StateFlow<Boolean> = _isLoading
+  private val _isLoading = MutableValue(true)
+  override val isLoading: Value<Boolean> = _isLoading
+
+  private val _isSettledExpanded = MutableValue(false)
+  override val isSettledExpanded: Value<Boolean> = _isSettledExpanded
 
   override fun loadOverview() = scope.launch {
     try {
@@ -73,6 +79,10 @@ class DefaultMyHouseholdsListComponent(
     navigation.pushNew(CreateJoinHouseholdComponent.Config())
   }
 
+  override fun onToggleSettledExpanded() {
+    _isSettledExpanded.value = !_isSettledExpanded.value
+  }
+
   class Factory(
       private val gateway: HouseholdService,
   ) : MyHouseholdsListComponent.Factory {
@@ -82,8 +92,8 @@ class DefaultMyHouseholdsListComponent(
 }
 
 class FakeMyHouseholdsListComponent(
-    override val overview: MutableStateFlow<HouseholdOverviewDto> =
-        MutableStateFlow(
+    override val overview: MutableValue<HouseholdOverviewDto> =
+        MutableValue(
             HouseholdOverviewDto(
                 households =
                     listOf(
@@ -112,11 +122,16 @@ class FakeMyHouseholdsListComponent(
                 overallCurrency = "IRR",
             )
         ),
-    override val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false),
+    override val isLoading: MutableValue<Boolean> = MutableValue(false),
+    override val isSettledExpanded: MutableValue<Boolean> = MutableValue(false),
 ) : MyHouseholdsListComponent {
   override fun loadOverview() = Job()
 
   override fun leaveHousehold(householdId: String) = Job()
 
   override fun onAddHouseholdClick() {}
+
+  override fun onToggleSettledExpanded() {
+    isSettledExpanded.value = !isSettledExpanded.value
+  }
 }
