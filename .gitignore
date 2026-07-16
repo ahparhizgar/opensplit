@@ -19,3 +19,5 @@ captures
 node_modules/
 app-data/
 sp-api/
+_bmad
+.agents/skills/bmad-*

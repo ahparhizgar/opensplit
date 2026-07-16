@@ -5,7 +5,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// From Penpot M3/Typography tokens (Roboto, lineHeight computed from ratio × fontSize)
 val OpenSplitTypography =
     Typography(
         titleLarge =
