@@ -7,9 +7,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -49,29 +50,29 @@ fun BottomNav(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface),
     ) {
       BottomNavItem(
-          label = "Households",
-          icon = Icons.Default.Home,
+          label = "Groups",
+          icon = Icons.Default.Groups,
           isSelected = 0 == selectedIndex,
           onClick = { onItemSelected(0) },
           modifier = Modifier.weight(1f).testTag("bottom-nav-item-households"),
       )
       BottomNavItem(
           label = "Friends",
-          icon = Icons.Default.AccountBox,
+          icon = Icons.Default.Person,
           isSelected = 1 == selectedIndex,
           onClick = { onItemSelected(1) },
           modifier = Modifier.weight(1f).testTag("bottom-nav-item-friends"),
       )
       BottomNavItem(
           label = "Activity",
-          icon = Icons.Default.Schedule,
+          icon = Icons.Default.BarChart,
           isSelected = 2 == selectedIndex,
           onClick = { onItemSelected(2) },
           modifier = Modifier.weight(1f).testTag("bottom-nav-item-activity"),
       )
       BottomNavItem(
           label = "Account",
-          icon = Icons.Default.AccountBox,
+          icon = Icons.Default.AccountCircle,
           isSelected = 3 == selectedIndex,
           onClick = { onItemSelected(3) },
           modifier = Modifier.weight(1f).testTag("bottom-nav-item-account"),

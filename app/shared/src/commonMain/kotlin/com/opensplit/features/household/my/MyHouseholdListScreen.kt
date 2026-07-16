@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Search
@@ -35,7 +37,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,10 +45,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.arkivanov.decompose.value.MutableValue
 import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.components.BottomNav
@@ -58,8 +62,8 @@ fun MyHouseholdsListScreen(
     component: MyHouseholdsListComponent,
     modifier: Modifier = Modifier,
 ) {
-  val isLoading by component.isLoading.collectAsState()
-  val overview by component.overview.collectAsState()
+  val isLoading by component.isLoading.subscribeAsState()
+  val overview by component.overview.subscribeAsState()
 
   Surface(
       modifier = modifier.fillMaxSize(),
@@ -73,7 +77,6 @@ fun MyHouseholdsListScreen(
       val scope = rememberCoroutineScope()
       var leaveConfirmHouseholdId by rememberSaveable { mutableStateOf<String?>(null) }
       var selectedNavIndex by rememberSaveable { mutableStateOf(0) }
-      var isSettledExpanded by rememberSaveable { mutableStateOf(false) }
 
       val (activeHouseholds, settledHouseholds) =
           remember(overview.households) { overview.households.partition { !it.isSettled } }
@@ -147,8 +150,8 @@ fun MyHouseholdsListScreen(
               item {
                 SettledGroupsSection(
                     households = settledHouseholds,
-                    isExpanded = isSettledExpanded,
-                    onToggle = { isSettledExpanded = !isSettledExpanded },
+                    isExpanded = component.isSettledExpanded.subscribeAsState().value,
+                    onToggle = { component.onToggleSettledExpanded() },
                     onStartNewGroup = { component.onAddHouseholdClick() },
                 )
               }
@@ -226,11 +229,8 @@ private fun NonGroupExpensesCard() {
                 ),
         contentAlignment = Alignment.Center,
     ) {
-      Icon(
-          imageVector = Icons.Default.Description,
-          contentDescription = null,
-          modifier = Modifier.size(32.dp),
-          tint = MaterialTheme.colorScheme.onSurfaceVariant,
+      Box(
+          modifier = Modifier.size(32.dp).background(Color.White, CircleShape),
       )
     }
 
@@ -284,13 +284,15 @@ private fun SettledGroupsSection(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Text(
-            text = "Re-hide",
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.clickable(onClick = onToggle).testTag("hide-settled-btn"),
-        )
+        TextButton(onToggle) {
+          Text(
+              text = "Re-hide",
+              style = MaterialTheme.typography.bodySmall,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.clickable(onClick = onToggle).testTag("hide-settled-btn"),
+          )
+        }
       }
 
       households.forEach { household -> SettledHouseholdCard(name = household.name) }
@@ -299,7 +301,7 @@ private fun SettledGroupsSection(
 
       OutlinedButton(
           onClick = onStartNewGroup,
-          modifier = Modifier.fillMaxWidth().testTag("start-new-group-btn"),
+          modifier = Modifier.wrapContentWidth().testTag("start-new-group-btn"),
       ) {
         Icon(
             imageVector = Icons.Default.GroupAdd,
@@ -400,7 +402,7 @@ private fun AddExpenseFab(
 ) {
   ExtendedFloatingActionButton(
       onClick = onClick,
-      icon = { Icon(Icons.Default.Description, contentDescription = null) },
+      icon = { Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = null) },
       text = { Text("Add expense") },
       containerColor = MaterialTheme.colorScheme.primary,
       contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -458,6 +460,19 @@ private fun MyHouseholdsListPreview() {
   OpenSplitTheme {
     MyHouseholdsListScreen(
         component = FakeMyHouseholdsListComponent(),
+    )
+  }
+}
+
+@Preview
+@Composable
+private fun MyHouseholdsListExtendedPreview() {
+  OpenSplitTheme {
+    MyHouseholdsListScreen(
+        component =
+            FakeMyHouseholdsListComponent(
+                isSettledExpanded = MutableValue(true),
+            ),
     )
   }
 }
