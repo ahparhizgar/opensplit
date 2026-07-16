@@ -1,6 +1,7 @@
 package com.opensplit.features.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,8 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,11 +37,7 @@ fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
       Spacer(modifier = Modifier.weight(1f))
 
       // Logo Placeholder
-      Box(
-          modifier =
-              Modifier.size(150.dp).clip(RoundedCornerShape(24.dp)).background(Color(0xFFE0E0E0)),
-          contentAlignment = Alignment.Center,
-      ) {
+      Box(contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
           Box(
               modifier =
@@ -52,7 +47,7 @@ fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
                           RoundedCornerShape(12.dp),
                       )
           )
-          Spacer(modifier = Modifier.height(8.dp))
+          Spacer(modifier = Modifier.height(16.dp))
           Text(
               "OpenSplit",
               fontWeight = FontWeight.Bold,
@@ -88,19 +83,22 @@ fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
           horizontalArrangement = Arrangement.Center,
       ) {
         Text(
-            "Terms",
+            modifier = Modifier.clickable {},
+            text = "Terms",
             style = MaterialTheme.typography.bodySmall,
             textDecoration = TextDecoration.Underline,
         )
         Text(" | ", style = MaterialTheme.typography.bodySmall)
         Text(
-            "Privacy Policy",
+            modifier = Modifier.clickable {},
+            text = "Privacy Policy",
             style = MaterialTheme.typography.bodySmall,
             textDecoration = TextDecoration.Underline,
         )
         Text(" | ", style = MaterialTheme.typography.bodySmall)
         Text(
-            "Contact us",
+            modifier = Modifier.clickable {},
+            text = "Contact us",
             style = MaterialTheme.typography.bodySmall,
             textDecoration = TextDecoration.Underline,
         )
@@ -112,11 +110,5 @@ fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
 @Composable
 @Preview
 fun WelcomeScreenPreview() {
-  OpenSplitTheme {
-    Surface {
-      WelcomeScreen(
-          FakeWelcomeComponent(),
-      )
-    }
-  }
+  OpenSplitTheme { Surface { WelcomeScreen(FakeWelcomeComponent()) } }
 }
