@@ -53,8 +53,8 @@ development_status:
   1-8-invite-code-display-and-share: done
   1-9-fix-membership-edge-cases: done
   epic-1-retrospective: done
-  epic-2: backlog
-  2-1-add-a-simple-expense-with-minimal-ui: backlog
+  epic-2: in-progress
+  2-1-add-a-simple-expense-with-minimal-ui: ready-for-dev
   2-2-ui-of-add-expense-should-have-defaults: backlog
   2-3-implement-inline-validations-for-required-fields: backlog
   2-4-calculate-balance-in-backend-and-show-real-balance-in-household-list-and-household-details-screen: backlog
