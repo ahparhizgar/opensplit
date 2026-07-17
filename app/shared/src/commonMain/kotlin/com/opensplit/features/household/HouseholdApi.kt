@@ -2,7 +2,7 @@ package com.opensplit.features.household
 
 import com.opensplit.dto.household.CreateHouseholdRequest
 import com.opensplit.dto.household.HouseholdDto
-import com.opensplit.dto.household.HouseholdOverviewDto
+import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.features.auth.TokenStorage
 import io.ktor.client.HttpClient
@@ -20,9 +20,9 @@ interface HouseholdApi {
 
   suspend fun joinHousehold(inviteCode: String): HouseholdDto
 
-  suspend fun loadOverview(): HouseholdOverviewDto
+  suspend fun loadOverview(): List<HouseholdSummaryDto>
 
-  suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto
+  suspend fun leaveHousehold(householdId: String): List<HouseholdSummaryDto>
 
   suspend fun getHousehold(id: String): HouseholdDto
 }
@@ -58,16 +58,16 @@ class KtorHouseholdApi(
     return response.body<HouseholdDto>()
   }
 
-  override suspend fun loadOverview(): HouseholdOverviewDto {
+  override suspend fun loadOverview(): List<HouseholdSummaryDto> {
     val response = client.get("households")
     if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
-    return response.body<HouseholdOverviewDto>()
+    return response.body<List<HouseholdSummaryDto>>()
   }
 
-  override suspend fun leaveHousehold(householdId: String): HouseholdOverviewDto {
+  override suspend fun leaveHousehold(householdId: String): List<HouseholdSummaryDto> {
     val response = client.delete("households/$householdId/memberships")
     if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
-    return response.body<HouseholdOverviewDto>()
+    return response.body<List<HouseholdSummaryDto>>()
   }
 
   override suspend fun getHousehold(id: String): HouseholdDto {

@@ -2,25 +2,20 @@ package com.opensplit.features.household
 
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.HouseholdMemberDto
-import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.features.auth.UserPrincipal
 
 class HouseholdService(private val householdRepository: HouseholdRepository) {
-  fun loadOverview(user: UserPrincipal): HouseholdOverviewDto =
-      HouseholdOverviewDto(
-          households =
-              householdRepository.loadHouseholdSummaries(user.userId).map { summary ->
-                HouseholdSummaryDto(
-                    id = summary.id,
-                    name = summary.name,
-                    memberCount = summary.memberCount,
-                    isOwner = summary.isOwner,
-                    inviteCode = summary.inviteCode,
-                )
-              },
-          members = emptyList(),
-      )
+  fun loadHouseholds(user: UserPrincipal): List<HouseholdSummaryDto> =
+      householdRepository.loadHouseholdSummaries(user.userId).map { summary ->
+        HouseholdSummaryDto(
+            id = summary.id,
+            name = summary.name,
+            memberCount = summary.memberCount,
+            isOwner = summary.isOwner,
+            inviteCode = summary.inviteCode,
+        )
+      }
 
   fun createHousehold(user: UserPrincipal, name: String): HouseholdDto {
     val household = householdRepository.createHousehold(name, user.userId)
@@ -89,9 +84,9 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
     return AddMemberByEmailResult.Success(detail.toDto(user.userId))
   }
 
-  fun leaveHousehold(user: UserPrincipal, householdId: String): HouseholdOverviewDto {
+  fun leaveHousehold(user: UserPrincipal, householdId: String): List<HouseholdSummaryDto> {
     householdRepository.leaveHousehold(householdId, user.userId)
-    return loadOverview(user)
+    return loadHouseholds(user)
   }
 
   fun getHousehold(user: UserPrincipal, householdId: String): HouseholdDto? =

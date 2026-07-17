@@ -63,7 +63,7 @@ fun MyHouseholdsListScreen(
     modifier: Modifier = Modifier,
 ) {
   val isLoading by component.isLoading.subscribeAsState()
-  val overview by component.overview.subscribeAsState()
+  val uiState by component.uiState.subscribeAsState()
 
   Surface(
       modifier = modifier.fillMaxSize(),
@@ -79,7 +79,7 @@ fun MyHouseholdsListScreen(
       var selectedNavIndex by rememberSaveable { mutableStateOf(0) }
 
       val (activeHouseholds, settledHouseholds) =
-          remember(overview.households) { overview.households.partition { !it.isSettled } }
+          remember(uiState.households) { uiState.households.partition { !it.isSettled } }
 
       Scaffold(
           bottomBar = {
@@ -119,8 +119,8 @@ fun MyHouseholdsListScreen(
 
           // Balance Summary Row
           BalanceSummaryRow(
-              balance = overview.overallBalance,
-              currency = overview.overallCurrency,
+              balance = uiState.overallBalance,
+              currency = uiState.overallCurrency,
               modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
           )
 
@@ -162,7 +162,7 @@ fun MyHouseholdsListScreen(
 
       // Leave confirmation dialog
       if (leaveConfirmHouseholdId != null) {
-        val householdToLeave = overview.households.find { it.id == leaveConfirmHouseholdId }
+        val householdToLeave = uiState.households.find { it.id == leaveConfirmHouseholdId }
 
         HouseholdLeaveConfirmDialog(
             householdName = householdToLeave?.name ?: leaveConfirmHouseholdId!!,
@@ -381,17 +381,16 @@ private fun HouseholdCard(
           fontWeight = FontWeight.Bold,
       )
       Text(
-          text = "you are owed ${household.currency}${household.balance}",
+          text = "you are owed IRR${household.balance}",
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.primary,
       )
-      household.description?.let {
-        Text(
-            text = it,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-      }
+
+      Text(
+          text = "someone owes someone",
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
     }
   }
 }
