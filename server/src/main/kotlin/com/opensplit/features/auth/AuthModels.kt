@@ -15,9 +15,9 @@ interface PasswordHasher {
   fun verify(password: String, hash: String): Boolean
 }
 
-class BcryptPasswordHasher : PasswordHasher {
+class BcryptPasswordHasher(private val cost: Int = 12) : PasswordHasher {
   override fun hash(password: String): String =
-      BCrypt.withDefaults().hashToString(12, password.toCharArray())
+      BCrypt.withDefaults().hashToString(cost, password.toCharArray())
 
   override fun verify(password: String, hash: String): Boolean =
       BCrypt.verifyer().verify(password.toCharArray(), hash).verified
@@ -39,9 +39,7 @@ data class RegisteredUser(
     val passwordHash: String,
 )
 
-class AuthService(
-    private val passwordHasher: PasswordHasher = BcryptPasswordHasher(),
-) {
+class AuthService(private val passwordHasher: PasswordHasher) {
   fun signUp(email: String, password: String, name: String? = null): AuthSession {
     val existing = transaction {
       Users.selectAll().where { Users.email eq email }.limit(1).firstOrNull()

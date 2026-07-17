@@ -1,5 +1,8 @@
 package com.opensplit
 
+import com.opensplit.db.Households
+import com.opensplit.db.Memberships
+import com.opensplit.db.Users
 import com.opensplit.dto.auth.AuthSessionState
 import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.features.auth.AuthService
@@ -17,12 +20,21 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import org.jetbrains.exposed.v1.jdbc.deleteAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.koin.ktor.ext.inject
 
 fun testOpenSplit(block: suspend ApplicationTestBuilder.() -> Unit) = testApplication {
   var token = ""
   application {
     openSplit(isTest = true)
+
+    transaction {
+      Memberships.deleteAll()
+      Households.deleteAll()
+      Users.deleteAll()
+    }
+
     val authService by inject<AuthService>()
     val auth = authService.signUp("registersdf@example.com", "password")
     token = auth.accessToken

@@ -3,7 +3,6 @@ package com.opensplit.db
 import com.zaxxer.hikari.HikariDataSource
 import javax.sql.DataSource
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.koin.dsl.module
 
@@ -11,7 +10,7 @@ import org.koin.dsl.module
 fun databaseTestModule() = module {
   single {
     DatabaseConfig(
-        jdbcUrl = "jdbc:h2:mem:test-${Uuid.random()};DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        jdbcUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
         username = "sa",
         password = "",
         driverClassName = "org.h2.Driver",

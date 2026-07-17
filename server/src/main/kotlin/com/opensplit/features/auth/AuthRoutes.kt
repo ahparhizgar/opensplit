@@ -13,11 +13,13 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
-import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.koin.ktor.ext.inject
 
-fun Application.authRoutes(authService: AuthService = AuthService()) {
+fun Application.authRoutes() {
+  val authService: AuthService by inject()
   routing {
     post("/users") {
       val request = call.receive<SignUpRequest>()
