@@ -6,15 +6,15 @@ import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.validation.auth.AuthValidation
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
-import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import org.koin.ktor.ext.inject
 
 fun Application.configureAuthRoutes() {
-  val authService: AuthService by dependencies
+  val authService by inject<AuthService>()
 
   routing {
     route("/users") {

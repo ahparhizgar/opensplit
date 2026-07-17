@@ -24,7 +24,7 @@ dependencies {
   implementation(libs.logback)
   implementation(libs.ktor.serverCore)
   implementation(libs.ktor.serverNetty)
-  implementation(libs.ktor.serverDi)
+  implementation(libs.koin.ktor)
   implementation(libs.ktor.serverContentNegotiation)
   implementation(libs.ktor.serializationKotlinxJson)
   implementation(libs.ktor.serverAuth)

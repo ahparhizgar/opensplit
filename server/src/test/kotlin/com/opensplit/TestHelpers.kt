@@ -18,11 +18,11 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import org.jetbrains.exposed.v1.jdbc.deleteAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.koin.ktor.ext.inject
 
 fun testOpenSplit(block: suspend ApplicationTestBuilder.() -> Unit) = testApplication {
   var token = ""
@@ -35,7 +35,7 @@ fun testOpenSplit(block: suspend ApplicationTestBuilder.() -> Unit) = testApplic
       Users.deleteAll()
     }
 
-    val authService: AuthService by dependencies
+    val authService by inject<AuthService>()
     val auth = authService.signUp("registersdf@example.com", "password", null)
     token = auth.accessToken
   }

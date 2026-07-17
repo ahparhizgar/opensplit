@@ -10,7 +10,6 @@ import com.opensplit.validation.household.HouseholdValidation
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.delete
@@ -18,10 +17,11 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import org.koin.ktor.ext.inject
 
 fun Application.configureHouseholdRoutes() {
-  val authService: AuthService by dependencies
-  val householdService: HouseholdService by dependencies
+  val authService by inject<AuthService>()
+  val householdService by inject<HouseholdService>()
 
   routing {
     route("/households") {

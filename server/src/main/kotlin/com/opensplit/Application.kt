@@ -9,7 +9,7 @@ import com.opensplit.plugins.configureSerialization
 import io.ktor.server.application.Application
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.server.plugins.di.dependencies
+import org.koin.ktor.ext.inject
 
 fun main() {
   embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::openSplit)
@@ -20,7 +20,7 @@ fun Application.openSplit(isTest: Boolean = false) {
   configureSerialization()
   configureDependencies(isTest)
 
-  val initializer: DatabaseInitializer by dependencies
+  val initializer by inject<DatabaseInitializer>()
   initializer.init()
 
   authModule()
