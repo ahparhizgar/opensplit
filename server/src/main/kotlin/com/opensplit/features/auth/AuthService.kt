@@ -1,7 +1,7 @@
 package com.opensplit.features.auth
 
 import com.opensplit.dto.auth.AuthResult
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 class AuthService(
     private val authRepository: AuthRepository,
@@ -16,7 +16,7 @@ class AuthService(
 
     val user =
         AuthUser(
-            id = UUID.randomUUID().toString(),
+            id = Uuid.random().toString(),
             name = name,
             email = email,
             passwordHash = passwordHasher.hash(password),
