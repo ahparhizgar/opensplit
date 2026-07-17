@@ -1,6 +1,6 @@
 package com.opensplit.features.auth
 
-import com.opensplit.dto.auth.AuthSessionState
+import com.opensplit.dto.auth.AuthResult
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.auth.SignInRequest
 import com.opensplit.dto.auth.SignUpRequest
@@ -63,7 +63,7 @@ class AuthScenarios {
     val signIn = client.post("/tokens") { setBody(SignInRequest(email, password)) }
 
     assertEquals(HttpStatusCode.OK, signIn.status)
-    val session: AuthSessionState = signIn.body()
+    val session: AuthResult = signIn.body()
     assertEquals(email, session.email)
     assertNotNull(session.accessToken)
     assertTrue(session.accessToken.isNotBlank())

@@ -1,4 +1,4 @@
-package com.opensplit.db
+package com.opensplit.database
 
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils

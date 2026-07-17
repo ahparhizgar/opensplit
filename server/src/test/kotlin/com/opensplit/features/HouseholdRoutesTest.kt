@@ -2,7 +2,7 @@ package com.opensplit.features
 
 import com.opensplit.createAuthenticatedClient
 import com.opensplit.createOtherClient
-import com.opensplit.dto.auth.AuthSessionState
+import com.opensplit.dto.auth.AuthResult
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.dto.household.CreateHouseholdRequest
@@ -92,7 +92,7 @@ class HouseholdScenarios {
     val otherUser =
         client
             .post("/users") { setBody(SignUpRequest("leave-test@example.com", "password123")) }
-            .body<AuthSessionState>()
+            .body<AuthResult>()
     val otherClient = createAuthenticatedClient(otherUser.accessToken)
 
     otherClient
@@ -117,7 +117,7 @@ class HouseholdScenarios {
     val otherUser =
         client
             .post("/users") { setBody(SignUpRequest("member-check@example.com", "password123")) }
-            .body<AuthSessionState>()
+            .body<AuthResult>()
     val otherClient = createAuthenticatedClient(otherUser.accessToken)
 
     val joinById =
@@ -153,7 +153,7 @@ class HouseholdScenarios {
     val otherUser =
         client
             .post("/users") { setBody(SignUpRequest("owner-transfer@example.com", "password123")) }
-            .body<AuthSessionState>()
+            .body<AuthResult>()
     val otherClient = createAuthenticatedClient(otherUser.accessToken)
 
     otherClient

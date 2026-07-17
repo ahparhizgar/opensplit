@@ -16,11 +16,10 @@ data class SignInRequest(
 )
 
 @Serializable
-data class AuthSessionState(
+data class AuthResult(
     val userId: String,
     val name: String? = null,
     val email: String,
-    val householdId: String? = null,
     val accessToken: String,
 )
 
@@ -28,12 +27,4 @@ data class AuthSessionState(
 data class ErrorResponse(
     val generalError: String,
     val errors: Map<String, String> = emptyMap(),
-)
-
-@Serializable
-data class HouseholdContextState(
-    val authenticated: Boolean,
-    val email: String,
-    val householdId: String? = null,
-    val message: String,
 )
