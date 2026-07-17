@@ -33,17 +33,11 @@ class AuthService(
     return user.toSessionState()
   }
 
-  fun authenticatedUser(token: String?): AuthUser? {
-    val accessToken = token ?: return null
-    val userId = jwtService.verify(accessToken) ?: return null
-    return authRepository.findUserById(userId)
-  }
-
   private fun AuthUser.toSessionState(): AuthResult =
       AuthResult(
           userId = id,
           name = name,
           email = email,
-          accessToken = jwtService.issue(id, email),
+          accessToken = jwtService.issue(id, email, name),
       )
 }

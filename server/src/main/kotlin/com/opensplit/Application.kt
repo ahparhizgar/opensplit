@@ -5,6 +5,7 @@ import com.opensplit.features.auth.authModule
 import com.opensplit.features.health.healthModule
 import com.opensplit.features.household.householdModule
 import com.opensplit.plugins.configureDependencies
+import com.opensplit.plugins.configureSecurity
 import com.opensplit.plugins.configureSerialization
 import io.ktor.server.application.Application
 import io.ktor.server.engine.embeddedServer
@@ -17,8 +18,9 @@ fun main() {
 }
 
 fun Application.openSplit(isTest: Boolean = false) {
-  configureSerialization()
   configureDependencies(isTest)
+  configureSerialization()
+  configureSecurity()
 
   val initializer by inject<DatabaseInitializer>()
   initializer.init()
