@@ -1,6 +1,7 @@
 1. refactor backend structure using a Ktor course
 2. introduce SSE
 3. improve messages of default api call error messages
+4. server tests are too slow
 
 
 ### Done

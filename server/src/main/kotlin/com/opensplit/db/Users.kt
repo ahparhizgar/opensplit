@@ -1,6 +1,6 @@
 package com.opensplit.db
 
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.v1.core.Table
 
 object Users : Table("users") {
   val id = varchar("id", 36)

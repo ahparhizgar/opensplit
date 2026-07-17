@@ -21,13 +21,12 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import java.net.URLDecoder
 import java.util.UUID
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 
 fun Application.householdRoutes() {
   routing {
@@ -121,11 +120,15 @@ fun Application.householdRoutes() {
                               userId = userId,
                               name =
                                   transaction {
-                                    Users.select { Users.id eq userId }.first()[Users.name]
+                                    Users.selectAll()
+                                        .where { Users.id eq userId }
+                                        .first()[Users.name]
                                   },
                               email =
                                   transaction {
-                                    Users.select { Users.id eq userId }.first()[Users.email]
+                                    Users.selectAll()
+                                        .where { Users.id eq userId }
+                                        .first()[Users.email]
                                   },
                               isOwner = true,
                               isCurrentUser = true,
@@ -169,7 +172,8 @@ fun Application.householdRoutes() {
           }
 
           val byInvite = transaction {
-            Households.select {
+            Households.selectAll()
+                .where {
                   Households.inviteCode eq
                       inviteCodeOrIdOrLink.removePrefix("https://opensplit.com/join/")
                 }
@@ -179,7 +183,8 @@ fun Application.householdRoutes() {
           val byId =
               if (byInvite == null)
                   transaction {
-                    Households.select { Households.id eq inviteCodeOrIdOrLink }
+                    Households.selectAll()
+                        .where { Households.id eq inviteCodeOrIdOrLink }
                         .limit(1)
                         .firstOrNull()
                   }
@@ -203,9 +208,8 @@ fun Application.householdRoutes() {
           if (!isJoinByInvite) {
             val ownerId = transaction { householdRow.get(Households.ownerId) }
             val isMember = transaction {
-              Memberships.select {
-                    (Memberships.householdId eq hid) and (Memberships.userId eq userId)
-                  }
+              Memberships.selectAll()
+                  .where { (Memberships.householdId eq hid) and (Memberships.userId eq userId) }
                   .any()
             }
             if (ownerId != userId && !isMember) {
@@ -222,9 +226,8 @@ fun Application.householdRoutes() {
 
           transaction {
             val alreadyMember =
-                Memberships.select {
-                      (Memberships.householdId eq hid) and (Memberships.userId eq userId)
-                    }
+                Memberships.selectAll()
+                    .where { (Memberships.householdId eq hid) and (Memberships.userId eq userId) }
                     .any()
             if (!alreadyMember) {
               Memberships.insert {
@@ -256,7 +259,7 @@ fun Application.householdRoutes() {
 
           val result = transaction {
             val household =
-                Households.select { Households.id eq householdId }.limit(1).firstOrNull()
+                Households.selectAll().where { Households.id eq householdId }.limit(1).firstOrNull()
                     ?: return@transaction "NOT_FOUND"
 
             if (household[Households.ownerId] != userId) {
@@ -264,12 +267,13 @@ fun Application.householdRoutes() {
             }
 
             val targetUser =
-                Users.select { Users.email eq email }.limit(1).firstOrNull()
+                Users.selectAll().where { Users.email eq email }.limit(1).firstOrNull()
                     ?: return@transaction "USER_NOT_FOUND"
 
             val targetUserId = targetUser[Users.id]
             val alreadyMember =
-                Memberships.select {
+                Memberships.selectAll()
+                    .where {
                       (Memberships.householdId eq householdId) and
                           (Memberships.userId eq targetUserId)
                     }
@@ -339,10 +343,12 @@ fun Application.householdRoutes() {
       }
 
       transaction {
-        val household = Households.select { Households.id eq householdId }.limit(1).firstOrNull()
+        val household =
+            Households.selectAll().where { Households.id eq householdId }.limit(1).firstOrNull()
         if (household != null && household[Households.ownerId] == userId) {
           val nextOwnerQuery =
-              Memberships.select {
+              Memberships.selectAll()
+                  .where {
                     (Memberships.householdId eq householdId) and (Memberships.userId neq userId)
                   }
                   .limit(1)
@@ -400,30 +406,34 @@ fun Application.householdRoutes() {
 
 private fun resolveUserIdFromToken(token: String?): String? {
   val userId = token?.let { JwtTokenService.verify(it) } ?: return null
-  return transaction { Users.select { Users.id eq userId }.limit(1).firstOrNull()?.get(Users.id) }
+  return transaction {
+    Users.selectAll().where { Users.id eq userId }.limit(1).firstOrNull()?.get(Users.id)
+  }
 }
 
 private fun loadHouseholdDetail(householdId: String, userId: String): HouseholdDto? {
   return transaction {
     val isMember =
-        Memberships.select {
-              (Memberships.householdId eq householdId) and (Memberships.userId eq userId)
-            }
+        Memberships.selectAll()
+            .where { (Memberships.householdId eq householdId) and (Memberships.userId eq userId) }
             .any()
 
     if (!isMember) return@transaction null
 
     val householdRow =
-        Households.select { Households.id eq householdId }.limit(1).firstOrNull()
+        Households.selectAll().where { Households.id eq householdId }.limit(1).firstOrNull()
             ?: return@transaction null
 
     val memberIds =
-        Memberships.select { Memberships.householdId eq householdId }.map { it[Memberships.userId] }
+        Memberships.selectAll()
+            .where { Memberships.householdId eq householdId }
+            .map { it[Memberships.userId] }
 
     val ownerId = householdRow[Households.ownerId]
 
     val members =
-        Users.select { Users.id inList memberIds }
+        Users.selectAll()
+            .where { Users.id inList memberIds }
             .map { row ->
               HouseholdMemberDto(
                   userId = row[Users.id],
@@ -447,11 +457,13 @@ private fun loadHouseholdDetail(householdId: String, userId: String): HouseholdD
 
 private fun loadHouseholds(userId: String): HouseholdOverviewDto {
   val households = transaction {
-    Memberships.select { Memberships.userId eq userId }
+    Memberships.selectAll()
+        .where { Memberships.userId eq userId }
         .map { membership ->
           val hid = membership[Memberships.householdId]
-          val row = Households.select { Households.id eq hid }.limit(1).first()
-          val memberCount = Memberships.select { Memberships.householdId eq hid }.count().toInt()
+          val row = Households.selectAll().where { Households.id eq hid }.limit(1).first()
+          val memberCount =
+              Memberships.selectAll().where { Memberships.householdId eq hid }.count().toInt()
           val ownerId = row[Households.ownerId]
           HouseholdSummaryDto(
               id = row[Households.id],
