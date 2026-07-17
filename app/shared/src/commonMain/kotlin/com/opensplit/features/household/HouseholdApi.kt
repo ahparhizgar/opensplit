@@ -1,5 +1,6 @@
 package com.opensplit.features.household
 
+import com.opensplit.dto.household.AddMemberByEmailRequest
 import com.opensplit.dto.household.CreateHouseholdRequest
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.HouseholdSummaryDto
@@ -11,14 +12,14 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
 
 interface HouseholdApi {
   suspend fun createHousehold(name: String): HouseholdDto
 
   suspend fun joinHousehold(inviteCode: String): HouseholdDto
+
+  suspend fun addMemberByEmail(householdId: String, email: String): HouseholdDto
 
   suspend fun loadOverview(): List<HouseholdSummaryDto>
 
@@ -37,11 +38,7 @@ class KtorHouseholdApi(
   }
 
   override suspend fun createHousehold(name: String): HouseholdDto {
-    val response =
-        client.post("households") {
-          contentType(ContentType.Application.Json)
-          setBody(CreateHouseholdRequest(name = name))
-        }
+    val response = client.post("households") { setBody(CreateHouseholdRequest(name = name)) }
     if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
     return response.body<HouseholdDto>()
   }
@@ -49,10 +46,16 @@ class KtorHouseholdApi(
   override suspend fun joinHousehold(inviteCode: String): HouseholdDto {
     val response =
         client.post("households/memberships") {
-          contentType(ContentType.Application.Json)
-          setBody<JoinHouseholdRequest>(
-              JoinHouseholdRequest.ByInvite(inviteCodeOrIdOrLink = inviteCode)
-          )
+          setBody(JoinHouseholdRequest(inviteCodeOrIdOrLink = inviteCode))
+        }
+    if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
+    return response.body<HouseholdDto>()
+  }
+
+  override suspend fun addMemberByEmail(householdId: String, email: String): HouseholdDto {
+    val response =
+        client.post("households/$householdId/memberships") {
+          setBody(AddMemberByEmailRequest(email = email))
         }
     if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
     return response.body<HouseholdDto>()
