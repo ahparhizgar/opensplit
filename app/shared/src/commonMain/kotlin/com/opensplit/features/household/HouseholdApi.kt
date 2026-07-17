@@ -15,7 +15,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
-interface HouseholdService {
+interface HouseholdApi {
   suspend fun createHousehold(name: String): HouseholdDto
 
   suspend fun joinHousehold(inviteCode: String): HouseholdDto
@@ -27,10 +27,10 @@ interface HouseholdService {
   suspend fun getHousehold(id: String): HouseholdDto
 }
 
-class KtorHouseholdService(
+class KtorHouseholdApi(
     private val client: HttpClient,
     private val tokenStorage: TokenStorage,
-) : HouseholdService {
+) : HouseholdApi {
 
   private suspend fun handleUnauthorized() {
     tokenStorage.clearAccessToken()

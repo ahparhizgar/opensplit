@@ -6,7 +6,7 @@ import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.dto.household.HouseholdDto
-import com.opensplit.features.household.HouseholdService
+import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +41,7 @@ interface HouseholdDetailsComponent {
 class DefaultHouseholdDetailsComponent(
     context: CContext,
     config: HouseholdDetailsComponent.Config,
-    private val gateway: HouseholdService,
+    private val gateway: HouseholdApi,
 ) : HouseholdDetailsComponent, CContext by context {
 
   override val householdId: String = config.householdId
@@ -78,7 +78,7 @@ class DefaultHouseholdDetailsComponent(
       }
 
   class Factory(
-      private val gateway: HouseholdService,
+      private val gateway: HouseholdApi,
   ) : HouseholdDetailsComponent.Factory {
     override fun create(
         cContext: CContext,

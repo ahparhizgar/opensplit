@@ -3,7 +3,7 @@ package com.opensplit.features.household.createjoin
 import com.ahparhizgar.katch.ApiCallError
 import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.opensplit.component.CContext
-import com.opensplit.features.household.HouseholdService
+import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.remote.fieldErrors
 import com.opensplit.remote.userMessage
@@ -29,7 +29,7 @@ interface JoinHouseholdComponent {
 
 class DefaultJoinHouseholdComponent(
     context: CContext,
-    private val gateway: HouseholdService,
+    private val gateway: HouseholdApi,
 ) : JoinHouseholdComponent, CContext by context {
 
   private val _uiState = MutableStateFlow(JoinHouseholdComponent.UiState())
