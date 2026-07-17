@@ -1,6 +1,6 @@
 package com.opensplit.features.auth
 
-import com.opensplit.dto.auth.AuthSessionState
+import com.opensplit.dto.auth.AuthResult
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.auth.SignInRequest
 import com.opensplit.dto.auth.SignUpRequest
@@ -13,10 +13,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
 data class AuthSubmissionResult(
-    val session: AuthSessionState,
+    val session: AuthResult,
 )
 
-interface AuthApi{
+interface AuthApi {
   suspend fun signUp(email: String, password: String): AuthSubmissionResult
 
   suspend fun signIn(email: String, password: String): AuthSubmissionResult
@@ -48,7 +48,7 @@ class KtorAuthApi(
       response.body<ErrorResponse>()
     }
 
-    val session = response.body<AuthSessionState>()
+    val session = response.body<AuthResult>()
     return AuthSubmissionResult(session = session)
   }
 }

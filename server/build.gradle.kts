@@ -24,52 +24,42 @@ dependencies {
   implementation(libs.logback)
   implementation(libs.ktor.serverCore)
   implementation(libs.ktor.serverNetty)
+  implementation(libs.ktor.serverDi)
   implementation(libs.ktor.serverContentNegotiation)
   implementation(libs.ktor.serializationKotlinxJson)
   implementation(libs.ktor.serverAuth)
   implementation(libs.ktor.serverAuthJwt)
   implementation(libs.ktor.jwt)
-
-  // Database: Exposed + HikariCP + PostgreSQL driver
   implementation(libs.exposed.core)
   implementation(libs.exposed.dao)
   implementation(libs.exposed.jdbc)
   implementation(libs.exposed.java.time)
   implementation(libs.hikaricp)
   implementation(libs.postgresql)
-  // H2 for tests and in-memory fallback
   implementation(libs.h2)
   implementation(libs.bcrypt)
 
   testImplementation(libs.ktor.serverTestHost)
   testImplementation(libs.kotlin.testJunit)
-  // Client-side content negotiation for tests so test HttpClient can install JSON serialization
   testImplementation(libs.ktor.clientContentNegotiation)
   testImplementation(libs.ktor.serializationKotlinxJson)
-  implementation(libs.koin.core)
-  implementation(libs.koin.ktor)
   implementation(libs.ktor.clientAuth)
 }
 
-// Configure shadow fat JAR
 tasks.withType(ShadowJar::class.java) {
   archiveFileName.set("server-fat.jar")
   mergeServiceFiles()
   manifest { attributes("Main-Class" to application.mainClass.get()) }
 }
 
-// Allow overriding via -PdockerCmd=/path/to/docker when running Gradle
 val dockerExecutable: String =
     (project.findProperty("dockerCmd") as String?) ?: "/usr/local/bin/docker"
 
-// Docker / compose helper tasks to make it easy to start the DB+server from Gradle
 tasks.register<Exec>("dockerComposeUp") {
   group = "docker"
   description =
       "Builds and starts docker-compose (db + server) using repository root docker-compose.yml"
   dependsOn("shadowJar")
-  // use the repository-level docker-compose file
-  // use resolved docker executable (helps when Gradle daemon PATH doesn't include docker)
   commandLine(
       dockerExecutable,
       "compose",
@@ -94,7 +84,6 @@ tasks.register<Exec>("dockerComposeDown") {
   )
 }
 
-// Waits for the Ktor health endpoint to respond 200
 tasks.register("waitForHealth") {
   group = "verification"
   description = "Polls http://localhost:8080/health until it returns HTTP 200 or times out (2min)"
@@ -130,7 +119,6 @@ tasks.register("waitForHealth") {
   }
 }
 
-// Top-level task: start everything and wait until server is ready so clients can connect
 tasks.register("startBackend") {
   group = "application"
   description =
