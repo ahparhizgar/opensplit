@@ -4,10 +4,10 @@ import at.favre.lib.crypto.bcrypt.BCrypt
 import com.opensplit.db.Users
 import java.util.UUID
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 interface PasswordHasher {
   fun hash(password: String): String
@@ -43,7 +43,9 @@ class AuthService(
     private val passwordHasher: PasswordHasher = BcryptPasswordHasher(),
 ) {
   fun signUp(email: String, password: String, name: String? = null): AuthSession {
-    val existing = transaction { Users.select { Users.email eq email }.limit(1).firstOrNull() }
+    val existing = transaction {
+      Users.selectAll().where { Users.email eq email }.limit(1).firstOrNull()
+    }
     require(existing == null) { "Email already exists" }
     val userId = UUID.randomUUID().toString()
     val passwordHash = passwordHasher.hash(password)
@@ -62,7 +64,7 @@ class AuthService(
 
   fun signIn(email: String, password: String): AuthSession {
     val row =
-        transaction { Users.select { Users.email eq email }.limit(1).firstOrNull() }
+        transaction { Users.selectAll().where { Users.email eq email }.limit(1).firstOrNull() }
             ?: throw IllegalArgumentException("Invalid credentials")
     val storedHash = row[Users.passwordHash]
     if (!passwordHasher.verify(password, storedHash))
@@ -77,7 +79,9 @@ class AuthService(
     return user.toSessionState()
   }
 
-  fun hasUser(email: String): Boolean = transaction { Users.select { Users.email eq email }.any() }
+  fun hasUser(email: String): Boolean = transaction {
+    Users.selectAll().where { Users.email eq email }.any()
+  }
 
   private fun RegisteredUser.toSessionState(): AuthSession =
       AuthSession(

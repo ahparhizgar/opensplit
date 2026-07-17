@@ -2,7 +2,7 @@ package com.opensplit.db
 
 import com.zaxxer.hikari.HikariDataSource
 import javax.sql.DataSource
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import org.koin.dsl.module
 
 fun databaseModule() = module {

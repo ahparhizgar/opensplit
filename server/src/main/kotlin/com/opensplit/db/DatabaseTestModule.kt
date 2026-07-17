@@ -4,7 +4,7 @@ import com.zaxxer.hikari.HikariDataSource
 import javax.sql.DataSource
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import org.koin.dsl.module
 
 @OptIn(ExperimentalUuidApi::class)

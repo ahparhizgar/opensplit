@@ -13,8 +13,9 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 fun Application.authRoutes(authService: AuthService = AuthService()) {
   routing {
@@ -110,7 +111,11 @@ fun Application.authRoutes(authService: AuthService = AuthService()) {
           if (userId == null) null
           else
               transaction {
-                Users.select { Users.id eq userId }.limit(1).firstOrNull()?.get(Users.email)
+                Users.selectAll()
+                    .where { Users.id eq userId }
+                    .limit(1)
+                    .firstOrNull()
+                    ?.get(Users.email)
               }
       if (email == null) {
         call.respond(
