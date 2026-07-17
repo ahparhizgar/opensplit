@@ -18,7 +18,7 @@ kotlin {
 
   @OptIn(ExperimentalWasmDsl::class) wasmJs { browser() }
 
-  androidLibrary {
+  android {
     namespace = "com.opensplit.core"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     minSdk = libs.versions.android.minSdk.get().toInt()
