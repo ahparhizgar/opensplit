@@ -54,10 +54,13 @@ development_status:
   1-9-fix-membership-edge-cases: done
   epic-1-retrospective: done
   epic-2: backlog
-  2-1-create-an-expense-with-smart-defaults: backlog
-  2-2-split-an-expense-equally-or-unequally: backlog
-  2-3-edit-or-delete-an-expense-and-keep-its-original-currency: backlog
-  2-4-review-expense-history: backlog
+  2-1-add-a-simple-expense-with-minimal-ui: backlog
+  2-2-ui-of-add-expense-should-have-defaults: backlog
+  2-3-implement-inline-validations-for-required-fields: backlog
+  2-4-calculate-balance-in-backend-and-show-real-balance-in-household-list-and-household-details-screen: backlog
+  2-5-split-an-expense-equally-or-unequally: backlog
+  2-6-edit-or-delete-an-expense-and-keep-its-original-currency: backlog
+  2-7-review-expense-history: backlog
   epic-2-retrospective: optional
   epic-3: backlog
   3-1-view-current-balances-and-owed-relationships: backlog

@@ -311,6 +311,66 @@ So that the greenfield project can be built, tested, and run consistently from t
 **When** the setup validation runs
 **Then** the starter project builds successfully and the baseline test suite passes
 
+### Story 1.7: Secure auth implementation
+
+As a user,
+I want my account creation and sign-in to use real cryptographic security,
+so that my credentials and session are protected from compromise.
+
+**Acceptance Criteria:**
+
+**Given** a user signs up or signs in
+**When** the server processes the request
+**Then** passwords are hashed with a slow, salted algorithm (bcrypt/Argon2)
+
+**Given** a user authenticates successfully
+**When** the server issues a token
+**Then** it is a real signed JWT with a cryptographically secure signature
+
+**Given** a user is on the sign-in or sign-up screen
+**When** they type their password
+**Then** the password field obscures input
+
+### Story 1.8: Invite code display and share
+
+As a household creator,
+I want to see my household's invite code and share it with others,
+so that my roommates can join without me having to copy-paste from logs or guess the code.
+
+**Acceptance Criteria:**
+
+**Given** a user has just created a household
+**When** the creation succeeds
+**Then** the invite code is displayed on the active household screen
+
+**Given** the user is viewing an active household
+**When** they look at the household information
+**Then** the invite code is visible and distinguishable
+
+**Given** the user can see the invite code
+**When** they tap/copy it
+**Then** the code is copied to the clipboard or clearly selectable
+
+### Story 1.9: Fix membership edge cases
+
+As a household member,
+I want the member list to correctly identify me and handle edge cases like leaving my last household,
+so that the membership experience is accurate and trustworthy.
+
+**Acceptance Criteria:**
+
+**Given** the user is viewing the household member list
+**When** the overview loads
+**Then** the current user is labeled "You" in the member list
+
+**Given** the user is the last member leaving a household
+**When** they confirm the leave action
+**Then** they are returned to the household setup screen (safe landing state)
+
+**Given** the owner leaves a household
+**When** the leave is processed
+**Then** the household continues to exist and ownership transfers to another member
+
 ## Epic 2: Log Shared Expenses Fast
 
 Users can add, edit, delete, and review shared expenses with smart defaults, payer selection, equal and unequal splits, participant-specific splits, and original-currency tracking.
@@ -321,27 +381,61 @@ Users can add, edit, delete, and review shared expenses with smart defaults, pay
 
 **UX-DRs addressed:** UX-DR1, UX-DR2, UX-DR4, UX-DR10, UX-DR11, UX-DR12
 
-### Story 2.1: Create an expense with smart defaults
+### Story 2.1: Add a simple expense with minimal UI
 
 As a household member,
-I want to add an expense with the right defaults already filled in,
-So that I can log shared costs in a few taps.
+I want to add an expense using a minimal form,
+So that I can log shared costs without unnecessary complexity.
 
 **Acceptance Criteria:**
 
-**Given** the user opens the expense entry flow
-**When** the form loads
-**Then** the current household, current user as payer, and equal split are prefilled when appropriate
+**Given** the user is in a household
+**When** they navigate to the "Add Expense" screen
+**Then** they see a minimal form with fields for description and amount
 
-**Given** the user enters required expense details
+**Given** the user enters a valid description and amount
 **When** they save the expense
-**Then** the expense is created and appears in the household history
+**Then** the expense is recorded and appears in the household history
 
-**Given** required data is missing or invalid
-**When** the user attempts to save
-**Then** inline validation explains what must be fixed
+### Story 2.2: UI of add expense should have defaults
 
-### Story 2.2: Split an expense equally or unequally
+As a household member,
+I want the "Add Expense" form to have smart defaults,
+So that I can log expenses with minimal typing.
+
+**Acceptance Criteria:**
+
+**Given** the user opens the "Add Expense" flow
+**When** the form loads
+**Then** the current household, the current user as payer, and "equal split" are prefilled by default
+
+### Story 2.3: Implement inline validations for required fields
+
+As a household member,
+I want to see immediate feedback if I miss required fields,
+So that I can correct errors before submitting the form.
+
+**Acceptance Criteria:**
+
+**Given** the user is on the "Add Expense" screen
+**When** they attempt to save with a missing description or invalid amount
+**Then** an inline validation error is shown for the specific field
+**And** the save action is disabled or blocked
+
+### Story 2.4: Calculate balance in backend and show real balance in household-list and household details screen
+
+As a household member,
+I want to see updated balances in the household list and details screens,
+So that I can immediately see the impact of my added expenses.
+
+**Acceptance Criteria:**
+
+**Given** an expense is successfully added
+**When** the backend calculates the new totals
+**Then** the updated balance is visible on the household list screen
+**And** the updated balance is visible on the household details screen
+
+### Story 2.5: Split an expense equally or unequally
 
 As a household member,
 I want to split an expense equally or with custom shares,
@@ -361,7 +455,7 @@ So that the debt matches the real arrangement.
 **When** the user tries to save
 **Then** the save is blocked with a clear error message
 
-### Story 2.3: Edit or delete an expense and keep its original currency
+### Story 2.6: Edit or delete an expense and keep its original currency
 
 As a household member,
 I want to edit or delete an existing expense without losing its original currency,
@@ -381,7 +475,7 @@ So that the record stays accurate and trustworthy.
 **When** the user views or edits it later
 **Then** the original currency remains visible and unchanged
 
-### Story 2.4: Review expense history
+### Story 2.7: Review expense history
 
 As a household member,
 I want to review expense history,
