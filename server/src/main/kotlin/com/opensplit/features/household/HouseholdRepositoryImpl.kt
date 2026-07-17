@@ -3,7 +3,7 @@ package com.opensplit.features.household
 import com.opensplit.database.Households
 import com.opensplit.database.Memberships
 import com.opensplit.database.Users
-import java.util.UUID
+import kotlin.uuid.Uuid
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -44,8 +44,8 @@ class HouseholdRepositoryImpl(private val database: Database) : HouseholdReposit
 
   override fun createHousehold(name: String, ownerId: String): HouseholdRecord =
       transaction(database) {
-        val targetHouseholdId = UUID.randomUUID().toString()
-        val inviteCode = UUID.randomUUID().toString().replace("-", "").take(12)
+        val targetHouseholdId = Uuid.random().toString()
+        val inviteCode = Uuid.random().toString().replace("-", "").take(12)
 
         Households.insert {
           it[Households.id] = targetHouseholdId
@@ -54,7 +54,7 @@ class HouseholdRepositoryImpl(private val database: Database) : HouseholdReposit
           it[Households.inviteCode] = inviteCode
         }
         Memberships.insert {
-          it[Memberships.id] = UUID.randomUUID().toString()
+          it[Memberships.id] = Uuid.random().toString()
           it[Memberships.householdId] = targetHouseholdId
           it[Memberships.userId] = ownerId
         }
@@ -100,7 +100,7 @@ class HouseholdRepositoryImpl(private val database: Database) : HouseholdReposit
               .any()
       if (!alreadyMember) {
         Memberships.insert {
-          it[Memberships.id] = UUID.randomUUID().toString()
+          it[Memberships.id] = Uuid.random().toString()
           it[Memberships.householdId] = householdId
           it[Memberships.userId] = userId
         }
