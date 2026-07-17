@@ -33,14 +33,14 @@ class SampleTest :
       Given("an initial state") {
         var count by testValue { 1 }
 
-        When(
-            "incrementing",
-            { count++ },
-        ) {
-          And(
-              "incrementing again",
-              { count++ },
-          ) {
+        When("incrementing") {
+          beforeEach {
+            count++
+          }
+          And("incrementing again") {
+            beforeEach {
+              count++
+            }
             Then("the value should be updated") {
               count shouldBe 3
             }
