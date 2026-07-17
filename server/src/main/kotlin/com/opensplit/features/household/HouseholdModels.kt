@@ -20,14 +20,6 @@ data class HouseholdDetailRecord(
     val members: List<HouseholdMemberRecord>,
 )
 
-data class HouseholdSummaryRecord(
-    val id: String,
-    val name: String,
-    val memberCount: Int,
-    val isOwner: Boolean,
-    val inviteCode: String?,
-)
-
 sealed interface JoinHouseholdResult {
   data class Success(val household: HouseholdDto) : JoinHouseholdResult
 

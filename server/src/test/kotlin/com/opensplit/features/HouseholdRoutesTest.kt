@@ -8,7 +8,6 @@ import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.dto.household.AddMemberByEmailRequest
 import com.opensplit.dto.household.CreateHouseholdRequest
 import com.opensplit.dto.household.HouseholdDto
-import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.testOpenSplit
 import io.ktor.client.call.body
@@ -104,7 +103,7 @@ class HouseholdScenarios {
 
     val leaveResponse = otherClient.delete("/households/${created.id}/memberships")
     assertEquals(HttpStatusCode.OK, leaveResponse.status)
-    val afterLeave = leaveResponse.body<List<HouseholdSummaryDto>>()
+    val afterLeave = leaveResponse.body<List<HouseholdDto>>()
     assertEquals(0, afterLeave.size)
   }
 
@@ -132,15 +131,15 @@ class HouseholdScenarios {
   }
 
   @Test
-  fun overviewIncludesInviteCode() = testOpenSplit {
+  fun overviewIncludesInviteLink() = testOpenSplit {
     client
         .post("/households") { setBody(CreateHouseholdRequest("Family Home")) }
         .body<HouseholdDto>()
 
-    val households = client.get("/households").body<List<HouseholdSummaryDto>>()
+    val households = client.get("/households").body<List<HouseholdDto>>()
 
     assertEquals(1, households.size)
-    assertTrue(households.first().inviteCode != null)
+    assertTrue(households.first().inviteLink.isNotEmpty())
   }
 
   @Test
@@ -168,7 +167,7 @@ class HouseholdScenarios {
     }
 
     // Verify other user is still in the household
-    val households = otherClient.get("/households").body<List<HouseholdSummaryDto>>()
+    val households = otherClient.get("/households").body<List<HouseholdDto>>()
     assertEquals(1, households.size)
     assertTrue(households.first().isOwner, "Ownership should have been transferred")
   }
@@ -185,7 +184,7 @@ class HouseholdScenarios {
     }
 
     // Verify safe landing
-    val households = client.get("/households").body<List<HouseholdSummaryDto>>()
+    val households = client.get("/households").body<List<HouseholdDto>>()
     assertEquals(0, households.size, "Should have no households")
   }
 
