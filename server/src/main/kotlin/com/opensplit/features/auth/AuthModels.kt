@@ -7,6 +7,12 @@ data class AuthUser(
     val passwordHash: String,
 )
 
+data class UserPrincipal(
+    val userId: String,
+    val email: String,
+    val name: String?,
+)
+
 class DuplicateEmailException : RuntimeException()
 
 class InvalidCredentialsException : RuntimeException()

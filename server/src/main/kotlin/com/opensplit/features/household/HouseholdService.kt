@@ -4,13 +4,13 @@ import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.HouseholdMemberDto
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
-import com.opensplit.features.auth.AuthUser
+import com.opensplit.features.auth.UserPrincipal
 
 class HouseholdService(private val householdRepository: HouseholdRepository) {
-  fun loadOverview(user: AuthUser): HouseholdOverviewDto =
+  fun loadOverview(user: UserPrincipal): HouseholdOverviewDto =
       HouseholdOverviewDto(
           households =
-              householdRepository.loadHouseholdSummaries(user.id).map { summary ->
+              householdRepository.loadHouseholdSummaries(user.userId).map { summary ->
                 HouseholdSummaryDto(
                     id = summary.id,
                     name = summary.name,
@@ -22,15 +22,15 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
           members = emptyList(),
       )
 
-  fun createHousehold(user: AuthUser, name: String): HouseholdDto {
-    val household = householdRepository.createHousehold(name, user.id)
+  fun createHousehold(user: UserPrincipal, name: String): HouseholdDto {
+    val household = householdRepository.createHousehold(name, user.userId)
     return HouseholdDto(
         id = household.id,
         name = household.name,
         members =
             listOf(
                 HouseholdMemberDto(
-                    userId = user.id,
+                    userId = user.userId,
                     name = user.name,
                     email = user.email,
                     isOwner = true,
@@ -43,7 +43,7 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
     )
   }
 
-  fun joinHousehold(user: AuthUser, inviteCodeOrIdOrLink: String): JoinHouseholdResult {
+  fun joinHousehold(user: UserPrincipal, inviteCodeOrIdOrLink: String): JoinHouseholdResult {
     val inviteCode = inviteCodeOrIdOrLink.removePrefix("https://opensplit.com/join/")
     val householdByInvite = householdRepository.findHouseholdByInviteCode(inviteCode)
     val household = householdByInvite ?: householdRepository.findHouseholdById(inviteCodeOrIdOrLink)
@@ -53,24 +53,28 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
 
     if (
         householdByInvite == null &&
-            household.ownerId != user.id &&
-            !householdRepository.hasMembership(household.id, user.id)
+            household.ownerId != user.userId &&
+            !householdRepository.hasMembership(household.id, user.userId)
     ) {
       return JoinHouseholdResult.MissingPermission
     }
 
-    householdRepository.ensureMembership(household.id, user.id)
+    householdRepository.ensureMembership(household.id, user.userId)
     val detail =
-        householdRepository.loadHouseholdDetail(household.id, user.id)
+        householdRepository.loadHouseholdDetail(household.id, user.userId)
             ?: return JoinHouseholdResult.InvalidInviteCode
-    return JoinHouseholdResult.Success(detail.toDto(user.id))
+    return JoinHouseholdResult.Success(detail.toDto(user.userId))
   }
 
-  fun addMemberByEmail(user: AuthUser, householdId: String, email: String): AddMemberByEmailResult {
+  fun addMemberByEmail(
+      user: UserPrincipal,
+      householdId: String,
+      email: String,
+  ): AddMemberByEmailResult {
     val household =
         householdRepository.findHouseholdById(householdId)
             ?: return AddMemberByEmailResult.HouseholdNotFound
-    if (household.ownerId != user.id) {
+    if (household.ownerId != user.userId) {
       return AddMemberByEmailResult.Forbidden
     }
 
@@ -80,18 +84,18 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
 
     householdRepository.ensureMembership(householdId, targetUser.userId)
     val detail =
-        householdRepository.loadHouseholdDetail(householdId, user.id)
+        householdRepository.loadHouseholdDetail(householdId, user.userId)
             ?: return AddMemberByEmailResult.HouseholdNotFound
-    return AddMemberByEmailResult.Success(detail.toDto(user.id))
+    return AddMemberByEmailResult.Success(detail.toDto(user.userId))
   }
 
-  fun leaveHousehold(user: AuthUser, householdId: String): HouseholdOverviewDto {
-    householdRepository.leaveHousehold(householdId, user.id)
+  fun leaveHousehold(user: UserPrincipal, householdId: String): HouseholdOverviewDto {
+    householdRepository.leaveHousehold(householdId, user.userId)
     return loadOverview(user)
   }
 
-  fun getHousehold(user: AuthUser, householdId: String): HouseholdDto? =
-      householdRepository.loadHouseholdDetail(householdId, user.id)?.toDto(user.id)
+  fun getHousehold(user: UserPrincipal, householdId: String): HouseholdDto? =
+      householdRepository.loadHouseholdDetail(householdId, user.userId)?.toDto(user.userId)
 
   private fun HouseholdDetailRecord.toDto(currentUserId: String): HouseholdDto =
       HouseholdDto(
