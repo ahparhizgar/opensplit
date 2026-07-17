@@ -74,6 +74,28 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
     )
   }
 
+  override suspend fun addMemberByEmail(householdId: String, email: String): HouseholdDto =
+      fakeApiCall {
+        HouseholdDto(
+            id = householdId,
+            name = "Maple House",
+            inviteLink = "https://opensplit.com/join/invite-abc123",
+            members =
+                listOf(
+                    HouseholdMemberDto(
+                        userId = "user-1",
+                        email = "owner@example.com",
+                        isOwner = true,
+                    ),
+                    HouseholdMemberDto(
+                        userId = "user-2",
+                        email = email,
+                        isOwner = false,
+                    ),
+                ),
+        )
+      }
+
   override suspend fun loadOverview(): List<HouseholdSummaryDto> = fakeApiCall { households }
 
   override suspend fun leaveHousehold(householdId: String): List<HouseholdSummaryDto> =

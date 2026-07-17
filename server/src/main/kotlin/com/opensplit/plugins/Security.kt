@@ -5,8 +5,10 @@ import com.opensplit.features.auth.UserPrincipal
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.auth.principal
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.RoutingCall
 import org.koin.ktor.ext.inject
 
@@ -32,3 +34,7 @@ fun Application.configureSecurity() {
 
 fun RoutingCall.user(): UserPrincipal =
     checkNotNull(principal<UserPrincipal>()) { "call.user() called on a non-authenticated route." }
+
+fun Route.authenticateUser(block: Route.() -> Unit) {
+  authenticate("user-jwt") { block() }
+}
