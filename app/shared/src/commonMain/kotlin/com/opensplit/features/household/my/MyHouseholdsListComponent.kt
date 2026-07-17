@@ -3,10 +3,10 @@ package com.opensplit.features.household.my
 import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
-import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 interface MyHouseholdsListComponent {
-  val overview: Value<HouseholdOverviewDto>
+  val uiState: Value<MyHouseholdsUiState>
   val isLoading: Value<Boolean>
   val isSettledExpanded: Value<Boolean>
 
@@ -38,6 +38,12 @@ interface MyHouseholdsListComponent {
   }
 }
 
+data class MyHouseholdsUiState(
+    val households: List<HouseholdSummaryDto> = emptyList(),
+    val overallBalance: Double = 0.0,
+    val overallCurrency: String = "IRR",
+)
+
 class DefaultMyHouseholdsListComponent(
     context: CContext,
     private val gateway: HouseholdApi,
@@ -49,8 +55,8 @@ class DefaultMyHouseholdsListComponent(
     doOnCreate { loadOverview() }
   }
 
-  private val _overview = MutableValue(HouseholdOverviewDto())
-  override val overview: Value<HouseholdOverviewDto> = _overview
+  private val _uiState = MutableValue(MyHouseholdsUiState())
+  override val uiState: Value<MyHouseholdsUiState> = _uiState
 
   private val _isLoading = MutableValue(true)
   override val isLoading: Value<Boolean> = _isLoading
@@ -61,9 +67,19 @@ class DefaultMyHouseholdsListComponent(
   override fun loadOverview() = scope.launch {
     try {
       val result = gateway.loadOverview()
-      _overview.value = result
+      updateState(result)
     } finally {
       _isLoading.value = false
+    }
+  }
+
+  private fun updateState(households: List<HouseholdSummaryDto>) {
+    _uiState.update {
+      it.copy(
+          households = households,
+          overallBalance = households.sumOf { h -> h.balance },
+          overallCurrency = "IRR",
+      )
     }
   }
 
@@ -72,7 +88,8 @@ class DefaultMyHouseholdsListComponent(
   }
 
   override fun leaveHousehold(householdId: String) = scope.launch {
-    _overview.value = gateway.leaveHousehold(householdId)
+    val result = gateway.leaveHousehold(householdId)
+    updateState(result)
   }
 
   override fun onAddHouseholdClick() {
@@ -92,39 +109,35 @@ class DefaultMyHouseholdsListComponent(
 }
 
 class FakeMyHouseholdsListComponent(
-    override val overview: MutableValue<HouseholdOverviewDto> =
-        MutableValue(
-            HouseholdOverviewDto(
-                households =
-                    listOf(
-                        HouseholdSummaryDto(
-                            id = "1",
-                            name = "Box Gym Bros",
-                            memberCount = 2,
-                            balance = 10.15,
-                            currency = "IRR",
-                            description = "Ali B. owes you IRR10.15",
-                        ),
-                        HouseholdSummaryDto(
-                            id = "2",
-                            name = "203.3",
-                            memberCount = 3,
-                            isSettled = true,
-                        ),
-                        HouseholdSummaryDto(
-                            id = "3",
-                            name = "گلابی",
-                            memberCount = 4,
-                            isSettled = true,
-                        ),
+    uiState: MyHouseholdsUiState =
+        MyHouseholdsUiState(
+            households =
+                listOf(
+                    HouseholdSummaryDto(
+                        id = "1",
+                        name = "Amirs House",
+                        memberCount = 2,
+                        balance = 10.15,
                     ),
-                overallBalance = 10.15,
-                overallCurrency = "IRR",
-            )
+                    HouseholdSummaryDto(
+                        id = "2",
+                        name = "203.3",
+                        memberCount = 3,
+                    ),
+                    HouseholdSummaryDto(
+                        id = "3",
+                        name = "Shomal Trip",
+                        memberCount = 4,
+                    ),
+                ),
+            overallBalance = 10.15,
+            overallCurrency = "IRR",
         ),
     override val isLoading: MutableValue<Boolean> = MutableValue(false),
     override val isSettledExpanded: MutableValue<Boolean> = MutableValue(false),
 ) : MyHouseholdsListComponent {
+  override val uiState: Value<MyHouseholdsUiState> = MutableValue(uiState)
+
   override fun loadOverview() = Job()
 
   override fun leaveHousehold(householdId: String) = Job()

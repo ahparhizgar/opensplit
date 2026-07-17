@@ -23,7 +23,7 @@ fun Application.configureHouseholdRoutes() {
   routing {
     authenticate("user-jwt") {
       route("/households") {
-        get { call.respond(HttpStatusCode.OK, householdService.loadOverview(call.user())) }
+        get { call.respond(HttpStatusCode.OK, householdService.loadHouseholds(call.user())) }
 
         post {
           val request = call.receive<CreateHouseholdRequest>()

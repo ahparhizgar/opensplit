@@ -89,7 +89,7 @@ class HouseholdComponentTest : BehaviorSpec() {
       When("loading overview") {
         beforeEach { listComponent.loadOverview().join() }
         Then("loads households from gateway") {
-          listComponent.overview.value.households.shouldNotBeEmpty()
+          listComponent.uiState.value.households.shouldNotBeEmpty()
         }
       }
 
@@ -99,7 +99,7 @@ class HouseholdComponentTest : BehaviorSpec() {
           listComponent.leaveHousehold(id).join()
         }
         Then("calls gateway to leave") {
-          listComponent.overview.value.households.map { it.id } shouldNotContain "household-1"
+          listComponent.uiState.value.households.map { it.id } shouldNotContain "household-1"
         }
       }
     }

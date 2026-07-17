@@ -7,7 +7,7 @@ import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.dto.household.CreateHouseholdRequest
 import com.opensplit.dto.household.HouseholdDto
-import com.opensplit.dto.household.HouseholdOverviewDto
+import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.dto.household.JoinHouseholdRequest
 import com.opensplit.testOpenSplit
 import io.ktor.client.call.body
@@ -103,8 +103,8 @@ class HouseholdScenarios {
 
     val leaveResponse = otherClient.delete("/households/${created.id}/memberships")
     assertEquals(HttpStatusCode.OK, leaveResponse.status)
-    val afterLeave = leaveResponse.body<HouseholdOverviewDto>()
-    assertEquals(0, afterLeave.households.size)
+    val afterLeave = leaveResponse.body<List<HouseholdSummaryDto>>()
+    assertEquals(0, afterLeave.size)
   }
 
   @Test
@@ -132,15 +132,14 @@ class HouseholdScenarios {
 
   @Test
   fun overviewIncludesInviteCode() = testOpenSplit {
-    val created =
-        client
-            .post("/households") { setBody(CreateHouseholdRequest("Family Home")) }
-            .body<HouseholdDto>()
+    client
+        .post("/households") { setBody(CreateHouseholdRequest("Family Home")) }
+        .body<HouseholdDto>()
 
-    val overview = client.get("/households").body<HouseholdOverviewDto>()
+    val households = client.get("/households").body<List<HouseholdSummaryDto>>()
 
-    assertEquals(1, overview.households.size)
-    val household = overview.households.first()
+    assertEquals(1, households.size)
+    assertTrue(households.first().inviteCode != null)
   }
 
   @Test
@@ -168,9 +167,9 @@ class HouseholdScenarios {
     }
 
     // Verify other user is still in the household
-    val overview = otherClient.get("/households").body<HouseholdOverviewDto>()
-    assertEquals(1, overview.households.size)
-    assertTrue(overview.households.first().isOwner, "Ownership should have been transferred")
+    val households = otherClient.get("/households").body<List<HouseholdSummaryDto>>()
+    assertEquals(1, households.size)
+    assertTrue(households.first().isOwner, "Ownership should have been transferred")
   }
 
   @Test
@@ -185,8 +184,8 @@ class HouseholdScenarios {
     }
 
     // Verify safe landing
-    val overview = client.get("/households").body<HouseholdOverviewDto>()
-    assertEquals(0, overview.households.size, "Should have no households")
+    val households = client.get("/households").body<List<HouseholdSummaryDto>>()
+    assertEquals(0, households.size, "Should have no households")
   }
 
   @Test
