@@ -1,11 +1,11 @@
 package com.opensplit.fake
 
 import com.opensplit.dto.auth.AuthSessionState
-import com.opensplit.features.auth.AuthService
+import com.opensplit.features.auth.AuthApi
 import com.opensplit.features.auth.AuthSubmissionResult
 import com.opensplit.util.FakeService
 
-class FakeAuthService : AuthService, FakeService {
+class FakeAuthApi : AuthApi, FakeService {
   override var errorToThrow: Exception? = null
 
   override suspend fun signUp(email: String, password: String): AuthSubmissionResult = fakeApiCall {

@@ -3,7 +3,7 @@ package com.opensplit.features.household.createjoin
 import com.ahparhizgar.katch.ApiCallError
 import com.opensplit.component.CContext
 import com.opensplit.dto.household.HouseholdDto
-import com.opensplit.features.household.HouseholdService
+import com.opensplit.features.household.HouseholdApi
 import com.opensplit.remote.fieldErrors
 import com.opensplit.remote.userMessage
 import com.opensplit.validation.household.HouseholdValidation
@@ -32,7 +32,7 @@ interface CreateHouseholdComponent {
 
 class DefaultCreateHouseholdComponent(
     context: CContext,
-    private val gateway: HouseholdService,
+    private val gateway: HouseholdApi,
     private val onDone: (HouseholdDto) -> Unit,
 ) : CreateHouseholdComponent, CContext by context {
 
@@ -78,7 +78,7 @@ class DefaultCreateHouseholdComponent(
   }
 
   class Factory(
-      private val gateway: HouseholdService,
+      private val gateway: HouseholdApi,
   ) : CreateHouseholdComponent.Factory {
     override fun create(
         cContext: CContext,

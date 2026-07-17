@@ -5,7 +5,7 @@ import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.dto.household.HouseholdDto
-import com.opensplit.features.household.HouseholdService
+import com.opensplit.features.household.HouseholdApi
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,7 +43,7 @@ interface HouseholdSettingsComponent {
 class DefaultHouseholdSettingsComponent(
     context: CContext,
     config: HouseholdSettingsComponent.Config,
-    private val householdService: HouseholdService,
+    private val householdApi: HouseholdApi,
 ) : HouseholdSettingsComponent, CContext by context {
 
   override val householdId: String = config.householdId
@@ -69,7 +69,7 @@ class DefaultHouseholdSettingsComponent(
   override fun onLeaveGroupClicked() {
     componentScope().launch {
       try {
-        householdService.leaveHousehold(householdId)
+        householdApi.leaveHousehold(householdId)
         navigation.pop()
       } catch (e: Exception) {
         _uiState.update { it.copy(error = "Failed to leave group: ${e.message}") }
@@ -85,7 +85,7 @@ class DefaultHouseholdSettingsComponent(
       componentScope().launch {
         _uiState.update { it.copy(isLoading = true) }
         try {
-          val response = householdService.getHousehold(householdId)
+          val response = householdApi.getHousehold(householdId)
           _uiState.update { it.copy(household = response, isLoading = false) }
         } catch (e: Exception) {
           _uiState.update {
@@ -95,13 +95,13 @@ class DefaultHouseholdSettingsComponent(
       }
 
   class Factory(
-      private val householdService: HouseholdService,
+      private val householdApi: HouseholdApi,
   ) : HouseholdSettingsComponent.Factory {
     override fun create(
         cContext: CContext,
         config: HouseholdSettingsComponent.Config,
     ): HouseholdSettingsComponent =
-        DefaultHouseholdSettingsComponent(cContext, config, householdService)
+        DefaultHouseholdSettingsComponent(cContext, config, householdApi)
   }
 }
 

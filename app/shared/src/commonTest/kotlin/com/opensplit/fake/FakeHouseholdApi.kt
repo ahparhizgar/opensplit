@@ -4,10 +4,10 @@ import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.HouseholdMemberDto
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
-import com.opensplit.features.household.HouseholdService
+import com.opensplit.features.household.HouseholdApi
 import com.opensplit.util.FakeService
 
-class FakeHouseholdService : HouseholdService, FakeService {
+class FakeHouseholdApi : HouseholdApi, FakeService {
   override var errorToThrow: Exception? = null
   var overview =
       HouseholdOverviewDto(

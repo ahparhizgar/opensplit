@@ -8,7 +8,7 @@ import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.dto.household.HouseholdOverviewDto
 import com.opensplit.dto.household.HouseholdSummaryDto
-import com.opensplit.features.household.HouseholdService
+import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.root.TopLevelDestinationConfig
@@ -40,7 +40,7 @@ interface MyHouseholdsListComponent {
 
 class DefaultMyHouseholdsListComponent(
     context: CContext,
-    private val gateway: HouseholdService,
+    private val gateway: HouseholdApi,
 ) : MyHouseholdsListComponent, CContext by context {
 
   private val scope = componentScope()
@@ -84,7 +84,7 @@ class DefaultMyHouseholdsListComponent(
   }
 
   class Factory(
-      private val gateway: HouseholdService,
+      private val gateway: HouseholdApi,
   ) : MyHouseholdsListComponent.Factory {
     override fun create(cContext: CContext): MyHouseholdsListComponent =
         DefaultMyHouseholdsListComponent(cContext, gateway)

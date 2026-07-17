@@ -46,7 +46,7 @@ data class LoginViewState(
 class DefaultLoginComponent(
     private val context: CContext,
     private val navigation: StackNavigation<AuthConfig>,
-    private val gateway: AuthService,
+    private val gateway: AuthApi,
     private val tokenStorage: TokenStorage,
     private val onAuthenticated: () -> Unit,
 ) : LoginComponent {
@@ -100,7 +100,7 @@ class DefaultLoginComponent(
   }
 
   class Factory(
-      private val gateway: AuthService,
+      private val gateway: AuthApi,
       private val tokenStorage: TokenStorage,
   ) : LoginComponent.Factory {
     override fun create(
