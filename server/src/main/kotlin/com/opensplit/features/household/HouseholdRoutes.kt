@@ -18,10 +18,14 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import java.net.URLDecoder
 import java.util.UUID
-import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -30,375 +34,385 @@ import org.jetbrains.exposed.v1.jdbc.update
 
 fun Application.householdRoutes() {
   routing {
-    get("/households") {
-      val raw =
-          call.request.headers["Authorization"]?.removePrefix("Bearer ")
-              ?: call.request.cookies["opensplit-auth-session"]
-      val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
-      val userId = resolveUserIdFromToken(token)
-      if (userId == null) {
-        call.respond(
-            HttpStatusCode.Unauthorized,
-            ErrorResponse(
-                generalError = "Authentication required",
-                errors = mapOf("token" to "Authentication required"),
-            ),
-        )
-        return@get
-      }
-
-      call.respond(HttpStatusCode.OK, loadHouseholds(userId))
-    }
-
-    post("/households") {
-      val req = call.receive<CreateHouseholdRequest>()
-
-      if (req.name.isBlank()) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse(
-                generalError = "Invalid household name",
-                errors = mapOf("name" to "Name must not be empty"),
-            ),
-        )
-        return@post
-      }
-      if (req.name.length > 255) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse(
-                generalError = "Invalid household name",
-                errors = mapOf("name" to "Name is too long"),
-            ),
-        )
-        return@post
-      }
-
-      val raw =
-          call.request.headers["Authorization"]?.removePrefix("Bearer ")
-              ?: call.request.cookies["opensplit-auth-session"]
-      val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
-      val userId = resolveUserIdFromToken(token)
-
-      if (userId == null) {
-        call.respond(
-            HttpStatusCode.Unauthorized,
-            ErrorResponse(
-                generalError = "Authentication required",
-                errors = mapOf("token" to "Authentication required"),
-            ),
-        )
-        return@post
-      }
-
-      val householdId = UUID.randomUUID().toString()
-      val inviteCode = UUID.randomUUID().toString().replace("-", "").take(12)
-
-      transaction {
-        Households.insert {
-          it[Households.id] = householdId
-          it[Households.name] = req.name
-          it[Households.ownerId] = userId
-          it[Households.inviteCode] = inviteCode
-        }
-        Memberships.insert {
-          it[Memberships.id] = UUID.randomUUID().toString()
-          it[Memberships.householdId] = householdId
-          it[Memberships.userId] = userId
-        }
-      }
-
-      call.respond(
-          status = HttpStatusCode.Created,
-          message =
-              HouseholdDto(
-                  id = householdId,
-                  name = req.name,
-                  members =
-                      listOf(
-                          HouseholdMemberDto(
-                              userId = userId,
-                              name =
-                                  transaction {
-                                    Users.selectAll()
-                                        .where { Users.id eq userId }
-                                        .first()[Users.name]
-                                  },
-                              email =
-                                  transaction {
-                                    Users.selectAll()
-                                        .where { Users.id eq userId }
-                                        .first()[Users.email]
-                                  },
-                              isOwner = true,
-                              isCurrentUser = true,
-                              balance = 0.0,
-                              balanceCurrency = "IRR",
-                          )
-                      ),
-                  inviteLink = "https://opensplit.com/join/$inviteCode",
+    route("/households") {
+      get {
+        val raw =
+            call.request.headers["Authorization"]?.removePrefix("Bearer ")
+                ?: call.request.cookies["opensplit-auth-session"]
+        val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
+        val userId = resolveUserIdFromToken(token)
+        if (userId == null) {
+          call.respond(
+              HttpStatusCode.Unauthorized,
+              ErrorResponse(
+                  generalError = "Authentication required",
+                  errors = mapOf("token" to "Authentication required"),
               ),
-      )
-    }
+          )
+          return@get
+        }
 
-    post("/households/memberships") {
-      val req = call.receive<JoinHouseholdRequest>()
-      val raw =
-          call.request.headers["Authorization"]?.removePrefix("Bearer ")
-              ?: call.request.cookies["opensplit-auth-session"]
-      val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
-      val userId = resolveUserIdFromToken(token)
-
-      if (userId == null) {
-        call.respond(
-            HttpStatusCode.Unauthorized,
-            ErrorResponse(
-                generalError = "Authentication required",
-                errors = mapOf("token" to "Authentication required"),
-            ),
-        )
-        return@post
+        call.respond(HttpStatusCode.OK, loadHouseholds(userId))
       }
 
-      when (req) {
-        is JoinHouseholdRequest.ByInvite -> {
-          val inviteCodeOrIdOrLink = req.inviteCodeOrIdOrLink
-          if (inviteCodeOrIdOrLink.isBlank()) {
-            call.respond(
-                HttpStatusCode.BadRequest,
-                ErrorResponse(generalError = "Invite code is required"),
-            )
-            return@post
-          }
+      post {
+        val req = call.receive<CreateHouseholdRequest>()
 
-          val byInvite = transaction {
-            Households.selectAll()
-                .where {
-                  Households.inviteCode eq
-                      inviteCodeOrIdOrLink.removePrefix("https://opensplit.com/join/")
-                }
-                .limit(1)
-                .firstOrNull()
-          }
-          val byId =
-              if (byInvite == null)
-                  transaction {
-                    Households.selectAll()
-                        .where { Households.id eq inviteCodeOrIdOrLink }
-                        .limit(1)
-                        .firstOrNull()
-                  }
-              else null
-          val householdRow = byInvite ?: byId
+        if (req.name.isBlank()) {
+          call.respond(
+              HttpStatusCode.BadRequest,
+              ErrorResponse(
+                  generalError = "Invalid household name",
+                  errors = mapOf("name" to "Name must not be empty"),
+              ),
+          )
+          return@post
+        }
+        if (req.name.length > 255) {
+          call.respond(
+              HttpStatusCode.BadRequest,
+              ErrorResponse(
+                  generalError = "Invalid household name",
+                  errors = mapOf("name" to "Name is too long"),
+              ),
+          )
+          return@post
+        }
 
-          if (householdRow == null) {
-            call.respond(
-                HttpStatusCode.NotFound,
-                ErrorResponse(
-                    generalError = "Invalid invite code",
-                    errors = mapOf("inviteCode" to "Invalid invite code."),
+        val raw =
+            call.request.headers["Authorization"]?.removePrefix("Bearer ")
+                ?: call.request.cookies["opensplit-auth-session"]
+        val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
+        val userId = resolveUserIdFromToken(token)
+
+        if (userId == null) {
+          call.respond(
+              HttpStatusCode.Unauthorized,
+              ErrorResponse(
+                  generalError = "Authentication required",
+                  errors = mapOf("token" to "Authentication required"),
+              ),
+          )
+          return@post
+        }
+
+        val householdId = UUID.randomUUID().toString()
+        val inviteCode = UUID.randomUUID().toString().replace("-", "").take(12)
+
+        transaction {
+          Households.insert {
+            it[Households.id] = householdId
+            it[Households.name] = req.name
+            it[Households.ownerId] = userId
+            it[Households.inviteCode] = inviteCode
+          }
+          Memberships.insert {
+            it[Memberships.id] = UUID.randomUUID().toString()
+            it[Memberships.householdId] = householdId
+            it[Memberships.userId] = userId
+          }
+        }
+
+        call.respond(
+            status = HttpStatusCode.Created,
+            message =
+                HouseholdDto(
+                    id = householdId,
+                    name = req.name,
+                    members =
+                        listOf(
+                            HouseholdMemberDto(
+                                userId = userId,
+                                name =
+                                    transaction {
+                                      Users.selectAll()
+                                          .where { Users.id eq userId }
+                                          .first()[Users.name]
+                                    },
+                                email =
+                                    transaction {
+                                      Users.selectAll()
+                                          .where { Users.id eq userId }
+                                          .first()[Users.email]
+                                    },
+                                isOwner = true,
+                                isCurrentUser = true,
+                                balance = 0.0,
+                                balanceCurrency = "IRR",
+                            )
+                        ),
+                    inviteLink = "https://opensplit.com/join/$inviteCode",
                 ),
-            )
-            return@post
-          }
+        )
+      }
 
-          val hid = transaction { householdRow.get(Households.id) }
-          val isJoinByInvite = byInvite != null
+      post("/memberships") {
+        val req = call.receive<JoinHouseholdRequest>()
+        val raw =
+            call.request.headers["Authorization"]?.removePrefix("Bearer ")
+                ?: call.request.cookies["opensplit-auth-session"]
+        val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
+        val userId = resolveUserIdFromToken(token)
 
-          if (!isJoinByInvite) {
-            val ownerId = transaction { householdRow.get(Households.ownerId) }
-            val isMember = transaction {
-              Memberships.selectAll()
-                  .where { (Memberships.householdId eq hid) and (Memberships.userId eq userId) }
-                  .any()
-            }
-            if (ownerId != userId && !isMember) {
+        if (userId == null) {
+          call.respond(
+              HttpStatusCode.Unauthorized,
+              ErrorResponse(
+                  generalError = "Authentication required",
+                  errors = mapOf("token" to "Authentication required"),
+              ),
+          )
+          return@post
+        }
+
+        when (req) {
+          is JoinHouseholdRequest.ByInvite -> {
+            val inviteCodeOrIdOrLink = req.inviteCodeOrIdOrLink
+            if (inviteCodeOrIdOrLink.isBlank()) {
               call.respond(
-                  HttpStatusCode.Forbidden,
+                  HttpStatusCode.BadRequest,
+                  ErrorResponse(generalError = "Invite code is required"),
+              )
+              return@post
+            }
+
+            val byInvite = transaction {
+              Households.selectAll()
+                  .where {
+                    Households.inviteCode eq
+                        inviteCodeOrIdOrLink.removePrefix("https://opensplit.com/join/")
+                  }
+                  .limit(1)
+                  .firstOrNull()
+            }
+            val byId =
+                if (byInvite == null)
+                    transaction {
+                      Households.selectAll()
+                          .where { Households.id eq inviteCodeOrIdOrLink }
+                          .limit(1)
+                          .firstOrNull()
+                    }
+                else null
+            val householdRow = byInvite ?: byId
+
+            if (householdRow == null) {
+              call.respond(
+                  HttpStatusCode.NotFound,
                   ErrorResponse(
-                      generalError = "Missing permission to access this household",
-                      errors = mapOf("permission" to "Missing permission to access this household"),
+                      generalError = "Invalid invite code",
+                      errors = mapOf("inviteCode" to "Invalid invite code."),
                   ),
               )
               return@post
             }
-          }
 
-          transaction {
-            val alreadyMember =
+            val hid = transaction { householdRow.get(Households.id) }
+            val isJoinByInvite = byInvite != null
+
+            if (!isJoinByInvite) {
+              val ownerId = transaction { householdRow.get(Households.ownerId) }
+              val isMember = transaction {
                 Memberships.selectAll()
                     .where { (Memberships.householdId eq hid) and (Memberships.userId eq userId) }
                     .any()
-            if (!alreadyMember) {
-              Memberships.insert {
-                it[Memberships.id] = UUID.randomUUID().toString()
-                it[Memberships.householdId] = hid
-                it[Memberships.userId] = userId
               }
-            }
-          }
-
-          val detail = loadHouseholdDetail(hid, userId)
-          if (detail != null) {
-            call.respond(HttpStatusCode.OK, detail)
-          } else {
-            call.respond(HttpStatusCode.InternalServerError)
-          }
-        }
-        is JoinHouseholdRequest.ByEmail -> {
-          val householdId = req.householdId
-          val email = req.email
-
-          if (email.isBlank()) {
-            call.respond(
-                HttpStatusCode.BadRequest,
-                ErrorResponse(generalError = "Email is required"),
-            )
-            return@post
-          }
-
-          val result = transaction {
-            val household =
-                Households.selectAll().where { Households.id eq householdId }.limit(1).firstOrNull()
-                    ?: return@transaction "NOT_FOUND"
-
-            if (household[Households.ownerId] != userId) {
-              return@transaction "FORBIDDEN"
-            }
-
-            val targetUser =
-                Users.selectAll().where { Users.email eq email }.limit(1).firstOrNull()
-                    ?: return@transaction "USER_NOT_FOUND"
-
-            val targetUserId = targetUser[Users.id]
-            val alreadyMember =
-                Memberships.selectAll()
-                    .where {
-                      (Memberships.householdId eq householdId) and
-                          (Memberships.userId eq targetUserId)
-                    }
-                    .any()
-            if (!alreadyMember) {
-              Memberships.insert {
-                it[Memberships.id] = UUID.randomUUID().toString()
-                it[Memberships.householdId] = householdId
-                it[Memberships.userId] = targetUserId
-              }
-            }
-            "OK"
-          }
-
-          when (result) {
-            "NOT_FOUND" ->
-                call.respond(
-                    HttpStatusCode.NotFound,
-                    ErrorResponse(generalError = "Household not found"),
-                )
-            "FORBIDDEN" ->
+              if (ownerId != userId && !isMember) {
                 call.respond(
                     HttpStatusCode.Forbidden,
-                    ErrorResponse(generalError = "Only the owner can add members by email"),
+                    ErrorResponse(
+                        generalError = "Missing permission to access this household",
+                        errors =
+                            mapOf("permission" to "Missing permission to access this household"),
+                    ),
                 )
-            "USER_NOT_FOUND" ->
-                call.respond(
-                    HttpStatusCode.NotFound,
-                    ErrorResponse(generalError = "User with email $email not found"),
-                )
-            "OK" -> {
-              val detail = loadHouseholdDetail(householdId, userId)
-              if (detail != null) call.respond(HttpStatusCode.OK, detail)
-              else call.respond(HttpStatusCode.InternalServerError)
+                return@post
+              }
+            }
+
+            transaction {
+              val alreadyMember =
+                  Memberships.selectAll()
+                      .where { (Memberships.householdId eq hid) and (Memberships.userId eq userId) }
+                      .any()
+              if (!alreadyMember) {
+                Memberships.insert {
+                  it[Memberships.id] = UUID.randomUUID().toString()
+                  it[Memberships.householdId] = hid
+                  it[Memberships.userId] = userId
+                }
+              }
+            }
+
+            val detail = loadHouseholdDetail(hid, userId)
+            if (detail != null) {
+              call.respond(HttpStatusCode.OK, detail)
+            } else {
+              call.respond(HttpStatusCode.InternalServerError)
+            }
+          }
+
+          is JoinHouseholdRequest.ByEmail -> {
+            val householdId = req.householdId
+            val email = req.email
+
+            if (email.isBlank()) {
+              call.respond(
+                  HttpStatusCode.BadRequest,
+                  ErrorResponse(generalError = "Email is required"),
+              )
+              return@post
+            }
+
+            val result = transaction {
+              val household =
+                  Households.selectAll()
+                      .where { Households.id eq householdId }
+                      .limit(1)
+                      .firstOrNull() ?: return@transaction "NOT_FOUND"
+
+              if (household[Households.ownerId] != userId) {
+                return@transaction "FORBIDDEN"
+              }
+
+              val targetUser =
+                  Users.selectAll().where { Users.email eq email }.limit(1).firstOrNull()
+                      ?: return@transaction "USER_NOT_FOUND"
+
+              val targetUserId = targetUser[Users.id]
+              val alreadyMember =
+                  Memberships.selectAll()
+                      .where {
+                        (Memberships.householdId eq householdId) and
+                            (Memberships.userId eq targetUserId)
+                      }
+                      .any()
+              if (!alreadyMember) {
+                Memberships.insert {
+                  it[Memberships.id] = UUID.randomUUID().toString()
+                  it[Memberships.householdId] = householdId
+                  it[Memberships.userId] = targetUserId
+                }
+              }
+              "OK"
+            }
+
+            when (result) {
+              "NOT_FOUND" ->
+                  call.respond(
+                      HttpStatusCode.NotFound,
+                      ErrorResponse(generalError = "Household not found"),
+                  )
+
+              "FORBIDDEN" ->
+                  call.respond(
+                      HttpStatusCode.Forbidden,
+                      ErrorResponse(generalError = "Only the owner can add members by email"),
+                  )
+
+              "USER_NOT_FOUND" ->
+                  call.respond(
+                      HttpStatusCode.NotFound,
+                      ErrorResponse(generalError = "User with email $email not found"),
+                  )
+
+              "OK" -> {
+                val detail = loadHouseholdDetail(householdId, userId)
+                if (detail != null) call.respond(HttpStatusCode.OK, detail)
+                else call.respond(HttpStatusCode.InternalServerError)
+              }
             }
           }
         }
       }
-    }
 
-    delete("/households/{householdId}/memberships") {
-      val householdId = call.parameters["householdId"]
-      val raw =
-          call.request.headers["Authorization"]?.removePrefix("Bearer ")
-              ?: call.request.cookies["opensplit-auth-session"]
-      val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
-      val userId = resolveUserIdFromToken(token)
-      if (userId == null) {
-        call.respond(
-            HttpStatusCode.Unauthorized,
-            ErrorResponse(
-                generalError = "Authentication required",
-                errors = mapOf("token" to "Authentication required"),
-            ),
-        )
-        return@delete
-      }
-      if (householdId.isNullOrBlank()) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse(
-                generalError = "Household id is required",
-                errors = mapOf("householdId" to "Household id is required"),
-            ),
-        )
-        return@delete
-      }
+      delete("/{householdId}/memberships") {
+        val householdId = call.parameters["householdId"]
+        val raw =
+            call.request.headers["Authorization"]?.removePrefix("Bearer ")
+                ?: call.request.cookies["opensplit-auth-session"]
+        val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
+        val userId = resolveUserIdFromToken(token)
+        if (userId == null) {
+          call.respond(
+              HttpStatusCode.Unauthorized,
+              ErrorResponse(
+                  generalError = "Authentication required",
+                  errors = mapOf("token" to "Authentication required"),
+              ),
+          )
+          return@delete
+        }
+        if (householdId.isNullOrBlank()) {
+          call.respond(
+              HttpStatusCode.BadRequest,
+              ErrorResponse(
+                  generalError = "Household id is required",
+                  errors = mapOf("householdId" to "Household id is required"),
+              ),
+          )
+          return@delete
+        }
 
-      transaction {
-        val household =
-            Households.selectAll().where { Households.id eq householdId }.limit(1).firstOrNull()
-        if (household != null && household[Households.ownerId] == userId) {
-          val nextOwnerQuery =
-              Memberships.selectAll()
-                  .where {
-                    (Memberships.householdId eq householdId) and (Memberships.userId neq userId)
-                  }
-                  .limit(1)
-                  .firstOrNull()
-          if (nextOwnerQuery != null) {
-            val nextUserId = nextOwnerQuery[Memberships.userId]
-            Households.update({ Households.id eq householdId }) {
-              it[Households.ownerId] = nextUserId
+        transaction {
+          val household =
+              Households.selectAll().where { Households.id eq householdId }.limit(1).firstOrNull()
+          if (household != null && household[Households.ownerId] == userId) {
+            val nextOwnerQuery =
+                Memberships.selectAll()
+                    .where {
+                      (Memberships.householdId eq householdId) and (Memberships.userId neq userId)
+                    }
+                    .limit(1)
+                    .firstOrNull()
+            if (nextOwnerQuery != null) {
+              val nextUserId = nextOwnerQuery[Memberships.userId]
+              Households.update({ Households.id eq householdId }) {
+                it[Households.ownerId] = nextUserId
+              }
             }
+          }
+
+          Memberships.deleteWhere {
+            (Memberships.householdId eq householdId) and (Memberships.userId eq userId)
           }
         }
 
-        Memberships.deleteWhere {
-          (Memberships.householdId eq householdId) and (Memberships.userId eq userId)
+        call.respond(HttpStatusCode.OK, loadHouseholds(userId))
+      }
+
+      get("/{id}") {
+        val householdId =
+            call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+        val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ")
+        val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
+        val userId = resolveUserIdFromToken(token)
+
+        if (userId == null) {
+          call.respond(
+              HttpStatusCode.Unauthorized,
+              ErrorResponse(
+                  generalError = "Authentication required",
+                  errors = mapOf("token" to "Authentication required"),
+              ),
+          )
+          return@get
         }
-      }
 
-      call.respond(HttpStatusCode.OK, loadHouseholds(userId))
-    }
+        val result = loadHouseholdDetail(householdId, userId)
 
-    get("/households/{id}") {
-      val householdId = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-
-      val raw = call.request.headers["Authorization"]?.removePrefix("Bearer ")
-      val token = raw?.let { URLDecoder.decode(it, "UTF-8") }
-      val userId = resolveUserIdFromToken(token)
-
-      if (userId == null) {
-        call.respond(
-            HttpStatusCode.Unauthorized,
-            ErrorResponse(
-                generalError = "Authentication required",
-                errors = mapOf("token" to "Authentication required"),
-            ),
-        )
-        return@get
-      }
-
-      val result = loadHouseholdDetail(householdId, userId)
-
-      if (result == null) {
-        call.respond(
-            HttpStatusCode.NotFound,
-            ErrorResponse(
-                generalError = "Household not found or access denied",
-                errors = mapOf("id" to "Household not found or access denied"),
-            ),
-        )
-      } else {
-        call.respond(HttpStatusCode.OK, result)
+        if (result == null) {
+          call.respond(
+              HttpStatusCode.NotFound,
+              ErrorResponse(
+                  generalError = "Household not found or access denied",
+                  errors = mapOf("id" to "Household not found or access denied"),
+              ),
+          )
+        } else {
+          call.respond(HttpStatusCode.OK, result)
+        }
       }
     }
   }
