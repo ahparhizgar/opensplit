@@ -1,8 +1,8 @@
 package com.opensplit.fake
 
+import com.opensplit.dto.household.FakeHouseholdDtoFactory
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.HouseholdMemberDto
-import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.features.household.HouseholdApi
 import com.opensplit.util.FakeService
 
@@ -10,68 +10,52 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
   override var errorToThrow: Exception? = null
   var households =
       listOf(
-          HouseholdSummaryDto(
+          FakeHouseholdDtoFactory.create(
               id = "household-1",
               name = "Maple House",
-              memberCount = 1,
-              inviteCode = "invite-abc123",
           ),
-          HouseholdSummaryDto(
+          FakeHouseholdDtoFactory.create(
               id = "household-2",
               name = "River House",
-              memberCount = 2,
-              inviteCode = "invite-def456",
           ),
       )
 
   override suspend fun createHousehold(name: String): HouseholdDto = fakeApiCall {
-    households =
-        listOf(
-            HouseholdSummaryDto(
-                id = "household-1",
-                name = name,
-                memberCount = 1,
-                inviteCode = "invite-abc123",
-            )
+    val newHousehold =
+        HouseholdDto(
+            id = "household-1",
+            name = name,
+            inviteLink = "https://opensplit.com/join/invite-abc123",
+            members =
+                listOf(
+                    HouseholdMemberDto(
+                        userId = "user-1",
+                        email = "amir@example.com",
+                        isOwner = true,
+                    )
+                ),
         )
-    HouseholdDto(
-        id = "household-1",
-        name = name,
-        inviteLink = "https://opensplit.com/join/invite-abc123",
-        members =
-            listOf(
-                HouseholdMemberDto(
-                    userId = "user-1",
-                    email = "amir@example.com",
-                    isOwner = true,
-                )
-            ),
-    )
+    households = listOf(newHousehold)
+    newHousehold
   }
 
   override suspend fun joinHousehold(inviteCode: String): HouseholdDto = fakeApiCall {
-    households =
-        listOf(
-            HouseholdSummaryDto(
-                id = "household-2",
-                name = "Joined House",
-                memberCount = 2,
-                inviteCode = "invite-def456",
-            ),
+    val joinedHousehold =
+        HouseholdDto(
+            id = "household-2",
+            name = "Joined House",
+            inviteLink = "https://opensplit.com/join/invite-def456",
+            members =
+                listOf(
+                    HouseholdMemberDto(
+                        userId = "user-1",
+                        email = "amir@example.com",
+                        isOwner = false,
+                    )
+                ),
         )
-    HouseholdDto(
-        id = "household-2",
-        name = "Joined House",
-        inviteLink = "https://opensplit.com/join/invite-def456",
-        members =
-            listOf(
-                HouseholdMemberDto(
-                    userId = "user-1",
-                    email = "amir@example.com",
-                    isOwner = false,
-                )
-            ),
-    )
+    households = listOf(joinedHousehold)
+    joinedHousehold
   }
 
   override suspend fun addMemberByEmail(householdId: String, email: String): HouseholdDto =
@@ -96,13 +80,12 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
         )
       }
 
-  override suspend fun loadOverview(): List<HouseholdSummaryDto> = fakeApiCall { households }
+  override suspend fun loadOverview(): List<HouseholdDto> = fakeApiCall { households }
 
-  override suspend fun leaveHousehold(householdId: String): List<HouseholdSummaryDto> =
-      fakeApiCall {
-        households = households.filterNot { it.id == householdId }
-        households
-      }
+  override suspend fun leaveHousehold(householdId: String): List<HouseholdDto> = fakeApiCall {
+    households = households.filterNot { it.id == householdId }
+    households
+  }
 
   override suspend fun getHousehold(id: String): HouseholdDto = fakeApiCall {
     HouseholdDto(

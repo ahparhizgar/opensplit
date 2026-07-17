@@ -17,29 +17,31 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 
 class HouseholdRepositoryImpl(private val database: Database) : HouseholdRepository {
-  override fun loadHouseholdSummaries(userId: String): List<HouseholdSummaryRecord> =
+  override fun loadHouseholds(userId: String): List<HouseholdDetailRecord> =
       transaction(database) {
-        Memberships.selectAll()
-            .where { Memberships.userId eq userId }
-            .map { membership ->
-              val targetHouseholdId = membership[Memberships.householdId]
-              val household =
-                  Households.selectAll()
-                      .where { Households.id eq targetHouseholdId }
-                      .limit(1)
-                      .first()
-              HouseholdSummaryRecord(
-                  id = household[Households.id],
-                  name = household[Households.name],
-                  memberCount =
-                      Memberships.selectAll()
-                          .where { Memberships.householdId eq targetHouseholdId }
-                          .count()
-                          .toInt(),
-                  isOwner = household[Households.ownerId] == userId,
-                  inviteCode = household[Households.inviteCode],
-              )
-            }
+        // TODO fix N+1 query
+        val householdIds =
+            Memberships.selectAll()
+                .where { Memberships.userId eq userId }
+                .map { it[Memberships.householdId] }
+
+        householdIds.mapNotNull { householdId ->
+          val household =
+              Households.selectAll()
+                  .where { Households.id eq householdId }
+                  .limit(1)
+                  .firstOrNull()
+                  ?.toHouseholdRecord() ?: return@mapNotNull null
+
+          val memberIds =
+              Memberships.selectAll()
+                  .where { Memberships.householdId eq householdId }
+                  .map { it[Memberships.userId] }
+          val members =
+              Users.selectAll().where { Users.id inList memberIds }.map { it.toHouseholdMember() }
+
+          HouseholdDetailRecord(household = household, members = members)
+        }
       }
 
   override fun createHousehold(name: String, ownerId: String): HouseholdRecord =

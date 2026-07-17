@@ -52,7 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.value.MutableValue
-import com.opensplit.dto.household.HouseholdSummaryDto
+import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.components.BottomNav
 import kotlinx.coroutines.launch
@@ -251,7 +251,7 @@ private fun NonGroupExpensesCard() {
 
 @Composable
 private fun SettledGroupsSection(
-    households: List<HouseholdSummaryDto>,
+    households: List<HouseholdDto>,
     isExpanded: Boolean,
     onToggle: () -> Unit,
     onStartNewGroup: () -> Unit,
@@ -348,7 +348,7 @@ private fun SettledHouseholdCard(name: String) {
 
 @Composable
 private fun HouseholdCard(
-    household: HouseholdSummaryDto,
+    household: HouseholdDto,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

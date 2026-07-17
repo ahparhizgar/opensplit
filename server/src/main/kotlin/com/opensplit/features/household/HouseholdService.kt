@@ -2,20 +2,11 @@ package com.opensplit.features.household
 
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.HouseholdMemberDto
-import com.opensplit.dto.household.HouseholdSummaryDto
 import com.opensplit.features.auth.UserPrincipal
 
 class HouseholdService(private val householdRepository: HouseholdRepository) {
-  fun loadHouseholds(user: UserPrincipal): List<HouseholdSummaryDto> =
-      householdRepository.loadHouseholdSummaries(user.userId).map { summary ->
-        HouseholdSummaryDto(
-            id = summary.id,
-            name = summary.name,
-            memberCount = summary.memberCount,
-            isOwner = summary.isOwner,
-            inviteCode = summary.inviteCode,
-        )
-      }
+  fun loadHouseholds(user: UserPrincipal): List<HouseholdDto> =
+      householdRepository.loadHouseholds(user.userId).map { it.toDto(user.userId) }
 
   fun createHousehold(user: UserPrincipal, name: String): HouseholdDto {
     val household = householdRepository.createHousehold(name, user.userId)
@@ -35,6 +26,7 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
                 )
             ),
         inviteLink = household.inviteLink(),
+        isOwner = true,
     )
   }
 
@@ -84,7 +76,7 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
     return AddMemberByEmailResult.Success(detail.toDto(user.userId))
   }
 
-  fun leaveHousehold(user: UserPrincipal, householdId: String): List<HouseholdSummaryDto> {
+  fun leaveHousehold(user: UserPrincipal, householdId: String): List<HouseholdDto> {
     householdRepository.leaveHousehold(householdId, user.userId)
     return loadHouseholds(user)
   }
@@ -109,6 +101,7 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
                 )
               },
           inviteLink = household.inviteLink(),
+          isOwner = household.ownerId == currentUserId,
       )
 
   private fun HouseholdRecord.inviteLink(): String =

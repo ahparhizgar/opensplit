@@ -7,7 +7,8 @@ import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
-import com.opensplit.dto.household.HouseholdSummaryDto
+import com.opensplit.dto.household.FakeHouseholdDtoFactory
+import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
@@ -39,7 +40,7 @@ interface MyHouseholdsListComponent {
 }
 
 data class MyHouseholdsUiState(
-    val households: List<HouseholdSummaryDto> = emptyList(),
+    val households: List<HouseholdDto> = emptyList(),
     val overallBalance: Double = 0.0,
     val overallCurrency: String = "IRR",
 )
@@ -73,7 +74,7 @@ class DefaultMyHouseholdsListComponent(
     }
   }
 
-  private fun updateState(households: List<HouseholdSummaryDto>) {
+  private fun updateState(households: List<HouseholdDto>) {
     _uiState.update {
       it.copy(
           households = households,
@@ -113,21 +114,18 @@ class FakeMyHouseholdsListComponent(
         MyHouseholdsUiState(
             households =
                 listOf(
-                    HouseholdSummaryDto(
-                        id = "1",
-                        name = "Amirs House",
-                        memberCount = 2,
-                        balance = 10.15,
-                    ),
-                    HouseholdSummaryDto(
+                    FakeHouseholdDtoFactory.create(
+                            id = "1",
+                            name = "Amirs House",
+                        )
+                        .copy(balance = 10.15),
+                    FakeHouseholdDtoFactory.create(
                         id = "2",
                         name = "203.3",
-                        memberCount = 3,
                     ),
-                    HouseholdSummaryDto(
+                    FakeHouseholdDtoFactory.create(
                         id = "3",
                         name = "Shomal Trip",
-                        memberCount = 4,
                     ),
                 ),
             overallBalance = 10.15,

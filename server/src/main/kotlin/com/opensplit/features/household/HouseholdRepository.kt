@@ -1,7 +1,7 @@
 package com.opensplit.features.household
 
 interface HouseholdRepository {
-  fun loadHouseholdSummaries(userId: String): List<HouseholdSummaryRecord>
+  fun loadHouseholds(userId: String): List<HouseholdDetailRecord>
 
   fun createHousehold(name: String, ownerId: String): HouseholdRecord
 
