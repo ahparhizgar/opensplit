@@ -1,5 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import java.net.URL
+import java.net.URI
 
 plugins {
   alias(libs.plugins.kotlinJvm)
@@ -31,14 +31,14 @@ dependencies {
   implementation(libs.ktor.jwt)
 
   // Database: Exposed + HikariCP + PostgreSQL driver
-  implementation("org.jetbrains.exposed:exposed-core:0.41.1")
-  implementation("org.jetbrains.exposed:exposed-dao:0.41.1")
-  implementation("org.jetbrains.exposed:exposed-jdbc:0.41.1")
-  implementation("org.jetbrains.exposed:exposed-java-time:0.41.1")
-  implementation("com.zaxxer:HikariCP:5.0.1")
-  implementation("org.postgresql:postgresql:42.6.0")
+  implementation(libs.exposed.core)
+  implementation(libs.exposed.dao)
+  implementation(libs.exposed.jdbc)
+  implementation(libs.exposed.java.time)
+  implementation(libs.hikaricp)
+  implementation(libs.postgresql)
   // H2 for tests and in-memory fallback
-  implementation("com.h2database:h2:2.1.214")
+  implementation(libs.h2)
   implementation(libs.bcrypt)
 
   testImplementation(libs.ktor.serverTestHost)
@@ -100,7 +100,7 @@ tasks.register("waitForHealth") {
   description = "Polls http://localhost:8080/health until it returns HTTP 200 or times out (2min)"
   dependsOn("dockerComposeUp")
   doLast {
-    val url = URL("http://localhost:8080/health")
+    val url = URI("http://localhost:8080/health").toURL()
     val start = System.currentTimeMillis()
     val timeoutMs = 120_000L
     println("Waiting for server health endpoint at http://localhost:8080/health...")

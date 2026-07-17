@@ -10,6 +10,10 @@ androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.11.0-rc01"
 androidx-testExt = "1.3.0"
 composeMultiplatform = "1.11.1"
+#exposed = "1.3.1"
+exposed = "0.41.1"
+h2 = "2.4.240"
+hikaricp = "7.1.0"
 junit = "4.13.2"
 kotlin = "2.4.0"
 kotlin-wrappers = "2026.7.0"
@@ -29,8 +33,15 @@ ksp = "2.3.8"
 datastorePreferences = "1.3.0-alpha09"
 bcrypt = "0.10.2"
 ktfmtPlugin = "0.26.0"
+postgresql = "42.7.13"
 
 [libraries]
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -68,6 +79,7 @@ ktor-clientContentNegotiation = { module = "io.ktor:ktor-client-content-negotiat
 ktor-clientOkHttp = { module = "io.ktor:ktor-client-okhttp-jvm", version.ref = "ktor" }
 ktor-clientDarwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-clientJs = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 wrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
 katch = { module = "io.github.ahparhizgar:katch", version.ref = "katch" }
 katch-ktor = { module = "io.github.ahparhizgar:katch-ktor", version.ref = "katch" }
@@ -97,6 +109,6 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-kotest = { id = "io.kotest" , version.ref = "kotest" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp"}
+kotest = { id = "io.kotest", version.ref = "kotest" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmtPlugin" }
