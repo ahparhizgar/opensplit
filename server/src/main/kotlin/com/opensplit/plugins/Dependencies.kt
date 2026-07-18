@@ -6,6 +6,7 @@ import com.opensplit.database.connectDatabase
 import com.opensplit.database.createHikariDataSource
 import com.opensplit.features.auth.authKoinModule
 import com.opensplit.features.auth.testAuthKoinModule
+import com.opensplit.features.expense.expenseKoinModule
 import com.opensplit.features.household.householdKoinModule
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -29,6 +30,7 @@ fun Application.configureDependencies(isTest: Boolean) {
         },
         authKoinModule(),
         householdKoinModule(),
+        expenseKoinModule(),
     )
     if (isTest) {
       modules(testAuthKoinModule())

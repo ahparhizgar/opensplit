@@ -19,6 +19,11 @@ This guide defines the standards for writing tests in OpenSplit to ensure they a
 *   **Custom DSL:** Utilize the project's custom **`When`** variant that supports an action block.
 *   **Coroutines:** Apply `extensions(MainDispatcherExtension())` inside spec (outside Given).
 
+### Note for BehaviorSpec:
+
+Always `beforeEach` or `testValue` inside `Given` or `When` blocks. If you put code outside these
+blocks, your test will fail.
+
 ## 3. Behavioral Structure & Naming
 A test should read like documentation of a feature's behavior:
 *   **`Given`**: Initial context or setup (e.g., `Given("a user with existing tasks")`).

@@ -2,6 +2,7 @@ package com.opensplit
 
 import com.opensplit.database.DatabaseInitializer
 import com.opensplit.features.auth.authModule
+import com.opensplit.features.expense.expenseModule
 import com.opensplit.features.health.healthModule
 import com.opensplit.features.household.householdModule
 import com.opensplit.plugins.configureDependencies
@@ -27,5 +28,6 @@ fun Application.openSplit(isTest: Boolean = false) {
 
   authModule()
   householdModule()
+  expenseModule()
   healthModule()
 }

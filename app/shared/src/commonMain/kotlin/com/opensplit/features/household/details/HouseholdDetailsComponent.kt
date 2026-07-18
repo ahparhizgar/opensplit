@@ -6,6 +6,7 @@ import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.dto.household.HouseholdDto
+import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.root.TopLevelDestinationConfig
@@ -20,6 +21,8 @@ interface HouseholdDetailsComponent {
   val uiState: StateFlow<UiState>
 
   fun onAddMemberClicked() {}
+
+  fun onAddExpenseClicked() {}
 
   fun onBack() {}
 
@@ -54,6 +57,10 @@ class DefaultHouseholdDetailsComponent(
 
   override fun onAddMemberClicked() {
     TODO()
+  }
+
+  override fun onAddExpenseClicked() {
+    navigation.pushNew(AddExpenseComponent.Config(householdId))
   }
 
   override fun onSettingsClick() {

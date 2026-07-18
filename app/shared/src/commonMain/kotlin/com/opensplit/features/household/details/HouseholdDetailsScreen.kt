@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
@@ -21,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,8 +45,14 @@ fun HouseholdDetailsScreen(
 ) {
   val uiState by component.uiState.collectAsState()
   val household = uiState.household
-  Scaffold {
-    Column {
+  Scaffold(
+      floatingActionButton = {
+        FloatingActionButton(onClick = { component.onAddExpenseClicked() }) {
+          Icon(Icons.Default.Add, contentDescription = "Add Expense")
+        }
+      }
+  ) { padding ->
+    Column(modifier = Modifier.padding(padding)) {
       Box(
           modifier =
               Modifier.background(MaterialTheme.colorScheme.primary)
