@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -132,7 +133,25 @@ fun HouseholdDetailsScreen(
             }
           } else {
             LazyColumn(modifier.fillMaxWidth()) {
-              // TODO show transactions
+              items(uiState.expenses) { expense ->
+                // TODO create a UI component for expense card
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                ) {
+                  Row(
+                      modifier = Modifier.padding(16.dp),
+                      horizontalArrangement = Arrangement.SpaceBetween,
+                      verticalAlignment = Alignment.CenterVertically,
+                  ) {
+                    Text(text = expense.title, style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        text = "${expense.amount} IRR",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                  }
+                }
+              }
             }
           }
         }

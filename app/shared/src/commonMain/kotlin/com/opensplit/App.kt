@@ -20,6 +20,8 @@ import com.arkivanov.decompose.extensions.compose.stack.animation.scale
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthRootScreen
+import com.opensplit.features.expense.AddExpenseComponent
+import com.opensplit.features.expense.AddExpenseScreen
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdScreen
 import com.opensplit.features.household.details.HouseholdDetailsComponent
@@ -95,6 +97,12 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
           HouseholdDetailsScreen(
               component = child,
               modifier = Modifier.fillMaxSize(),
+          )
+        }
+
+        is AddExpenseComponent -> {
+          AddExpenseScreen(
+              component = child,
           )
         }
 

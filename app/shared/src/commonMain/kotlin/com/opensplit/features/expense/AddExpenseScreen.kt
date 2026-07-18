@@ -31,10 +31,11 @@ import com.opensplit.ui.OpenSplitTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddExpenseScreen(component: AddExpenseComponent) {
+fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifier) {
   val uiState by component.uiState.subscribeAsState()
 
   Scaffold(
+      modifier = modifier,
       topBar = {
         TopAppBar(
             title = { Text("Add Expense") },
@@ -44,7 +45,7 @@ fun AddExpenseScreen(component: AddExpenseComponent) {
               }
             },
         )
-      }
+      },
   ) { padding ->
     Column(
         modifier = Modifier.padding(padding).padding(16.dp).fillMaxSize(),

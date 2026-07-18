@@ -151,8 +151,7 @@ fun MyHouseholdsListScreen(
                 SettledGroupsSection(
                     households = settledHouseholds,
                     isExpanded = component.isSettledExpanded.subscribeAsState().value,
-                    onToggle = { component.onToggleSettledExpanded() },
-                    onStartNewGroup = { component.onAddHouseholdClick() },
+                    component = component,
                 )
               }
             }
@@ -252,9 +251,8 @@ private fun NonGroupExpensesCard() {
 @Composable
 private fun SettledGroupsSection(
     households: List<HouseholdDto>,
+    component: MyHouseholdsListComponent,
     isExpanded: Boolean,
-    onToggle: () -> Unit,
-    onStartNewGroup: () -> Unit,
 ) {
   Column(
       modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
@@ -268,7 +266,7 @@ private fun SettledGroupsSection(
           color = MaterialTheme.colorScheme.onSurfaceVariant,
       )
       OutlinedButton(
-          onClick = onToggle,
+          onClick = component::onToggleSettledExpanded,
           modifier = Modifier.testTag("show-settled-btn"),
       ) {
         Text("Show ${households.size} settled-up groups")
@@ -284,23 +282,28 @@ private fun SettledGroupsSection(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        TextButton(onToggle) {
+        TextButton(onClick = component::onToggleSettledExpanded) {
           Text(
+              modifier = Modifier.testTag("hide-settled-btn"),
               text = "Re-hide",
               style = MaterialTheme.typography.bodySmall,
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
-              modifier = Modifier.clickable(onClick = onToggle).testTag("hide-settled-btn"),
           )
         }
       }
 
-      households.forEach { household -> SettledHouseholdCard(name = household.name) }
+      households.forEach { household ->
+        HouseholdCard(
+            household = household,
+            onClick = { component.onHouseholdClick(household.id) },
+        )
+      }
 
       Spacer(Modifier.height(8.dp))
 
       OutlinedButton(
-          onClick = onStartNewGroup,
+          onClick = component::onAddHouseholdClick,
           modifier = Modifier.wrapContentWidth().testTag("start-new-group-btn"),
       ) {
         Icon(
@@ -311,37 +314,6 @@ private fun SettledGroupsSection(
         Spacer(Modifier.width(8.dp))
         Text("Start a new group")
       }
-    }
-  }
-}
-
-@Composable
-private fun SettledHouseholdCard(name: String) {
-  Row(
-      modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-      horizontalArrangement = Arrangement.spacedBy(16.dp),
-      verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Box(
-        modifier =
-            Modifier.size(64.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(8.dp),
-                )
-    )
-    Column {
-      Text(
-          text = name,
-          style = MaterialTheme.typography.titleMedium,
-          fontWeight = FontWeight.Bold,
-          color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-      )
-      Text(
-          text = "settled up",
-          style = MaterialTheme.typography.bodyMedium,
-          color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-      )
     }
   }
 }

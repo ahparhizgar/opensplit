@@ -11,28 +11,6 @@ Our goal is to write tests that give **real confidence**, stay **readable**, and
 
 ---
 
-## Why this guideline exists
-
-We are moving away from a test strategy that creates high maintenance cost and low confidence.
-
-Problems we want to avoid:
-
-- tightly coupled tests
-- heavy use of mocks
-- tests that verify implementation details instead of behavior
-- tests for trivial delegation
-- brittle tests that fail during harmless refactors
-
-Our test strategy should help us:
-
-- catch real regressions
-- support safe refactoring
-- test user-relevant behavior
-- keep tests understandable
-- reduce unnecessary mocking
-
----
-
 ## Core principles
 
 ### 1. Test behavior, not implementation
@@ -240,3 +218,12 @@ Write an E2E test when you need confidence that:
 - a user can complete onboarding
 - a user can place an order
 - a user can submit a key workflow from start to finish
+
+---
+
+## Fakes
+
+Use hardcoded instant values in fakes. do not use `Clock.Server.now()` because it can lead to 
+fragile tests.
+
+Do not use random values in fakes. It can lead to fragile tests.

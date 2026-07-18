@@ -34,6 +34,7 @@ Imports:
     interface FxComponent {
     val uiState: Value<FxUiState>
     fun clickOnXxButton() {}
+    fun someLongRunningOperation(): Job
     interface Factory {
         fun create(context: CContext): FxComponent
     }
@@ -78,7 +79,11 @@ class DefaultFxComponent(
             it.copy(/* handle state change */)
         }
     }
-
+    
+    fun someLongRunningOperation(): Job = scope.launch {
+        // do the long-running operation
+    }
+    
     class Factory(val httpClient: HttpClient) : FxComponent.Factory {
         override fun create(context: CContext): FxComponent {
             return DefaultFxComponent(

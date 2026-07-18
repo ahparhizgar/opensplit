@@ -9,6 +9,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
@@ -41,8 +42,30 @@ fun Application.configureExpenseRoutes() {
           }
 
           val user = call.user()
-          val expense = expenseService.createExpense(householdId, user.userId, request)
+          val expense =
+              try {
+                expenseService.createExpense(householdId, user.userId, request)
+              } catch (_: NotAMemberException) {
+                call.respond(
+                    HttpStatusCode.Forbidden,
+                    ErrorResponse(generalError = "You are not a member of this household"),
+                )
+                return@post
+              }
           call.respond(HttpStatusCode.Created, expense)
+        }
+
+        get {
+          val householdId = call.parameters["householdId"]
+          if (householdId.isNullOrBlank()) {
+            call.respond(
+                HttpStatusCode.BadRequest,
+                ErrorResponse(generalError = "Household id is required"),
+            )
+            return@get
+          }
+          val expenses = expenseService.getExpenses(householdId)
+          call.respond(expenses)
         }
       }
     }

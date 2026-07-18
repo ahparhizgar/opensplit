@@ -6,5 +6,5 @@ import org.koin.dsl.module
 
 fun expenseKoinModule() = module {
   singleOf(::ExpenseRepositoryImpl).bind<ExpenseRepository>()
-  singleOf(::ExpenseService)
+  single { ExpenseService(get(), get()) }
 }

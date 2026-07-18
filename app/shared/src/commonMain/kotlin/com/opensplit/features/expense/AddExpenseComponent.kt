@@ -57,27 +57,30 @@ class DefaultAddExpenseComponent(
     _uiState.update { it.copy(amount = amount, fieldErrors = it.fieldErrors - "amount") }
   }
 
-  override fun onSaveClicked(): Job {
+  override fun onSaveClicked(): Job = scope.launch {
     val title = _uiState.value.title
     val amountStr = _uiState.value.amount
-    val amount = amountStr.toDoubleOrNull() ?: 0.0
+    val amount = amountStr.toDoubleOrNull()
+
+    if (amount == null) {
+      _uiState.update { it.copy(fieldErrors = it.fieldErrors + ("amount" to "Invalid amount")) }
+      return@launch
+    }
 
     val validation = ExpenseValidation.validateExpense(title, amount)
     if (!validation.isValid) {
-      _uiState.update { it.copy(fieldErrors = validation.errors) }
-      return Job().apply { complete() }
+      _uiState.update { it.copy(fieldErrors = it.fieldErrors + validation.errors) }
+      return@launch
     }
 
     _uiState.update { it.copy(isLoading = true) }
-    return scope.launch {
-      try {
-        expenseApi.createExpense(householdId, title, amount)
-        onFinished()
-      } catch (e: ApiCallError) {
-        _uiState.update { it.copy(fieldErrors = e.fieldErrors) }
-      } finally {
-        _uiState.update { it.copy(isLoading = false) }
-      }
+    try {
+      expenseApi.createExpense(householdId, title, amount)
+      onFinished()
+    } catch (e: ApiCallError) {
+      _uiState.update { it.copy(fieldErrors = e.fieldErrors) }
+    } finally {
+      _uiState.update { it.copy(isLoading = false) }
     }
   }
 

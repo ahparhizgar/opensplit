@@ -1,6 +1,6 @@
 # Story 2.1: Add a simple expense with minimal UI
 
-Status: review
+Status: done
 
 ## Story
 
@@ -65,6 +65,16 @@ So that I can log shared costs without unnecessary complexity.
 
 - New feature directory: `com.opensplit.features.expense` in both `server` and `app/shared`.
 - New DTO package: `com.opensplit.dto.expense` in `core`.
+
+### Review Findings
+
+- [x] [Review][Defer] Financial Precision (ID 1) — The code uses `Double` for expense amounts. Your Dev Notes acknowledge this but defer switching to `BigDecimal` or `Long` (cents). Should we make the switch now to avoid a migration later? — deferred, will fix later
+- [x] [Review][Patch] Missing History UI (ID 7) — AC 2 requires expenses to appear in the "household history." The current changes implement the adding flow but not the viewing flow on the `HouseholdDetailsScreen`. Is this intended for this story or a follow-up? -> Implement minimal history UI.
+- [x] [Review][Patch] Security (ID 6) [ExpenseService.kt:12]
+- [x] [Review][Patch] Error Masking (ID 2) [KtorExpenseApi.kt:34]
+- [x] [Review][Patch] Validation Gaps (ID 4, 5, 9) [ExpenseValidation.kt:11, 12]
+- [x] [Review][Patch] UI Stability (ID 3) [DefaultHouseholdDetailsComponent.kt]
+- [x] [Review][Defer] Fake Fragility (ID 10) [FakeExpenseApi.kt] — deferred, pre-existing
 
 ### References
 
