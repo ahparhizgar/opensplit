@@ -2,10 +2,12 @@ package com.opensplit.util
 
 import com.opensplit.di.appModule
 import com.opensplit.fake.FakeAuthApi
+import com.opensplit.fake.FakeExpenseApi
 import com.opensplit.fake.FakeHouseholdApi
 import com.opensplit.features.auth.AuthApi
 import com.opensplit.features.auth.NoOpTokenStorage
 import com.opensplit.features.auth.TokenStorage
+import com.opensplit.features.expense.ExpenseApi
 import com.opensplit.features.household.HouseholdApi
 import io.kotest.core.spec.Spec
 import org.koin.dsl.bind
@@ -35,4 +37,5 @@ fun integrationTestModule() = module {
   single { FakeAuthApi() }.bind<AuthApi>()
   single { NoOpTokenStorage() }.bind<TokenStorage>()
   single { FakeHouseholdApi() }.bind<HouseholdApi>()
+  single { FakeExpenseApi() }.bind<ExpenseApi>()
 }

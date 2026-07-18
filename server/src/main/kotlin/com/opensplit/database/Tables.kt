@@ -25,3 +25,12 @@ object Memberships : Table("memberships") {
   val householdId = varchar("household_id", 36)
   val userId = varchar("user_id", 36)
 }
+
+object Expenses : Table("expenses") {
+  val id = varchar("id", 36)
+  val householdId = varchar("household_id", 36)
+  val title = varchar("title", 255)
+  val amount = double("amount")
+  val payerId = varchar("payer_id", 36)
+  val createdAt = long("created_at")
+}

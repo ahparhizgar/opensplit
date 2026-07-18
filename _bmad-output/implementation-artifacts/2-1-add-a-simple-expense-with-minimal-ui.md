@@ -1,6 +1,6 @@
 # Story 2.1: Add a simple expense with minimal UI
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -16,34 +16,34 @@ So that I can log shared costs without unnecessary complexity.
 ## Tasks / Subtasks
 
 ### Backend (Server) Implementation
-- [ ] Create `Expenses` table in `server/src/main/kotlin/com/opensplit/database/Tables.kt` (AC: 2)
-  - Fields: `id`, `household_id`, `description`, `amount`, `payer_id`, `created_at`
-- [ ] Update `DatabaseInitializer.kt` to include `Expenses` table (AC: 2)
-- [ ] Create `ExpenseRecord` and `CreateExpenseRequest` in a new `server/src/main/kotlin/com/opensplit/features/expense/ExpenseModels.kt` (AC: 2)
-- [ ] Implement `ExpenseRepository` and `ExpenseRepositoryImpl` in `server/src/main/kotlin/com/opensplit/features/expense/` (AC: 2)
-- [ ] Create `ExpenseService` to handle business logic and DTO mapping (AC: 2)
-- [ ] Implement `ExpenseRoutes` and Ktor/Koin modules for expenses (AC: 2)
+- [x] Create `Expenses` table in `server/src/main/kotlin/com/opensplit/database/Tables.kt` (AC: 2)
+  - Fields: `id`, `household_id`, `title`, `amount`, `payer_id`, `created_at`
+- [x] Update `DatabaseInitializer.kt` to include `Expenses` table (AC: 2)
+- [x] Create `ExpenseRecord` and `CreateExpenseRequest` in a new `server/src/main/kotlin/com/opensplit/features/expense/ExpenseModels.kt` (AC: 2)
+- [x] Implement `ExpenseRepository` and `ExpenseRepositoryImpl` in `server/src/main/kotlin/com/opensplit/features/expense/` (AC: 2)
+- [x] Create `ExpenseService` to handle business logic and DTO mapping (AC: 2)
+- [x] Implement `ExpenseRoutes` and Ktor/Koin modules for expenses (AC: 2)
   - Endpoint: `POST /households/{id}/expenses`
 
 ### Core (Shared) Implementation
-- [ ] Create `ExpenseDto` and `CreateExpenseRequest` in `core/src/commonMain/kotlin/com/opensplit/dto/expense/ExpenseDtos.kt` (AC: 2)
-- [ ] Add expense validation logic in `core/src/commonMain/kotlin/com/opensplit/validation/expense/ExpenseValidation.kt` (AC: 2)
+- [x] Create `ExpenseDto` and `CreateExpenseRequest` in `core/src/commonMain/kotlin/com/opensplit/dto/expense/ExpenseDtos.kt` (AC: 2)
+- [x] Add expense validation logic in `core/src/commonMain/kotlin/com/opensplit/validation/expense/ExpenseValidation.kt` (AC: 2)
 
 ### Client (Shared UI) Implementation
-- [ ] Update `HouseholdApi` to include `createExpense` method (AC: 2)
-- [ ] Create `AddExpenseComponent` and `AddExpenseScreen` in `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/` (AC: 1)
-- [ ] Add "Add Expense" navigation to `HouseholdDetailsComponent` (AC: 1)
-- [ ] Implement simple form with `description` and `amount` fields (AC: 1)
-- [ ] Wire save button to call `createExpense` and navigate back on success (AC: 2)
+- [x] Create `ExpenseApi` and `KtorExpenseApi` for expense-specific network calls (AC: 2)
+- [x] Create `AddExpenseComponent` and `AddExpenseScreen` in `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/` (AC: 1)
+- [x] Add "Add Expense" navigation to `HouseholdDetailsComponent` (AC: 1)
+- [x] Implement simple form with `title` and `amount` fields (AC: 1)
+- [x] Wire save button to call `createExpense` and navigate back on success (AC: 2)
 
 ### Testing Implementation
-- [ ] **Backend Integration Test:** `ExpenseRoutesTest.kt`
-  - [ ] `POST /households/{id}/expenses` returns `BadRequest` when description is empty
-  - [ ] `POST /households/{id}/expenses` returns `Created` when form is valid
-- [ ] **Component Integration Test:** `AddExpenseComponentTest.kt`
-  - [ ] Navigate from `HouseholdDetailsComponent` to `AddExpenseComponent` on button click
-  - [ ] `AddExpenseComponent` shows field errors when submitting empty form
-  - [ ] `AddExpenseComponent` navigates back to `HouseholdDetails` on successful save
+- [x] **Backend Integration Test:** `ExpenseRoutesTest.kt`
+  - [x] `POST /households/{id}/expenses` returns `BadRequest` when title is empty
+  - [x] `POST /households/{id}/expenses` returns `Created` when form is valid
+- [x] **Component Integration Test:** `AddExpenseComponentTest.kt`
+  - [x] Navigate from `HouseholdDetailsComponent` to `AddExpenseComponent` on button click
+  - [x] `AddExpenseComponent` shows field errors when submitting empty form
+  - [x] `AddExpenseComponent` navigates back to `HouseholdDetails` on successful save
 
 ## Dev Notes
 
@@ -82,10 +82,24 @@ Amelia (Senior Software Engineer)
 
 - `server/src/main/kotlin/com/opensplit/database/Tables.kt`
 - `server/src/main/kotlin/com/opensplit/database/DatabaseInitializer.kt`
-- `server/src/main/kotlin/com/opensplit/features/expense/*`
+- `server/src/main/kotlin/com/opensplit/features/expense/ExpenseModels.kt`
+- `server/src/main/kotlin/com/opensplit/features/expense/ExpenseRepository.kt`
+- `server/src/main/kotlin/com/opensplit/features/expense/ExpenseRepositoryImpl.kt`
+- `server/src/main/kotlin/com/opensplit/features/expense/ExpenseService.kt`
+- `server/src/main/kotlin/com/opensplit/features/expense/ExpenseRoutes.kt`
+- `server/src/main/kotlin/com/opensplit/features/expense/KoinModule.kt`
+- `server/src/main/kotlin/com/opensplit/features/expense/KtorModule.kt`
+- `server/src/test/kotlin/com/opensplit/features/ExpenseRoutesTest.kt`
 - `core/src/commonMain/kotlin/com/opensplit/dto/expense/ExpenseDtos.kt`
 - `core/src/commonMain/kotlin/com/opensplit/validation/expense/ExpenseValidation.kt`
-- `app/shared/src/commonMain/kotlin/com/opensplit/features/household/HouseholdApi.kt`
-- `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/*`
+- `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/ExpenseApi.kt`
+- `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/AddExpenseComponent.kt`
+- `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/AddExpenseScreen.kt`
 - `app/shared/src/commonMain/kotlin/com/opensplit/features/household/details/HouseholdDetailsComponent.kt`
 - `app/shared/src/commonMain/kotlin/com/opensplit/features/household/details/HouseholdDetailsScreen.kt`
+- `app/shared/src/commonMain/kotlin/com/opensplit/di/DecomposeModule.kt`
+- `app/shared/src/commonMain/kotlin/com/opensplit/di/AppModule.kt`
+- `app/shared/src/commonMain/kotlin/com/opensplit/root/RootComponent.kt`
+- `app/shared/src/commonTest/kotlin/com/opensplit/fake/FakeExpenseApi.kt`
+- `app/shared/src/commonTest/kotlin/com/opensplit/AddExpenseComponentTest.kt`
+- `app/shared/src/commonTest/kotlin/com/opensplit/util/Koin.kt`
