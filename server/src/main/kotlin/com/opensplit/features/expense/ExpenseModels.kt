@@ -21,3 +21,5 @@ fun ExpenseRecord.toDto() =
         payerId = payerId,
         createdAt = createdAt,
     )
+
+class NotAMemberException : RuntimeException()

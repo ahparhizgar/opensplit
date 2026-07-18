@@ -2,15 +2,22 @@ package com.opensplit.features.expense
 
 import com.opensplit.dto.expense.CreateExpenseRequest
 import com.opensplit.dto.expense.ExpenseDto
+import com.opensplit.features.household.HouseholdRepository
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
-class ExpenseService(private val expenseRepository: ExpenseRepository) {
+class ExpenseService(
+    private val expenseRepository: ExpenseRepository,
+    private val householdRepository: HouseholdRepository,
+) {
   fun createExpense(
       householdId: String,
       payerId: String,
       request: CreateExpenseRequest,
   ): ExpenseDto {
+    if (!householdRepository.hasMembership(householdId, payerId)) {
+      throw NotAMemberException()
+    }
     val expense =
         ExpenseRecord(
             id = Uuid.random().toString(),
