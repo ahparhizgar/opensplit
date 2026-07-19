@@ -3,6 +3,7 @@
 3. improve messages of default api call error messages
 4. server tests are too slow
 5. create currency and money model (use Int)
+6. start offline first approach
 
 
 ### Done
