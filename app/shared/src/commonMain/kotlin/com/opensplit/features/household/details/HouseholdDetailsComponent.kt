@@ -65,7 +65,13 @@ class DefaultHouseholdDetailsComponent(
   }
 
   override fun onAddExpenseClicked() {
-    navigation.pushNew(AddExpenseComponent.Config(householdId))
+    navigation.pushNew(
+        AddExpenseComponent.Config(
+            householdId = householdId,
+            household = uiState.value.household!!,
+            me = uiState.value.household!!.members.first(),
+        )
+    )
   }
 
   override fun onSettingsClick() {

@@ -91,7 +91,9 @@ class HouseholdScenarios {
 
     val otherUser =
         client
-            .post("/users") { setBody(SignUpRequest("leave-test@example.com", "password123")) }
+            .post("/users") {
+              setBody(SignUpRequest("leave-test@example.com", "password123", "Amir"))
+            }
             .body<AuthResult>()
     val otherClient = createAuthenticatedClient(otherUser.accessToken)
 
@@ -116,7 +118,9 @@ class HouseholdScenarios {
 
     val otherUser =
         client
-            .post("/users") { setBody(SignUpRequest("member-check@example.com", "password123")) }
+            .post("/users") {
+              setBody(SignUpRequest("member-check@example.com", "password123", "Amir"))
+            }
             .body<AuthResult>()
     val otherClient = createAuthenticatedClient(otherUser.accessToken)
 
@@ -151,7 +155,9 @@ class HouseholdScenarios {
 
     val otherUser =
         client
-            .post("/users") { setBody(SignUpRequest("owner-transfer@example.com", "password123")) }
+            .post("/users") {
+              setBody(SignUpRequest("owner-transfer@example.com", "password123", "Amir"))
+            }
             .body<AuthResult>()
     val otherClient = createAuthenticatedClient(otherUser.accessToken)
 
@@ -196,7 +202,7 @@ class HouseholdScenarios {
             .body<HouseholdDto>()
 
     val otherUserEmail = "target@example.com"
-    client.post("/users") { setBody(SignUpRequest(otherUserEmail, "password123")) }
+    client.post("/users") { setBody(SignUpRequest(otherUserEmail, "password123", "Amir")) }
 
     val response =
         client.post("/households/${created.id}/memberships") {
@@ -217,7 +223,7 @@ class HouseholdScenarios {
 
     val otherClient = createOtherClient()
     val targetEmail = "target2@example.com"
-    client.post("/users") { setBody(SignUpRequest(targetEmail, "password123")) }
+    client.post("/users") { setBody(SignUpRequest(targetEmail, "password123", "Amir")) }
 
     val response =
         otherClient.post("/households/${created.id}/memberships") {

@@ -9,7 +9,7 @@ import com.opensplit.dto.expense.SplitType
 
 interface AdjustSplitComponent {
   val equallyComponent: EquallySplitComponent
-  val exactComponent: ExactSplitComponent
+  val unequallyComponent: UnequallySplitComponent
   val percentageComponent: PercentageSplitComponent
   val sharesComponent: SharesSplitComponent
   val adjustmentComponent: AdjustmentSplitComponent
@@ -21,7 +21,7 @@ interface AdjustSplitComponent {
   interface Factory {
     fun create(
         context: CContext,
-        initialParticipants: List<ParticipantState>,
+        initialParticipants: List<String>,
         totalAmount: Double,
         onDone: (SplitMethod) -> Unit,
     ): AdjustSplitComponent
@@ -30,7 +30,7 @@ interface AdjustSplitComponent {
 
 class DefaultAdjustSplitComponent(
     context: CContext,
-    private val initialParticipants: List<ParticipantState>,
+    initialParticipants: List<String>,
     totalAmount: Double,
     private val onDone: (SplitMethod) -> Unit,
 ) : AdjustSplitComponent, CContext by context {
@@ -38,7 +38,7 @@ class DefaultAdjustSplitComponent(
   private var currentSplitType = SplitType.EQUALLY
 
   override val equallyComponent = EquallySplitComponent(initialParticipants)
-  override val exactComponent = ExactSplitComponent(initialParticipants, totalAmount)
+  override val unequallyComponent = UnequallySplitComponent(initialParticipants, totalAmount)
   override val percentageComponent = PercentageSplitComponent(initialParticipants)
   override val sharesComponent = SharesSplitComponent(initialParticipants)
   override val adjustmentComponent = AdjustmentSplitComponent(initialParticipants)
@@ -50,36 +50,29 @@ class DefaultAdjustSplitComponent(
   override fun onDoneClicked() {
     val method =
         when (currentSplitType) {
-          SplitType.EQUALLY ->
-              SplitMethod.Equally(
-                  equallyComponent.participants.filter { it.isIncluded }.map { it.userId }
-              )
-          SplitType.EXACT ->
+          SplitType.EQUALLY -> equallyComponent.uiState.value.toMode()
+          SplitType.Unequally ->
               SplitMethod.Unequally(
-                  exactComponent.participants.associate {
-                    it.userId to (it.owedAmount.toDoubleOrNull() ?: 0.0)
+                  unequallyComponent.uiState.value.amounts.mapValues {
+                    it.value.toDoubleOrNull() ?: 0.0
                   }
               )
           SplitType.PERCENTAGE ->
               SplitMethod.Percentage(
-                  percentageComponent.participants.associate {
-                    it.userId to (it.percentage.toDoubleOrNull() ?: 0.0)
+                  percentageComponent.uiState.value.percentages.mapValues {
+                    it.value.toDoubleOrNull() ?: 0.0
                   }
               )
           SplitType.SHARES ->
               SplitMethod.Shares(
-                  sharesComponent.participants.associate {
-                    it.userId to (it.shares.toDoubleOrNull() ?: 0.0)
-                  }
+                  sharesComponent.uiState.value.shares.mapValues { it.value.toIntOrNull() ?: 0 }
               )
           SplitType.ADJUSTMENT ->
               SplitMethod.Adjustment(
                   adjustments =
-                      adjustmentComponent.participants.associate {
-                        it.userId to (it.adjustment.toDoubleOrNull() ?: 0.0)
+                      adjustmentComponent.uiState.value.adjustments.mapValues {
+                        it.value.toDoubleOrNull() ?: 0.0
                       },
-                  equallyUserIds =
-                      adjustmentComponent.participants.filter { it.isIncluded }.map { it.userId },
               )
         }
     onDone(method)
@@ -88,7 +81,7 @@ class DefaultAdjustSplitComponent(
   class Factory : AdjustSplitComponent.Factory {
     override fun create(
         context: CContext,
-        initialParticipants: List<ParticipantState>,
+        initialParticipants: List<String>,
         totalAmount: Double,
         onDone: (SplitMethod) -> Unit,
     ): AdjustSplitComponent =
@@ -105,60 +98,48 @@ data class SplitParticipantState(
 )
 
 // Equally Split
-data class EquallySplitUiState(val participants: List<ParticipantState> = emptyList())
+data class EquallySplitUiState(val userIds: Set<String> = emptySet()) {
+  fun toMode(): SplitMethod.Equally {
+    return SplitMethod.Equally(userIds.toList())
+  }
+}
 
-class EquallySplitComponent(initialParticipants: List<ParticipantState>) {
-  private val _uiState = MutableValue(EquallySplitUiState(initialParticipants))
+class EquallySplitComponent(val initialParticipants: List<String>) {
+  private val _uiState = MutableValue(EquallySplitUiState(userIds = initialParticipants.toSet()))
   val uiState: Value<EquallySplitUiState> = _uiState
-
-  val participants: List<ParticipantState>
-    get() = uiState.value.participants
 
   fun onParticipantInclusionChanged(userId: String, isIncluded: Boolean) {
     _uiState.update { state ->
-      state.copy(
-          participants =
-              state.participants.map {
-                if (it.userId == userId) it.copy(isIncluded = isIncluded) else it
-              }
-      )
+      state.copy(userIds = state.userIds.let { if (isIncluded) it + userId else it - userId })
     }
   }
 }
 
 // Exact Split
 data class ExactSplitUiState(
-    val participants: List<ParticipantState> = emptyList(),
-    val totalAmount: Double,
-    val remainingAmount: Double = 0.0,
+    val amounts: Map<String, String> = emptyMap(),
+    val remainingAmount: Double,
 )
 
-class ExactSplitComponent(initialParticipants: List<ParticipantState>, val totalAmount: Double) {
-  private val _uiState = MutableValue(ExactSplitUiState(initialParticipants, totalAmount))
+class UnequallySplitComponent(
+    val initialParticipants: List<String>,
+    val totalAmount: Double,
+) {
+  private val _uiState = MutableValue(ExactSplitUiState(remainingAmount = totalAmount))
   val uiState: Value<ExactSplitUiState> = _uiState
 
   init {
     updateRemaining()
   }
 
-  val participants: List<ParticipantState>
-    get() = uiState.value.participants
-
   fun onParticipantAmountChanged(userId: String, amount: String) {
-    _uiState.update { state ->
-      state.copy(
-          participants =
-              state.participants.map {
-                if (it.userId == userId) it.copy(owedAmount = amount) else it
-              }
-      )
-    }
+    _uiState.update { state -> state.copy(amounts = state.amounts + Pair(userId, amount)) }
     updateRemaining()
   }
 
   private fun updateRemaining() {
     _uiState.update { state ->
-      val totalOwed = state.participants.sumOf { it.owedAmount.toDoubleOrNull() ?: 0.0 }
+      val totalOwed = state.amounts.values.sumOf { it.toDoubleOrNull() ?: 0.0 }
       state.copy(remainingAmount = totalAmount - totalOwed)
     }
   }
@@ -166,36 +147,28 @@ class ExactSplitComponent(initialParticipants: List<ParticipantState>, val total
 
 // Percentage Split
 data class PercentageSplitUiState(
-    val participants: List<ParticipantState> = emptyList(),
+    val percentages: Map<String, String> = emptyMap(),
     val totalPercentage: Double = 0.0,
 )
 
-class PercentageSplitComponent(initialParticipants: List<ParticipantState>) {
-  private val _uiState = MutableValue(PercentageSplitUiState(initialParticipants))
+class PercentageSplitComponent(val initialParticipants: List<String>) {
+  private val _uiState = MutableValue(PercentageSplitUiState())
   val uiState: Value<PercentageSplitUiState> = _uiState
 
   init {
     updateTotal()
   }
 
-  val participants: List<ParticipantState>
-    get() = uiState.value.participants
-
   fun onParticipantPercentageChanged(userId: String, percentage: String) {
     _uiState.update { state ->
-      state.copy(
-          participants =
-              state.participants.map {
-                if (it.userId == userId) it.copy(percentage = percentage) else it
-              }
-      )
+      state.copy(percentages = state.percentages + Pair(userId, percentage))
     }
     updateTotal()
   }
 
   private fun updateTotal() {
     _uiState.update { state ->
-      val total = state.participants.sumOf { it.percentage.toDoubleOrNull() ?: 0.0 }
+      val total = state.percentages.values.sumOf { it.toDoubleOrNull() ?: 0.0 }
       state.copy(totalPercentage = total)
     }
   }
@@ -203,34 +176,22 @@ class PercentageSplitComponent(initialParticipants: List<ParticipantState>) {
 
 // Shares Split
 data class SharesSplitUiState(
-    val participants: List<ParticipantState> = emptyList(),
-    val totalShares: Double = 0.0,
+    val shares: Map<String, String> = emptyMap(),
+    val totalShares: Int = 0,
 )
 
-class SharesSplitComponent(initialParticipants: List<ParticipantState>) {
-  private val _uiState = MutableValue(SharesSplitUiState(initialParticipants))
+class SharesSplitComponent(val initialParticipants: List<String>) {
+  private val _uiState = MutableValue(SharesSplitUiState())
   val uiState: Value<SharesSplitUiState> = _uiState
 
-  init {
-    updateTotal()
-  }
-
-  val participants: List<ParticipantState>
-    get() = uiState.value.participants
-
   fun onParticipantSharesChanged(userId: String, shares: String) {
-    _uiState.update { state ->
-      state.copy(
-          participants =
-              state.participants.map { if (it.userId == userId) it.copy(shares = shares) else it }
-      )
-    }
+    _uiState.update { state -> state.copy(shares = state.shares + Pair(userId, shares)) }
     updateTotal()
   }
 
   private fun updateTotal() {
     _uiState.update { state ->
-      val total = state.participants.sumOf { it.shares.toDoubleOrNull() ?: 0.0 }
+      val total = state.shares.values.sumOf { it.toIntOrNull() ?: 0 }
       state.copy(totalShares = total)
     }
   }
@@ -238,44 +199,26 @@ class SharesSplitComponent(initialParticipants: List<ParticipantState>) {
 
 // Adjustment Split
 data class AdjustmentSplitUiState(
-    val participants: List<ParticipantState> = emptyList(),
+    val adjustments: Map<String, String> = emptyMap(),
+    val allParticipants: List<String> = emptyList(),
     val totalAdjustment: Double = 0.0,
 )
 
-class AdjustmentSplitComponent(initialParticipants: List<ParticipantState>) {
-  private val _uiState = MutableValue(AdjustmentSplitUiState(initialParticipants))
+class AdjustmentSplitComponent(val initialParticipants: List<String>) {
+  private val _uiState = MutableValue(AdjustmentSplitUiState(allParticipants = initialParticipants))
   val uiState: Value<AdjustmentSplitUiState> = _uiState
-
-  init {
-    updateTotal()
-  }
-
-  val participants: List<ParticipantState>
-    get() = uiState.value.participants
 
   fun onParticipantAdjustmentChanged(userId: String, adjustment: String) {
     _uiState.update { state ->
-      state.copy(
-          participants =
-              state.participants.map {
-                if (it.userId == userId) it.copy(adjustment = adjustment) else it
-              }
-      )
-    }
-    updateTotal()
-  }
-
-  private fun updateTotal() {
-    _uiState.update { state ->
-      val total = state.participants.sumOf { it.adjustment.toDoubleOrNull() ?: 0.0 }
-      state.copy(totalAdjustment = total)
+      state.copy(adjustments = state.adjustments + Pair(userId, adjustment))
     }
   }
 }
 
 class FakeAdjustSplitComponent(
     override val equallyComponent: EquallySplitComponent = EquallySplitComponent(emptyList()),
-    override val exactComponent: ExactSplitComponent = ExactSplitComponent(emptyList(), 0.0),
+    override val unequallyComponent: UnequallySplitComponent =
+        UnequallySplitComponent(emptyList(), 0.0),
     override val percentageComponent: PercentageSplitComponent =
         PercentageSplitComponent(emptyList()),
     override val sharesComponent: SharesSplitComponent = SharesSplitComponent(emptyList()),

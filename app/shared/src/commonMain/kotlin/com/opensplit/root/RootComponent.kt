@@ -105,7 +105,13 @@ class DefaultRootComponent(
       is AddExpenseComponent.Config ->
           componentProvider
               .provide(AddExpenseComponent.Factory::class)
-              .create(cContext, config, onFinished = { rootNavigation.pop() })
+              .create(
+                  context = cContext,
+                  config = config,
+                  onFinished = { rootNavigation.pop() },
+                  household = config.household,
+                  me = config.me,
+              )
 
       else -> error("Destination not defined in createChild")
     }

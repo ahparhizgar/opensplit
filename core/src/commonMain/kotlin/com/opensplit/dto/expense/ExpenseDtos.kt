@@ -34,7 +34,7 @@ data class CreateExpenseRequest(
 @Serializable
 enum class SplitType {
   EQUALLY,
-  EXACT,
+  Unequally,
   PERCENTAGE,
   SHARES,
   ADJUSTMENT,

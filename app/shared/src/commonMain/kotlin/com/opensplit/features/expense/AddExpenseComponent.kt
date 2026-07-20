@@ -1,23 +1,30 @@
 package com.opensplit.features.expense
 
 import com.ahparhizgar.katch.ApiCallError
-import com.arkivanov.decompose.childContext
-import com.arkivanov.decompose.router.stack.*
+import com.arkivanov.decompose.router.stack.ChildStack
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.childStack
+import com.arkivanov.decompose.router.stack.navigate
+import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.popTo
+import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
+import com.opensplit.dto.expense.ParticipantAmount
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SplitMethod
-import com.opensplit.dto.expense.SplitType
+import com.opensplit.dto.household.HouseholdDto
+import com.opensplit.dto.household.HouseholdMemberDto
 import com.opensplit.features.household.HouseholdApi
 import com.opensplit.remote.fieldErrors
+import com.opensplit.root.TopLevelDestinationConfig
 import com.opensplit.validation.expense.ExpenseValidation
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.serializer
 
 interface AddExpenseComponent {
   val uiState: Value<AddExpenseUiState>
@@ -27,19 +34,11 @@ interface AddExpenseComponent {
 
   fun onAmountChanged(amount: String)
 
-  fun onSplitTypeChanged(splitType: SplitType)
-
-  fun onParticipantOwedAmountChanged(userId: String, amount: String)
-
-  fun onParticipantPercentageChanged(userId: String, percentage: String)
-
-  fun onParticipantSharesChanged(userId: String, shares: String)
-
-  fun onParticipantAdjustmentChanged(userId: String, adjustment: String)
-
-  fun onParticipantInclusionChanged(userId: String, isIncluded: Boolean)
+  fun setPaidAmounts(amounts: PayAmountsUiState)
 
   fun onParticipantPaidAmountChanged(userId: String, amount: String)
+
+  fun setSplitMethod(method: SplitMethod)
 
   fun onSaveClicked(): Job
 
@@ -56,14 +55,18 @@ interface AddExpenseComponent {
   fun navigateToAdjustSplit()
 
   @Serializable
-  data class Config(val householdId: String) : com.opensplit.root.TopLevelDestinationConfig
+  data class Config(
+      val householdId: String,
+      val household: HouseholdDto,
+      val me: HouseholdMemberDto,
+  ) : TopLevelDestinationConfig
 
   sealed class Child {
     class Main(val component: AddExpenseComponent) : Child()
 
     class PayerSelection(val component: AddExpenseComponent) : Child()
 
-    class PaidAmounts(val component: AddExpenseComponent) : Child()
+    class PaidAmounts(val component: PaidAmountsComponent) : Child()
 
     class QuickSplitSelection(val component: AddExpenseComponent) : Child()
 
@@ -71,7 +74,13 @@ interface AddExpenseComponent {
   }
 
   interface Factory {
-    fun create(context: CContext, config: Config, onFinished: () -> Unit): AddExpenseComponent
+    fun create(
+        context: CContext,
+        config: Config,
+        household: HouseholdDto,
+        me: HouseholdMemberDto,
+        onFinished: () -> Unit,
+    ): AddExpenseComponent
   }
 }
 
@@ -91,34 +100,72 @@ sealed class AddExpenseChildConfig {
 data class ParticipantState(
     val userId: String,
     val name: String,
-    val paidAmount: String = "0",
-    val owedAmount: String = "0",
-    val percentage: String = "0",
-    val shares: String = "1",
-    val adjustment: String = "0",
-    val isIncluded: Boolean = true,
+    val paidAmount: Double = 0.0,
+    val owedAmount: Double = 0.0,
     val isCurrentUser: Boolean = false,
 )
 
+sealed interface PayAmountsUiState {
+  fun toDomain(): PayAmounts
+
+  data class OnePerson(val userId: String, val amount: String) : PayAmountsUiState {
+    override fun toDomain(): PayAmounts = PayAmounts.OnePerson(userId, amount.toDoubleOrNull())
+  }
+
+  data class MultiplePeople(val amounts: List<ParticipantValue>) : PayAmountsUiState {
+    override fun toDomain(): PayAmounts =
+        PayAmounts.MultiplePeople(
+            amounts.map { ParticipantAmount(it.userId, it.value.toDoubleOrNull() ?: 0.0) }
+        )
+  }
+}
+
+sealed interface PayAmounts {
+  fun sum(): Double
+
+  data class OnePerson(val userId: String, val amount: Double?) : PayAmounts {
+    override fun sum(): Double = amount ?: 0.0
+  }
+
+  data class MultiplePeople(val amounts: List<ParticipantAmount>) : PayAmounts {
+    override fun sum(): Double = amounts.sumOf { it.amount }
+  }
+}
+
 data class AddExpenseUiState(
+    val allParticipants: List<String>,
+    val payAmounts: PayAmountsUiState,
     val title: String = "",
-    val amount: String = "",
-    val isLoading: Boolean = false,
     val fieldErrors: Map<String, String> = emptyMap(),
     val splitMethod: SplitMethod = SplitMethod.Equally(emptyList()),
-    val participants: List<ParticipantState> = emptyList(),
-)
+    val isLoading: Boolean = false,
+) {
+  val payAmountsDomain: PayAmounts = payAmounts.toDomain()
+  val amountSum: Double =
+      when (payAmountsDomain) {
+        is PayAmounts.OnePerson -> payAmountsDomain.amount ?: 0.0
+        is PayAmounts.MultiplePeople -> payAmountsDomain.amounts.sumOf { it.amount }
+      }
+}
 
 class DefaultAddExpenseComponent(
     context: CContext,
     config: AddExpenseComponent.Config,
     private val expenseApi: ExpenseApi,
     private val householdApi: HouseholdApi,
+    household: HouseholdDto,
+    me: HouseholdMemberDto,
     private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
     private val onFinished: () -> Unit,
 ) : AddExpenseComponent, CContext by context {
   private val householdId = config.householdId
-  private val _uiState = MutableValue(AddExpenseUiState())
+  private val _uiState =
+      MutableValue(
+          AddExpenseUiState(
+              allParticipants = household.members.map { it.userId },
+              payAmounts = PayAmountsUiState.OnePerson(userId = me.userId, amount = ""),
+          )
+      )
   override val uiState: Value<AddExpenseUiState> = _uiState
   private val scope = componentScope()
 
@@ -135,19 +182,29 @@ class DefaultAddExpenseComponent(
               is AddExpenseChildConfig.Main -> AddExpenseComponent.Child.Main(this)
               is AddExpenseChildConfig.PayerSelection ->
                   AddExpenseComponent.Child.PayerSelection(this)
-              is AddExpenseChildConfig.PaidAmounts -> AddExpenseComponent.Child.PaidAmounts(this)
+              is AddExpenseChildConfig.PaidAmounts ->
+                  AddExpenseComponent.Child.PaidAmounts(
+                      DefaultPaidAmountsComponent.Factory()
+                          .create(
+                              initial = _uiState.value.payAmountsDomain,
+                              household = household,
+                              onDone = { amounts ->
+                                setPaidAmounts(amounts)
+                                stackNavigation.pop()
+                              },
+                          )
+                  )
               is AddExpenseChildConfig.QuickSplitSelection ->
                   AddExpenseComponent.Child.QuickSplitSelection(this)
               is AddExpenseChildConfig.AdjustSplit ->
                   AddExpenseComponent.Child.AdjustSplit(
                       adjustSplitComponentFactory.create(
-                          context = childContext(key = "AdjustSplit"),
-                          initialParticipants = _uiState.value.participants,
-                          totalAmount = _uiState.value.amount.toDoubleOrNull() ?: 0.0,
+                          context = componentContext,
+                          initialParticipants = _uiState.value.allParticipants,
+                          totalAmount = _uiState.value.payAmountsDomain.sum(),
                           onDone = { splitMethod ->
                             _uiState.update { it.copy(splitMethod = splitMethod) }
-                            recalculate()
-                            stackNavigation.pop()
+                            stackNavigation.navigate { it.dropLast(2) }
                           },
                       )
                   )
@@ -165,24 +222,22 @@ class DefaultAddExpenseComponent(
       val household = householdApi.getHousehold(householdId)
       val participants =
           household.members.map { member ->
-            ParticipantState(
+            ParticipantAmount(
                 userId = member.userId,
-                name = member.name ?: member.email,
-                paidAmount = "0",
-                isIncluded = true,
-                isCurrentUser = member.isCurrentUser,
+                amount = 0.0,
             )
           }
       _uiState.update {
         it.copy(
-            participants = participants,
             splitMethod = SplitMethod.Equally(participants.map { p -> p.userId }),
         )
       }
-
-      recalculate()
-    } catch (ignore: Exception) {} finally {
-      _uiState.update { it.copy(isLoading = false) }
+    } finally {
+      _uiState.update {
+        it.copy(
+            isLoading = false,
+        )
+      }
     }
   }
 
@@ -192,113 +247,52 @@ class DefaultAddExpenseComponent(
 
   override fun onAmountChanged(amount: String) {
     _uiState.update { state ->
-      val paidParticipants =
-          state.participants.filter { (it.paidAmount.toDoubleOrNull() ?: 0.0) > 0.0 }
-      val updatedParticipants =
-          if (paidParticipants.size <= 1) {
-            state.participants.map {
-              val shouldUpdate =
-                  if (paidParticipants.isEmpty()) it.isCurrentUser
-                  else it.userId == paidParticipants.first().userId
-              if (shouldUpdate) {
-                it.copy(paidAmount = amount)
-              } else it
-            }
-          } else state.participants
-
-      state.copy(
-          amount = amount,
-          participants = updatedParticipants,
-          fieldErrors = state.fieldErrors - "amount",
-      )
+      state.payAmounts.let {
+        when (it) {
+          is PayAmountsUiState.MultiplePeople ->
+              error("cannot change multiple people amount directly")
+          is PayAmountsUiState.OnePerson -> state.copy(payAmounts = it.copy(amount = amount))
+        }
+      }
     }
-    recalculate()
-  }
-
-  override fun onSplitTypeChanged(splitType: SplitType) {
-    _uiState.update { state ->
-      val newMethod =
-          when (splitType) {
-            SplitType.EQUALLY ->
-                SplitMethod.Equally(state.participants.filter { it.isIncluded }.map { it.userId })
-            SplitType.EXACT ->
-                SplitMethod.Unequally(
-                    state.participants.associate {
-                      it.userId to (it.owedAmount.toDoubleOrNull() ?: 0.0)
-                    }
-                )
-            SplitType.PERCENTAGE ->
-                SplitMethod.Percentage(
-                    state.participants.associate {
-                      it.userId to (it.percentage.toDoubleOrNull() ?: 0.0)
-                    }
-                )
-            SplitType.SHARES ->
-                SplitMethod.Shares(
-                    state.participants.associate {
-                      it.userId to (it.shares.toDoubleOrNull() ?: 0.0)
-                    }
-                )
-            SplitType.ADJUSTMENT ->
-                SplitMethod.Adjustment(
-                    adjustments =
-                        state.participants.associate {
-                          it.userId to (it.adjustment.toDoubleOrNull() ?: 0.0)
-                        },
-                    equallyUserIds = state.participants.filter { it.isIncluded }.map { it.userId },
-                )
-          }
-      state.copy(splitMethod = newMethod)
-    }
-    recalculate()
-  }
-
-  override fun onParticipantOwedAmountChanged(userId: String, amount: String) {
-    updateParticipant(userId) { it.copy(owedAmount = amount) }
-    recalculate()
-  }
-
-  override fun onParticipantPercentageChanged(userId: String, percentage: String) {
-    updateParticipant(userId) { it.copy(percentage = percentage) }
-    recalculate()
-  }
-
-  override fun onParticipantSharesChanged(userId: String, shares: String) {
-    updateParticipant(userId) { it.copy(shares = shares) }
-    recalculate()
-  }
-
-  override fun onParticipantAdjustmentChanged(userId: String, adjustment: String) {
-    updateParticipant(userId) { it.copy(adjustment = adjustment) }
-    recalculate()
-  }
-
-  override fun onParticipantInclusionChanged(userId: String, isIncluded: Boolean) {
-    _uiState.update { state ->
-      val updatedParticipants =
-          state.participants.map {
-            if (it.userId == userId) it.copy(isIncluded = isIncluded) else it
-          }
-      val currentMethod = state.splitMethod
-      val updatedMethod =
-          when (currentMethod) {
-            is SplitMethod.Equally ->
-                currentMethod.copy(
-                    userIds = updatedParticipants.filter { it.isIncluded }.map { it.userId }
-                )
-            is SplitMethod.Adjustment ->
-                currentMethod.copy(
-                    equallyUserIds = updatedParticipants.filter { it.isIncluded }.map { it.userId }
-                )
-            else -> currentMethod
-          }
-      state.copy(participants = updatedParticipants, splitMethod = updatedMethod)
-    }
-    recalculate()
   }
 
   override fun onParticipantPaidAmountChanged(userId: String, amount: String) {
-    updateParticipant(userId) { it.copy(paidAmount = amount) }
+    _uiState.update {
+      it.copy(
+          payAmounts =
+              PayAmountsUiState.MultiplePeople(
+                  amounts =
+                      it.payAmounts.let { payAmounts ->
+                        when (payAmounts) {
+                          is PayAmountsUiState.OnePerson ->
+                              listOf(
+                                  ParticipantValue(
+                                      userId = userId,
+                                      value = amount,
+                                  )
+                              )
+                          is PayAmountsUiState.MultiplePeople ->
+                              payAmounts.amounts.map { participant ->
+                                if (participant.userId == userId) {
+                                  participant.copy(value = amount)
+                                } else {
+                                  participant
+                                }
+                              }
+                        }
+                      }
+              )
+      )
+    }
+  }
+
+  override fun setSplitMethod(method: SplitMethod) {
+    _uiState.update { it.copy(splitMethod = method) }
+  }
+
+  override fun setPaidAmounts(amounts: PayAmountsUiState) {
+    _uiState.update { it.copy(payAmounts = amounts) }
   }
 
   override fun navigateToPayerSelection() {
@@ -321,90 +315,62 @@ class DefaultAddExpenseComponent(
     stackNavigation.popTo(0)
   }
 
-  private fun updateParticipant(userId: String, block: (ParticipantState) -> ParticipantState) {
-    _uiState.update { state ->
-      state.copy(
-          participants = state.participants.map { if (it.userId == userId) block(it) else it }
-      )
-    }
-  }
-
-  private fun recalculate() {
-    val state = _uiState.value
-    val amount = state.amount.toDoubleOrNull() ?: 0.0
-    val owedAmounts =
-        state.splitMethod.calculateOwedAmounts(amount).associate { it.userId to it.amount }
-
-    _uiState.update { currentState ->
-      currentState.copy(
-          participants =
-              currentState.participants.map { p ->
-                p.copy(owedAmount = (owedAmounts[p.userId] ?: 0.0).toString())
-              }
-      )
-    }
-  }
-
   override fun onSaveClicked(): Job = scope.launch {
     val state = _uiState.value
     val title = state.title
-    val amountStr = state.amount
-    val amount = amountStr.toDoubleOrNull()
-
     val errors = mutableMapOf<String, String>()
-    if (amount == null) {
+    val amount = state.payAmountsDomain.sum()
+    if (amount == 0.0) {
       errors["amount"] = "Invalid amount"
     }
 
-    val validation = ExpenseValidation.validateExpense(title, amount ?: 0.0)
+    val validation = ExpenseValidation.validateExpense(title, amount)
     if (!validation.isValid || errors.isNotEmpty()) {
       _uiState.update { it.copy(fieldErrors = it.fieldErrors + validation.errors + errors) }
       return@launch
     }
 
     val participantsDto =
-        state.participants.map {
-          val paid = it.paidAmount.toDoubleOrNull() ?: 0.0
-          val owed = it.owedAmount.toDoubleOrNull() ?: 0.0
-          ParticipantShareDto(
-              userId = it.userId,
-              paidShare = paid,
-              owedShare = owed,
-              netBalance = paid - owed,
-          )
-        }
+        state.splitMethod
+            .calculateOwedAmounts(
+                payAmounts =
+                    when (state.payAmountsDomain) {
+                      is PayAmounts.OnePerson ->
+                          listOf(
+                              ParticipantAmount(
+                                  userId = state.payAmountsDomain.userId,
+                                  amount = state.payAmountsDomain.amount ?: 0.0,
+                              )
+                          )
+                      is PayAmounts.MultiplePeople -> state.payAmountsDomain.amounts
+                    },
+                allParticipants = state.allParticipants.toSet(),
+            )
+            .map { it ->
+              var paidShare =
+                  state.payAmountsDomain.let { payAmounts ->
+                    when (payAmounts) {
+                      is PayAmounts.OnePerson ->
+                          if (payAmounts.userId == it.userId) payAmounts.amount ?: 0.0 else 0.0
 
-    val totalPaid = participantsDto.sumOf { it.paidShare }
-    val totalOwed = participantsDto.sumOf { it.owedShare }
-
-    if (kotlin.math.abs(totalPaid - (amount ?: 0.0)) > 0.01) {
-      _uiState.update {
-        it.copy(
-            fieldErrors =
-                it.fieldErrors +
-                    ("amount" to "Total paid ($totalPaid) does not match cost ($amount)")
-        )
-      }
-      return@launch
-    }
-
-    if (kotlin.math.abs(totalOwed - (amount ?: 0.0)) > 0.01) {
-      _uiState.update {
-        it.copy(
-            fieldErrors =
-                it.fieldErrors +
-                    ("amount" to "Total owed ($totalOwed) does not match cost ($amount)")
-        )
-      }
-      return@launch
-    }
+                      is PayAmounts.MultiplePeople ->
+                          payAmounts.amounts.find { p -> p.userId == it.userId }?.amount ?: 0.0
+                    }
+                  }
+              ParticipantShareDto(
+                  userId = it.userId,
+                  paidShare = paidShare,
+                  owedShare = it.amount,
+                  netBalance = paidShare - it.amount,
+              )
+            }
 
     _uiState.update { it.copy(isLoading = true) }
     try {
       expenseApi.createExpense(
           householdId,
           title,
-          amount ?: 0.0,
+          amount,
           participantsDto,
           state.splitMethod,
       )
@@ -432,21 +398,29 @@ class DefaultAddExpenseComponent(
     override fun create(
         context: CContext,
         config: AddExpenseComponent.Config,
+        household: HouseholdDto,
+        me: HouseholdMemberDto,
         onFinished: () -> Unit,
     ): AddExpenseComponent =
         DefaultAddExpenseComponent(
-            context,
-            config,
-            expenseApi,
-            householdApi,
-            adjustSplitComponentFactory,
-            onFinished,
+            context = context,
+            config = config,
+            expenseApi = expenseApi,
+            householdApi = householdApi,
+            household = household,
+            me = me,
+            adjustSplitComponentFactory = adjustSplitComponentFactory,
+            onFinished = onFinished,
         )
   }
 }
 
 class FakeAddExpenseComponent(
-    uiState: AddExpenseUiState = AddExpenseUiState(),
+    uiState: AddExpenseUiState =
+        AddExpenseUiState(
+            allParticipants = listOf("user1"),
+            payAmounts = PayAmountsUiState.OnePerson(userId = "user1", amount = ""),
+        ),
     childFactory: (AddExpenseComponent) -> AddExpenseComponent.Child = {
       AddExpenseComponent.Child.Main(it)
     },
@@ -465,19 +439,15 @@ class FakeAddExpenseComponent(
 
   override fun onAmountChanged(amount: String) {}
 
-  override fun onSplitTypeChanged(splitType: SplitType) {}
-
-  override fun onParticipantOwedAmountChanged(userId: String, amount: String) {}
-
-  override fun onParticipantPercentageChanged(userId: String, percentage: String) {}
-
-  override fun onParticipantSharesChanged(userId: String, shares: String) {}
-
-  override fun onParticipantAdjustmentChanged(userId: String, adjustment: String) {}
-
-  override fun onParticipantInclusionChanged(userId: String, isIncluded: Boolean) {}
+  override fun setPaidAmounts(amounts: PayAmountsUiState) {
+    TODO("Not yet implemented")
+  }
 
   override fun onParticipantPaidAmountChanged(userId: String, amount: String) {}
+
+  override fun setSplitMethod(method: SplitMethod) {
+    TODO("Not yet implemented")
+  }
 
   override fun onSaveClicked(): Job = Job()
 

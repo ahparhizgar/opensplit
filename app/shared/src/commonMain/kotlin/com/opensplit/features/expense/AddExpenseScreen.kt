@@ -40,8 +40,8 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.dto.expense.SplitMethod
-import com.opensplit.dto.expense.SplitType
 import com.opensplit.ui.OpenSplitTheme
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,9 +93,9 @@ fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifi
         is AddExpenseComponent.Child.Main -> MainExpenseForm(instance.component, uiState)
         is AddExpenseComponent.Child.PayerSelection ->
             PayerSelectionScreen(instance.component, uiState)
-        is AddExpenseComponent.Child.PaidAmounts -> PaidAmountsScreen(instance.component, uiState)
+        is AddExpenseComponent.Child.PaidAmounts -> PaidAmountsScreen(instance.component)
         is AddExpenseComponent.Child.QuickSplitSelection ->
-            QuickSplitSelectionScreen(instance.component, uiState)
+            QuickSplitSelectionScreen(instance.component)
         is AddExpenseComponent.Child.AdjustSplit -> AdjustSplitScreen(instance.component)
       }
     }
@@ -111,30 +111,32 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
     OutlinedTextField(
         value = uiState.title,
         onValueChange = component::onTitleChanged,
-        label = { Text("Enter a description") },
+        label = { Text("Description") },
+        placeholder = { Text("Enter a description") },
         modifier = Modifier.fillMaxWidth(),
         isError = uiState.fieldErrors.containsKey("title"),
         supportingText = uiState.fieldErrors["title"]?.let { { Text(it) } },
     )
 
-    OutlinedTextField(
-        value = uiState.amount,
-        onValueChange = component::onAmountChanged,
-        label = { Text("0.00") },
-        prefix = { Text("IRR ") },
-        modifier = Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        isError = uiState.fieldErrors.containsKey("amount"),
-        supportingText = uiState.fieldErrors["amount"]?.let { { Text(it) } },
-    )
+    if (uiState.payAmounts is PayAmountsUiState.OnePerson) {
+      OutlinedTextField(
+          value = uiState.payAmounts.amount,
+          onValueChange = component::onAmountChanged,
+          placeholder = { Text("0.00") },
+          prefix = { Text("IRR ") },
+          modifier = Modifier.fillMaxWidth(),
+          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+          isError = uiState.fieldErrors.containsKey("amount"),
+          supportingText = uiState.fieldErrors["amount"]?.let { { Text(it) } },
+      )
+    }
 
-    val payersCount = uiState.participants.count { (it.paidAmount.toDoubleOrNull() ?: 0.0) > 0.0 }
     val payerText =
-        when {
-          payersCount > 1 -> "Multiple people"
-          else -> {
-            val payer = uiState.participants.find { (it.paidAmount.toDoubleOrNull() ?: 0.0) > 0.0 }
-            payer?.name ?: "You"
+        when (uiState.payAmountsDomain) {
+          is PayAmounts.MultiplePeople -> "Multiple people"
+          is PayAmounts.OnePerson -> {
+            // TODO convert to name
+            uiState.payAmountsDomain.userId
           }
         }
 
@@ -147,7 +149,9 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             ),
     ) {
-      Text("Paid by $payerText and split ${uiState.splitMethod.type.name.lowercase()}.")
+      Text(
+          "Paid by $payerText and split ${if(uiState.splitMethod is SplitMethod.Equally) "equally" else "unequally"}."
+      )
       Spacer(modifier = Modifier.size(8.dp))
       Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
     }
@@ -163,17 +167,18 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
 @Composable
 private fun PayerSelectionScreen(component: AddExpenseComponent, uiState: AddExpenseUiState) {
   LazyColumn(modifier = Modifier.fillMaxSize()) {
-    items(uiState.participants) { participant ->
-      val isPayer = (participant.paidAmount.toDoubleOrNull() ?: 0.0) > 0.0
+    items(uiState.allParticipants) { participant ->
+      val payAmounts = uiState.payAmounts as PayAmountsUiState.OnePerson
+      val isPayer = payAmounts.userId == participant
       ListItem(
-          headlineContent = { Text(participant.name) },
+          // Todo: convert to name
+          headlineContent = { Text(participant) },
           trailingContent = { if (isPayer) Icon(Icons.Default.Check, contentDescription = null) },
           modifier =
               Modifier.clickable {
-                uiState.participants.forEach {
-                  component.onParticipantPaidAmountChanged(it.userId, "0")
-                }
-                component.onParticipantPaidAmountChanged(participant.userId, uiState.amount)
+                component.setPaidAmounts(
+                    PayAmountsUiState.OnePerson(participant, payAmounts.amount)
+                )
                 component.onDoneClicked()
               },
       )
@@ -188,19 +193,19 @@ private fun PayerSelectionScreen(component: AddExpenseComponent, uiState: AddExp
 }
 
 @Composable
-private fun PaidAmountsScreen(component: AddExpenseComponent, uiState: AddExpenseUiState) {
+private fun PaidAmountsScreen(component: PaidAmountsComponent) {
+  val uiState by component.uiState.subscribeAsState()
   Column(modifier = Modifier.fillMaxSize()) {
     LazyColumn(modifier = Modifier.weight(1f)) {
-      items(uiState.participants) { participant ->
+      items(uiState.allParticipantAmounts) { participant ->
         ListItem(
-            headlineContent = { Text(participant.name) },
+            // Todo: convert to name
+            headlineContent = { Text(participant.userId) },
             trailingContent = {
               OutlinedTextField(
-                  value = participant.paidAmount,
-                  onValueChange = {
-                    component.onParticipantPaidAmountChanged(participant.userId, it)
-                  },
                   modifier = Modifier.width(120.dp),
+                  value = participant.value,
+                  onValueChange = { component.onParticipantAmountChanged(participant.userId, it) },
                   prefix = { Text("IRR ") },
                   keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
               )
@@ -210,47 +215,81 @@ private fun PaidAmountsScreen(component: AddExpenseComponent, uiState: AddExpens
     }
 
     Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
-      val totalPaid = uiState.participants.sumOf { it.paidAmount.toDoubleOrNull() ?: 0.0 }
-      val amount = uiState.amount.toDoubleOrNull() ?: 0.0
-      val diff = amount - totalPaid
+      val totalPaid = uiState.allParticipantAmounts.sumOf { it.value.toDoubleOrNull() ?: 0.0 }
+      val amount = uiState.goalAmount
+      if (amount != null) {
+        val diff = amount - totalPaid
 
-      Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = "IRR ${totalPaid} of IRR ${amount}",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            text = if (kotlin.math.abs(diff) < 0.01) "All settled" else "IRR ${diff} left",
-            style = MaterialTheme.typography.labelSmall,
-            color =
-                if (kotlin.math.abs(diff) < 0.01) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.error,
-        )
+        Column(modifier = Modifier.padding(16.dp)) {
+          Text(
+              text = "IRR $totalPaid of IRR $amount",
+              style = MaterialTheme.typography.bodyMedium,
+              fontWeight = FontWeight.Bold,
+          )
+          Text(
+              text = if (abs(diff) < 0.01) "All settled" else "IRR $diff left",
+              style = MaterialTheme.typography.labelSmall,
+              color =
+                  if (abs(diff) < 0.01) MaterialTheme.colorScheme.primary
+                  else MaterialTheme.colorScheme.error,
+          )
+        }
       }
     }
   }
 }
 
 @Composable
-private fun QuickSplitSelectionScreen(component: AddExpenseComponent, uiState: AddExpenseUiState) {
-  Column(modifier = Modifier.fillMaxSize()) {
-    uiState.participants.forEach { participant ->
-      ListItem(
-          headlineContent = { Text("${participant.name} paid, split equally.") },
-          modifier =
-              Modifier.clickable {
-                uiState.participants.forEach {
-                  component.onParticipantPaidAmountChanged(it.userId, "0")
-                }
-                component.onParticipantPaidAmountChanged(participant.userId, uiState.amount)
-                component.onSplitTypeChanged(SplitType.EQUALLY)
-                component.onDoneClicked()
-              },
-      )
-    }
-
-    Spacer(modifier = Modifier.size(16.dp))
+private fun QuickSplitSelectionScreen(component: AddExpenseComponent) {
+  val uiState by component.uiState.subscribeAsState()
+  // TODO order is not guaranteed
+  val you = uiState.allParticipants[0]
+  val other = uiState.allParticipants[1]
+  Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    ListItem(
+        modifier =
+            Modifier.clickable {
+              component.setPaidAmounts(
+                  PayAmountsUiState.OnePerson(you, uiState.amountSum.toString())
+              )
+              component.setSplitMethod(SplitMethod.Equally(uiState.allParticipants))
+              component.onBackClicked()
+            },
+        headlineContent = { Text("You paid, split equally.") },
+    )
+    ListItem(
+        modifier =
+            Modifier.clickable {
+              component.setPaidAmounts(
+                  PayAmountsUiState.OnePerson(you, uiState.amountSum.toString())
+              )
+              component.setSplitMethod(SplitMethod.Unequally(mapOf(other to uiState.amountSum)))
+              component.onBackClicked()
+            },
+        headlineContent = { Text("You are owed the full amount.") },
+    )
+    ListItem(
+        modifier =
+            Modifier.clickable {
+              component.setPaidAmounts(
+                  PayAmountsUiState.OnePerson(other, uiState.amountSum.toString())
+              )
+              component.setSplitMethod(SplitMethod.Equally(uiState.allParticipants))
+              component.onBackClicked()
+            },
+        headlineContent = { Text("$other paid, split equally.") },
+    )
+    ListItem(
+        modifier =
+            Modifier.clickable {
+              component.setPaidAmounts(
+                  PayAmountsUiState.OnePerson(other, uiState.amountSum.toString())
+              )
+              component.setSplitMethod(SplitMethod.Unequally(mapOf(you to uiState.amountSum)))
+              component.onBackClicked()
+            },
+        headlineContent = { Text("$other is owed the full amount.") },
+    )
 
     Button(
         onClick = { component.navigateToAdjustSplit() },
@@ -261,35 +300,14 @@ private fun QuickSplitSelectionScreen(component: AddExpenseComponent, uiState: A
   }
 }
 
-val previewParticipants =
-    listOf(
-        ParticipantState(
-            userId = "1",
-            name = "Alice",
-            paidAmount = "50000",
-            owedAmount = "25000",
-            isCurrentUser = true,
-        ),
-        ParticipantState(
-            userId = "2",
-            name = "Bob",
-            paidAmount = "0",
-            owedAmount = "25000",
-        ),
-        ParticipantState(
-            userId = "3",
-            name = "Charlie",
-            paidAmount = "0",
-            owedAmount = "25000",
-        ),
-    )
+val previewParticipants = listOf("user1", "user2", "user3")
 
 val previewUiState =
     AddExpenseUiState(
         title = "Dinner at restaurant",
-        amount = "75000",
-        splitMethod = SplitMethod.Equally(previewParticipants.map { it.userId }),
-        participants = previewParticipants,
+        splitMethod = SplitMethod.Equally(previewParticipants.map { it }),
+        allParticipants = previewParticipants,
+        payAmounts = PayAmountsUiState.OnePerson(previewParticipants[0], "20"),
     )
 
 @Preview
@@ -304,10 +322,7 @@ private fun PayerSelectionPreview() {
   OpenSplitTheme {
     AddExpenseScreen(
         FakeAddExpenseComponent(
-            uiState =
-                previewUiState.copy(
-                    participants = previewParticipants.map { it.copy(paidAmount = "0") }
-                ),
+            uiState = previewUiState,
             childFactory = { AddExpenseComponent.Child.PayerSelection(it) },
         )
     )
@@ -320,11 +335,8 @@ private fun PaidAmountsPreview() {
   OpenSplitTheme {
     AddExpenseScreen(
         FakeAddExpenseComponent(
-            uiState =
-                previewUiState.copy(
-                    participants = previewParticipants.map { it.copy(paidAmount = "25000") }
-                ),
-            childFactory = { AddExpenseComponent.Child.PaidAmounts(it) },
+            uiState = previewUiState,
+            childFactory = { AddExpenseComponent.Child.PaidAmounts(FakePaidAmountsComponent()) },
         )
     )
   }
