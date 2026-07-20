@@ -78,7 +78,7 @@ class ExpenseRoutesTest {
                           ),
                       ),
                   splitMethod =
-                      SplitMethod.Exact(
+                      SplitMethod.Unequally(
                           mapOf(household.members[0].userId to 60.0, "other-user" to 40.0)
                       ),
               )

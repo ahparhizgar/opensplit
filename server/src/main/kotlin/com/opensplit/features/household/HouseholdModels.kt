@@ -11,7 +11,7 @@ data class HouseholdRecord(
 
 data class HouseholdMemberRecord(
     val userId: String,
-    val name: String?,
+    val name: String,
     val email: String,
 )
 

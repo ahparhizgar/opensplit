@@ -36,7 +36,7 @@ fun testOpenSplit(block: suspend ApplicationTestBuilder.() -> Unit) = testApplic
     }
 
     val authService by inject<AuthService>()
-    val auth = authService.signUp("registersdf@example.com", "password", null)
+    val auth = authService.signUp("registersdf@example.com", "password", "Amir")
     token = auth.accessToken
   }
   startApplication()
@@ -63,7 +63,9 @@ private fun ApplicationTestBuilder.createTestClient(token: String): HttpClient =
 suspend fun ApplicationTestBuilder.createOtherClient(): HttpClient {
   val otherUser =
       client
-          .post("/users") { setBody(SignUpRequest("other@example.com", "password123")) }
+          .post("/users") {
+            setBody(SignUpRequest("other@example.com", "password123", "Other User"))
+          }
           .body<AuthResult>()
   return createAuthenticatedClient(otherUser.accessToken)
 }

@@ -26,12 +26,15 @@ class AuthScenarios {
 
   @Test
   fun cannotSignUpUsingTheSameEmail() = testOpenSplit {
-    val signUp = client.post("/users") { setBody(SignUpRequest("new@example.com", "password123")) }
+    val signUp =
+        client.post("/users") { setBody(SignUpRequest("new@example.com", "password123", "Amir")) }
 
     assertEquals(HttpStatusCode.Created, signUp.status)
 
     val secondSignUp =
-        client.post("/users") { setBody(SignUpRequest("new@example.com", "newPassword123")) }
+        client.post("/users") {
+          setBody(SignUpRequest("new@example.com", "newPassword123", "Amir"))
+        }
 
     assertEquals(HttpStatusCode.Conflict, secondSignUp.status)
   }
@@ -39,7 +42,9 @@ class AuthScenarios {
   @Test
   fun cannotSignInUsingWrongPassword() = testOpenSplit {
     val signUp =
-        client.post("/users") { setBody(SignUpRequest("wrong-pass@example.com", "password123")) }
+        client.post("/users") {
+          setBody(SignUpRequest("wrong-pass@example.com", "password123", "Amir"))
+        }
 
     assertEquals(HttpStatusCode.Created, signUp.status)
 
@@ -55,8 +60,9 @@ class AuthScenarios {
   fun canSignInAfterSignUp() = testOpenSplit {
     val email = "fresh@example.com"
     val password = "password123"
+    val name = "Amir"
 
-    val signUp = client.post("/users") { setBody(SignUpRequest(email, password)) }
+    val signUp = client.post("/users") { setBody(SignUpRequest(email, password, name)) }
 
     assertEquals(HttpStatusCode.Created, signUp.status)
 

@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class HouseholdMemberDto(
     val userId: String,
-    val name: String? = null,
+    val name: String,
     val email: String,
     val isOwner: Boolean = false,
     val isCurrentUser: Boolean = false,

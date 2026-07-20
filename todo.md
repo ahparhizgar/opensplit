@@ -4,6 +4,9 @@
 4. server tests are too slow
 5. create currency and money model (use Int)
 6. start offline first approach
+7. make YOU and EQUALLY buttons
+8. when there is more than two participants, there would be no quick split option
+9. color for left and over
 
 
 ### Done

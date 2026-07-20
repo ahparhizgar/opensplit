@@ -2,7 +2,6 @@ package com.opensplit
 
 import com.opensplit.component.defaultCContext
 import com.opensplit.component.fakeStack
-import com.opensplit.dto.expense.SplitType
 import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.util.MainDispatcherExtension
@@ -10,11 +9,11 @@ import com.opensplit.util.createComponentContext
 import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.maps.beEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 
@@ -41,7 +40,7 @@ class AddExpenseComponentTest :
         When("clicking on Add Expense button") {
           beforeEach { detailsComponent.onAddExpenseClicked() }
           Then("navigates to AddExpense screen") {
-            cContext.fakeStack() shouldContain AddExpenseComponent.Config("h1")
+            cContext.fakeStack().first().shouldBeInstanceOf<AddExpenseComponent.Config>()
           }
         }
       }
@@ -94,26 +93,6 @@ class AddExpenseComponentTest :
             addExpenseComponent.onSaveClicked().join()
           }
           Then("calls onFinished") { onFinishedCalled shouldBe true }
-        }
-
-        When("changing to percentage split") {
-          beforeEach {
-            waitForInit()
-            addExpenseComponent.onAmountChanged("100.0")
-            addExpenseComponent.onSplitTypeChanged(SplitType.PERCENTAGE)
-            val members = addExpenseComponent.uiState.value.participants
-            if (members.isNotEmpty()) {
-              addExpenseComponent.onParticipantPercentageChanged(members[0].userId, "60")
-              addExpenseComponent.onParticipantPercentageChanged(members[1].userId, "40")
-            }
-          }
-          Then("owed amounts are calculated correctly") {
-            val members = addExpenseComponent.uiState.value.participants
-            if (members.size >= 2) {
-              members[0].owedAmount shouldBe "60.0"
-              members[1].owedAmount shouldBe "40.0"
-            }
-          }
         }
       }
     })

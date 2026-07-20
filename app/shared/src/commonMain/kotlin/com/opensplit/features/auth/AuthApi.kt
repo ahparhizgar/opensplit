@@ -28,7 +28,8 @@ class KtorAuthApi(
   override suspend fun signUp(email: String, password: String): AuthSubmissionResult =
       submit(
           path = "/users",
-          request = SignUpRequest(email = email, password = password),
+          request =
+              SignUpRequest(email = email, password = password, name = email.split("@").first()),
       )
 
   override suspend fun signIn(email: String, password: String): AuthSubmissionResult =

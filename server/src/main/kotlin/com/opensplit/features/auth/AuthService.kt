@@ -8,7 +8,7 @@ class AuthService(
     private val passwordHasher: PasswordHasher,
     private val jwtService: JwtService,
 ) {
-  fun signUp(email: String, password: String, name: String?): AuthResult {
+  fun signUp(email: String, password: String, name: String): AuthResult {
     val existingUser = authRepository.findUserByEmail(email)
     if (existingUser != null) {
       throw DuplicateEmailException()
