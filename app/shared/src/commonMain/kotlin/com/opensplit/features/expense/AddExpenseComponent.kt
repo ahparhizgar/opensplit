@@ -16,7 +16,6 @@ import com.opensplit.validation.expense.ExpenseValidation
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.serializer
 
 interface AddExpenseComponent {
   val uiState: Value<AddExpenseUiState>
@@ -48,6 +47,8 @@ interface AddExpenseComponent {
 
   fun navigateToPayerSelection()
 
+  fun navigateToPaidAmounts()
+
   fun navigateToQuickSplit()
 
   fun navigateToAdjustSplit()
@@ -59,6 +60,8 @@ interface AddExpenseComponent {
     class Main(val component: AddExpenseComponent) : Child()
 
     class PayerSelection(val component: AddExpenseComponent) : Child()
+
+    class PaidAmounts(val component: AddExpenseComponent) : Child()
 
     class QuickSplitSelection(val component: AddExpenseComponent) : Child()
 
@@ -75,6 +78,8 @@ sealed class AddExpenseChildConfig {
   @Serializable data object Main : AddExpenseChildConfig()
 
   @Serializable data object PayerSelection : AddExpenseChildConfig()
+
+  @Serializable data object PaidAmounts : AddExpenseChildConfig()
 
   @Serializable data object QuickSplitSelection : AddExpenseChildConfig()
 
@@ -127,6 +132,7 @@ class DefaultAddExpenseComponent(
               is AddExpenseChildConfig.Main -> AddExpenseComponent.Child.Main(this)
               is AddExpenseChildConfig.PayerSelection ->
                   AddExpenseComponent.Child.PayerSelection(this)
+              is AddExpenseChildConfig.PaidAmounts -> AddExpenseComponent.Child.PaidAmounts(this)
               is AddExpenseChildConfig.QuickSplitSelection ->
                   AddExpenseComponent.Child.QuickSplitSelection(this)
               is AddExpenseChildConfig.AdjustSplit -> AddExpenseComponent.Child.AdjustSplit(this)
@@ -224,15 +230,19 @@ class DefaultAddExpenseComponent(
   }
 
   override fun navigateToPayerSelection() {
-    stackNavigation.push(AddExpenseChildConfig.PayerSelection)
+    stackNavigation.pushNew(AddExpenseChildConfig.PayerSelection)
+  }
+
+  override fun navigateToPaidAmounts() {
+    stackNavigation.pushNew(AddExpenseChildConfig.PaidAmounts)
   }
 
   override fun navigateToQuickSplit() {
-    stackNavigation.push(AddExpenseChildConfig.QuickSplitSelection)
+    stackNavigation.pushNew(AddExpenseChildConfig.QuickSplitSelection)
   }
 
   override fun navigateToAdjustSplit() {
-    stackNavigation.push(AddExpenseChildConfig.AdjustSplit)
+    stackNavigation.pushNew(AddExpenseChildConfig.AdjustSplit)
   }
 
   override fun onDoneClicked() {
@@ -414,6 +424,8 @@ class FakeAddExpenseComponent(uiState: AddExpenseUiState = AddExpenseUiState()) 
   override fun onDoneClicked() {}
 
   override fun navigateToPayerSelection() {}
+
+  override fun navigateToPaidAmounts() {}
 
   override fun navigateToQuickSplit() {}
 
