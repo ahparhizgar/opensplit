@@ -1,9 +1,11 @@
 package com.opensplit.features.expense
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -14,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -32,9 +35,10 @@ fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifi
         TopAppBar(
             title = {
               Text(
-                  when (val child = component.stack.value.active.instance) {
+                  when (component.stack.value.active.instance) {
                     is AddExpenseComponent.Child.Main -> "Add Expense"
                     is AddExpenseComponent.Child.PayerSelection -> "Who paid?"
+                    is AddExpenseComponent.Child.PaidAmounts -> "Enter paid amounts"
                     is AddExpenseComponent.Child.QuickSplitSelection ->
                         "How was this expense split?"
                     is AddExpenseComponent.Child.AdjustSplit -> "Adjust split"
@@ -47,10 +51,16 @@ fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifi
               }
             },
             actions = {
-              if (component.stack.value.active.instance !is AddExpenseComponent.Child.Main) {
-                IconButton(onClick = component::onDoneClicked) {
-                  Icon(Icons.Default.Check, contentDescription = "Done")
-                }
+              IconButton(
+                  onClick = {
+                    if (component.stack.value.active.instance is AddExpenseComponent.Child.Main) {
+                      component.onSaveClicked()
+                    } else {
+                      component.onDoneClicked()
+                    }
+                  }
+              ) {
+                Icon(Icons.Default.Check, contentDescription = "Done")
               }
             },
         )
@@ -61,6 +71,7 @@ fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifi
         is AddExpenseComponent.Child.Main -> MainExpenseForm(instance.component, uiState)
         is AddExpenseComponent.Child.PayerSelection ->
             PayerSelectionScreen(instance.component, uiState)
+        is AddExpenseComponent.Child.PaidAmounts -> PaidAmountsScreen(instance.component, uiState)
         is AddExpenseComponent.Child.QuickSplitSelection ->
             QuickSplitSelectionScreen(instance.component, uiState)
         is AddExpenseComponent.Child.AdjustSplit -> AdjustSplitScreen(instance.component, uiState)
@@ -121,19 +132,8 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
 
     Spacer(modifier = Modifier.weight(1f))
 
-    Button(
-        onClick = { component.onSaveClicked() },
-        modifier = Modifier.fillMaxWidth(),
-        enabled = !uiState.isLoading,
-    ) {
-      if (uiState.isLoading) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(24.dp),
-            color = MaterialTheme.colorScheme.onPrimary,
-        )
-      } else {
-        Text("Save Expense")
-      }
+    if (uiState.isLoading) {
+      CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
     }
   }
 }
@@ -159,11 +159,53 @@ private fun PayerSelectionScreen(component: AddExpenseComponent, uiState: AddExp
     item {
       ListItem(
           headlineContent = { Text("Multiple people") },
-          modifier =
-              Modifier.clickable {
-                // Navigate to multiple payers detailed screen if needed
-              },
+          modifier = Modifier.clickable { component.navigateToPaidAmounts() },
       )
+    }
+  }
+}
+
+@Composable
+private fun PaidAmountsScreen(component: AddExpenseComponent, uiState: AddExpenseUiState) {
+  Column(modifier = Modifier.fillMaxSize()) {
+    LazyColumn(modifier = Modifier.weight(1f)) {
+      items(uiState.participants) { participant ->
+        ListItem(
+            headlineContent = { Text(participant.name) },
+            trailingContent = {
+              OutlinedTextField(
+                  value = participant.paidAmount,
+                  onValueChange = {
+                    component.onParticipantPaidAmountChanged(participant.userId, it)
+                  },
+                  modifier = Modifier.width(120.dp),
+                  prefix = { Text("IRR ") },
+                  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+              )
+            },
+        )
+      }
+    }
+
+    Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
+      val totalPaid = uiState.participants.sumOf { it.paidAmount.toDoubleOrNull() ?: 0.0 }
+      val amount = uiState.amount.toDoubleOrNull() ?: 0.0
+      val diff = amount - totalPaid
+
+      Column(modifier = Modifier.padding(16.dp)) {
+        Text(
+            text = "IRR ${totalPaid} of IRR ${amount}",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = if (kotlin.math.abs(diff) < 0.01) "All settled" else "IRR ${diff} left",
+            style = MaterialTheme.typography.labelSmall,
+            color =
+                if (kotlin.math.abs(diff) < 0.01) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.error,
+        )
+      }
     }
   }
 }
@@ -201,6 +243,33 @@ private fun QuickSplitSelectionScreen(component: AddExpenseComponent, uiState: A
 @Composable
 private fun AdjustSplitScreen(component: AddExpenseComponent, uiState: AddExpenseUiState) {
   Column(modifier = Modifier.fillMaxSize()) {
+    val payersCount = uiState.participants.count { (it.paidAmount.toDoubleOrNull() ?: 0.0) > 0.0 }
+    val payerText =
+        when {
+          payersCount > 1 -> "Multiple people"
+          else -> {
+            val payer = uiState.participants.find { (it.paidAmount.toDoubleOrNull() ?: 0.0) > 0.0 }
+            payer?.name ?: "You"
+          }
+        }
+
+    ListItem(
+        headlineContent = { Text("Paid by $payerText") },
+        leadingContent = {
+          Box(
+              modifier =
+                  Modifier.size(40.dp)
+                      .clip(CircleShape)
+                      .background(MaterialTheme.colorScheme.primary)
+          )
+        },
+        trailingContent = {
+          IconButton(onClick = component::navigateToPayerSelection) {
+            Icon(Icons.Default.Edit, contentDescription = "Edit payer")
+          }
+        },
+    )
+
     SecondaryTabRow(selectedTabIndex = uiState.splitType.ordinal) {
       SplitType.entries.forEach { type ->
         Tab(

@@ -101,6 +101,8 @@ So that the debt matches the real arrangement.
 - Client-side math handles Equals, Exact, Percentage, Shares, and Adjustments.
 - Multi-payer support implemented in component logic.
 - Rounding issues handled via small epsilon (0.01) in validations.
+- Implemented Decompose nested navigation with `ChildStack` for sub-screens (`Main`, `PayerSelection`, `PaidAmounts`, `QuickSplitSelection`, `AdjustSplit`).
+- Fixed backstack handling: back button now correctly pops sub-screens instead of exiting the entire flow.
 - Tests passing for all scenarios.
 
 ### File List
