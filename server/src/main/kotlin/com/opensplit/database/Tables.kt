@@ -34,3 +34,11 @@ object Expenses : Table("expenses") {
   val payerId = varchar("payer_id", 36)
   val createdAt = long("created_at")
 }
+
+object ExpenseParticipants : Table("expense_participants") {
+  val id = varchar("id", 36)
+  val expenseId = varchar("expense_id", 36)
+  val userId = varchar("user_id", 36)
+  val paidAmount = double("paid_amount")
+  val owedAmount = double("owed_amount")
+}

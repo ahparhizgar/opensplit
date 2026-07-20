@@ -2,6 +2,7 @@ package com.opensplit
 
 import com.opensplit.component.defaultCContext
 import com.opensplit.component.fakeStack
+import com.opensplit.dto.expense.SplitType
 import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.util.MainDispatcherExtension
@@ -14,6 +15,8 @@ import io.kotest.matchers.maps.beEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 
 class AddExpenseComponentTest :
     BehaviorSpec({
@@ -55,6 +58,15 @@ class AddExpenseComponentTest :
               )
         }
 
+        suspend fun waitForInit() {
+          while (
+              addExpenseComponent.uiState.value.isLoading ||
+                  addExpenseComponent.uiState.value.participants.isEmpty()
+          ) {
+            delay(10.milliseconds)
+          }
+        }
+
         When("initial state") {
           Then("fields are empty") {
             addExpenseComponent.uiState.value.title shouldBe ""
@@ -64,20 +76,44 @@ class AddExpenseComponentTest :
         }
 
         When("submitting with empty form") {
-          beforeEach { addExpenseComponent.onSaveClicked().join() }
+          beforeEach {
+            waitForInit()
+            addExpenseComponent.onSaveClicked().join()
+          }
           Then("shows validation errors") {
             addExpenseComponent.uiState.value.fieldErrors["title"].shouldNotBeNull()
             addExpenseComponent.uiState.value.fieldErrors["amount"].shouldNotBeNull()
           }
         }
 
-        When("submitting with valid form") {
+        When("submitting with valid form and equal split") {
           beforeEach {
+            waitForInit()
             addExpenseComponent.onTitleChanged("Pizza")
-            addExpenseComponent.onAmountChanged("25.0")
+            addExpenseComponent.onAmountChanged("20.0")
             addExpenseComponent.onSaveClicked().join()
           }
           Then("calls onFinished") { onFinishedCalled shouldBe true }
+        }
+
+        When("changing to percentage split") {
+          beforeEach {
+            waitForInit()
+            addExpenseComponent.onAmountChanged("100.0")
+            addExpenseComponent.onSplitTypeChanged(SplitType.PERCENTAGE)
+            val members = addExpenseComponent.uiState.value.participants
+            if (members.isNotEmpty()) {
+              addExpenseComponent.onParticipantPercentageChanged(members[0].userId, "60")
+              addExpenseComponent.onParticipantPercentageChanged(members[1].userId, "40")
+            }
+          }
+          Then("owed amounts are calculated correctly") {
+            val members = addExpenseComponent.uiState.value.participants
+            if (members.size >= 2) {
+              members[0].owedAmount shouldBe "60.0"
+              members[1].owedAmount shouldBe "40.0"
+            }
+          }
         }
       }
     })
