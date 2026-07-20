@@ -58,7 +58,7 @@ development_status:
   2-2-ui-of-add-expense-should-have-defaults: backlog
   2-3-implement-inline-validations-for-required-fields: backlog
   2-4-calculate-balance-in-backend-and-show-real-balance-in-household-list-and-household-details-screen: backlog
-  2-5-split-an-expense-equally-or-unequally: ready-for-dev
+  2-5-split-an-expense-equally-or-unequally: review
   2-6-edit-or-delete-an-expense-and-keep-its-original-currency: backlog
   2-7-review-expense-history: backlog
   epic-2-retrospective: optional

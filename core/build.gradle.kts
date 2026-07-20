@@ -30,6 +30,10 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies { implementation(libs.kotlinx.serialization.json) }
-    commonTest.dependencies { implementation(libs.kotlin.test) }
+    commonTest.dependencies {
+      implementation(libs.kotlin.test)
+      implementation(libs.kotest.framework)
+      implementation(libs.kotest.assertion)
+    }
   }
 }

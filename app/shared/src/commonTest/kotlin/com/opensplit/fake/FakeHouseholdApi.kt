@@ -32,6 +32,7 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
                         userId = "user-1",
                         email = "amir@example.com",
                         isOwner = true,
+                        isCurrentUser = true,
                     )
                 ),
         )
@@ -51,6 +52,7 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
                         userId = "user-1",
                         email = "amir@example.com",
                         isOwner = false,
+                        isCurrentUser = true,
                     )
                 ),
         )
@@ -70,6 +72,7 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
                         userId = "user-1",
                         email = "owner@example.com",
                         isOwner = true,
+                        isCurrentUser = true,
                     ),
                     HouseholdMemberDto(
                         userId = "user-2",
@@ -98,7 +101,14 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
                     userId = "user-1",
                     email = "amir@example.com",
                     isOwner = true,
-                )
+                    isCurrentUser = true,
+                ),
+                HouseholdMemberDto(
+                    userId = "user-2",
+                    email = "other@example.com",
+                    isOwner = false,
+                    isCurrentUser = false,
+                ),
             ),
     )
   }

@@ -3,8 +3,8 @@ package com.opensplit.features.expense
 import com.opensplit.dto.expense.CreateExpenseRequest
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.features.household.HouseholdRepository
+import java.util.*
 import kotlin.time.Instant
-import kotlin.uuid.Uuid
 
 class ExpenseService(
     private val expenseRepository: ExpenseRepository,
@@ -18,14 +18,25 @@ class ExpenseService(
     if (!householdRepository.hasMembership(householdId, payerId)) {
       throw NotAMemberException()
     }
+
+    val participants =
+        request.participants.map {
+          ExpenseParticipantRecord(
+              userId = it.userId,
+              paidAmount = it.paidShare,
+              owedAmount = it.owedShare,
+          )
+        }
+
     val expense =
         ExpenseRecord(
-            id = Uuid.random().toString(),
+            id = UUID.randomUUID().toString(),
             householdId = householdId,
             title = request.title,
             amount = request.amount,
             payerId = payerId,
             createdAt = Instant.fromEpochMilliseconds(System.currentTimeMillis()),
+            participants = participants,
         )
     expenseRepository.createExpense(expense)
     return expense.toDto()

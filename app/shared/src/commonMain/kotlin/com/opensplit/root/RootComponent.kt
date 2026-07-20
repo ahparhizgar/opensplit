@@ -23,7 +23,6 @@ import com.opensplit.splash.SplashDestination
 import com.opensplit.usermessage.MessageHolder
 import kotlin.reflect.KClass
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 
 interface RootComponent {
@@ -138,7 +137,7 @@ class FakeRootComponent : RootComponent {
 
 interface Destination
 
-@Serializable interface TopLevelDestinationConfig
+interface TopLevelDestinationConfig
 
 interface ComponentProvider {
   fun <T : Any> provide(kClass: KClass<T>): T
