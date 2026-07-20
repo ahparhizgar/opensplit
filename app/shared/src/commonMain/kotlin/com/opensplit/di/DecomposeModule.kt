@@ -11,7 +11,9 @@ import com.opensplit.features.auth.ResetPasswordComponent
 import com.opensplit.features.auth.SignUpComponent
 import com.opensplit.features.auth.WelcomeComponent
 import com.opensplit.features.expense.AddExpenseComponent
+import com.opensplit.features.expense.AdjustSplitComponent
 import com.opensplit.features.expense.DefaultAddExpenseComponent
+import com.opensplit.features.expense.DefaultAdjustSplitComponent
 import com.opensplit.features.household.createjoin.CreateHouseholdComponent
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.createjoin.DefaultCreateHouseholdComponent
@@ -45,4 +47,5 @@ fun decomposeModule() = module {
   factoryOf(DefaultHouseholdDetailsComponent::Factory).bind<HouseholdDetailsComponent.Factory>()
   factoryOf(DefaultHouseholdSettingsComponent::Factory).bind<HouseholdSettingsComponent.Factory>()
   factoryOf(DefaultAddExpenseComponent::Factory).bind<AddExpenseComponent.Factory>()
+  factoryOf(DefaultAdjustSplitComponent::Factory).bind<AdjustSplitComponent.Factory>()
 }

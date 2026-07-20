@@ -4,6 +4,8 @@ import com.opensplit.database.ExpenseParticipants
 import com.opensplit.database.Expenses
 import java.util.*
 import kotlin.time.Instant
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.*
@@ -19,6 +21,7 @@ class ExpenseRepositoryImpl(private val database: Database) : ExpenseRepository 
         it[amount] = expense.amount
         it[payerId] = expense.payerId
         it[createdAt] = expense.createdAt.toEpochMilliseconds()
+        it[splitMethod] = Json.encodeToString(expense.splitMethod)
       }
 
       expense.participants.forEach { participant ->
@@ -60,6 +63,7 @@ class ExpenseRepositoryImpl(private val database: Database) : ExpenseRepository 
           payerId = get(Expenses.payerId),
           createdAt = Instant.fromEpochMilliseconds(get(Expenses.createdAt)),
           participants = participants,
+          splitMethod = Json.decodeFromString(get(Expenses.splitMethod)),
       )
 
   private fun ResultRow.toParticipantRecord(): ExpenseParticipantRecord =

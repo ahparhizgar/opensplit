@@ -2,6 +2,7 @@ package com.opensplit.fake
 
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
+import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.features.expense.ExpenseApi
 import com.opensplit.util.FakeService
 import kotlin.time.Instant
@@ -14,6 +15,7 @@ class FakeExpenseApi : ExpenseApi, FakeService {
       title: String,
       amount: Double,
       participants: List<ParticipantShareDto>,
+      splitMethod: SplitMethod,
   ): ExpenseDto = fakeApiCall {
     ExpenseDto(
         id = "expense-1",
@@ -23,6 +25,7 @@ class FakeExpenseApi : ExpenseApi, FakeService {
         payerId = participants.firstOrNull { it.paidShare > 0 }?.userId ?: "user-1",
         createdAt = Instant.fromEpochMilliseconds(123456789L),
         participants = participants,
+        splitMethod = splitMethod,
     )
   }
 

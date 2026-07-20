@@ -1,28 +1,47 @@
 package com.opensplit.features.expense
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SplitType
+import com.opensplit.ui.OpenSplitTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,8 +72,11 @@ fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifi
             actions = {
               IconButton(
                   onClick = {
-                    if (component.stack.value.active.instance is AddExpenseComponent.Child.Main) {
+                    val activeChild = component.stack.value.active.instance
+                    if (activeChild is AddExpenseComponent.Child.Main) {
                       component.onSaveClicked()
+                    } else if (activeChild is AddExpenseComponent.Child.AdjustSplit) {
+                      activeChild.component.onDoneClicked()
                     } else {
                       component.onDoneClicked()
                     }
@@ -74,7 +96,7 @@ fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifi
         is AddExpenseComponent.Child.PaidAmounts -> PaidAmountsScreen(instance.component, uiState)
         is AddExpenseComponent.Child.QuickSplitSelection ->
             QuickSplitSelectionScreen(instance.component, uiState)
-        is AddExpenseComponent.Child.AdjustSplit -> AdjustSplitScreen(instance.component, uiState)
+        is AddExpenseComponent.Child.AdjustSplit -> AdjustSplitScreen(instance.component)
       }
     }
   }
@@ -125,7 +147,7 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             ),
     ) {
-      Text("Paid by $payerText and split ${uiState.splitType.name.lowercase()}.")
+      Text("Paid by $payerText and split ${uiState.splitMethod.type.name.lowercase()}.")
       Spacer(modifier = Modifier.size(8.dp))
       Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
     }
@@ -239,129 +261,84 @@ private fun QuickSplitSelectionScreen(component: AddExpenseComponent, uiState: A
   }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AdjustSplitScreen(component: AddExpenseComponent, uiState: AddExpenseUiState) {
-  Column(modifier = Modifier.fillMaxSize()) {
-    val payersCount = uiState.participants.count { (it.paidAmount.toDoubleOrNull() ?: 0.0) > 0.0 }
-    val payerText =
-        when {
-          payersCount > 1 -> "Multiple people"
-          else -> {
-            val payer = uiState.participants.find { (it.paidAmount.toDoubleOrNull() ?: 0.0) > 0.0 }
-            payer?.name ?: "You"
-          }
-        }
-
-    ListItem(
-        headlineContent = { Text("Paid by $payerText") },
-        leadingContent = {
-          Box(
-              modifier =
-                  Modifier.size(40.dp)
-                      .clip(CircleShape)
-                      .background(MaterialTheme.colorScheme.primary)
-          )
-        },
-        trailingContent = {
-          IconButton(onClick = component::navigateToPayerSelection) {
-            Icon(Icons.Default.Edit, contentDescription = "Edit payer")
-          }
-        },
+val previewParticipants =
+    listOf(
+        ParticipantState(
+            userId = "1",
+            name = "Alice",
+            paidAmount = "50000",
+            owedAmount = "25000",
+            isCurrentUser = true,
+        ),
+        ParticipantState(
+            userId = "2",
+            name = "Bob",
+            paidAmount = "0",
+            owedAmount = "25000",
+        ),
+        ParticipantState(
+            userId = "3",
+            name = "Charlie",
+            paidAmount = "0",
+            owedAmount = "25000",
+        ),
     )
 
-    SecondaryTabRow(selectedTabIndex = uiState.splitType.ordinal) {
-      SplitType.entries.forEach { type ->
-        Tab(
-            selected = uiState.splitType == type,
-            onClick = { component.onSplitTypeChanged(type) },
-            text = { Text(type.name.lowercase().replaceFirstChar { it.uppercase() }) },
-        )
-      }
-    }
+val previewUiState =
+    AddExpenseUiState(
+        title = "Dinner at restaurant",
+        amount = "75000",
+        splitMethod = SplitMethod.Equally(previewParticipants.map { it.userId }),
+        participants = previewParticipants,
+    )
 
-    LazyColumn(modifier = Modifier.weight(1f)) {
-      items(uiState.participants) { participant ->
-        ListItem(
-            headlineContent = { Text(participant.name) },
-            supportingContent = { Text("IRR ${participant.owedAmount}") },
-            trailingContent = {
-              when (uiState.splitType) {
-                SplitType.EQUALLY -> {
-                  Checkbox(
-                      checked = participant.isIncluded,
-                      onCheckedChange = {
-                        component.onParticipantInclusionChanged(participant.userId, it)
-                      },
-                  )
-                }
-                SplitType.EXACT -> {
-                  OutlinedTextField(
-                      value = participant.owedAmount,
-                      onValueChange = {
-                        component.onParticipantOwedAmountChanged(participant.userId, it)
-                      },
-                      modifier = Modifier.width(100.dp),
-                      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                  )
-                }
-                SplitType.PERCENTAGE -> {
-                  OutlinedTextField(
-                      value = participant.percentage,
-                      onValueChange = {
-                        component.onParticipantPercentageChanged(participant.userId, it)
-                      },
-                      modifier = Modifier.width(100.dp),
-                      suffix = { Text("%") },
-                      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                  )
-                }
-                SplitType.SHARES -> {
-                  OutlinedTextField(
-                      value = participant.shares,
-                      onValueChange = {
-                        component.onParticipantSharesChanged(participant.userId, it)
-                      },
-                      modifier = Modifier.width(100.dp),
-                      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                  )
-                }
-                SplitType.ADJUSTMENT -> {
-                  OutlinedTextField(
-                      value = participant.adjustment,
-                      onValueChange = {
-                        component.onParticipantAdjustmentChanged(participant.userId, it)
-                      },
-                      modifier = Modifier.width(100.dp),
-                      prefix = { Text("+ ") },
-                      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                  )
-                }
-              }
-            },
-        )
-      }
-    }
+@Preview
+@Composable
+private fun MainExpenseFormPreview() {
+  OpenSplitTheme { AddExpenseScreen(FakeAddExpenseComponent(previewUiState)) }
+}
 
-    Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
-      val totalOwed = uiState.participants.sumOf { it.owedAmount.toDoubleOrNull() ?: 0.0 }
-      val amount = uiState.amount.toDoubleOrNull() ?: 0.0
-      val diff = amount - totalOwed
+@Preview
+@Composable
+private fun PayerSelectionPreview() {
+  OpenSplitTheme {
+    AddExpenseScreen(
+        FakeAddExpenseComponent(
+            uiState =
+                previewUiState.copy(
+                    participants = previewParticipants.map { it.copy(paidAmount = "0") }
+                ),
+            childFactory = { AddExpenseComponent.Child.PayerSelection(it) },
+        )
+    )
+  }
+}
 
-      Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = "IRR ${totalOwed} of IRR ${amount}",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
+@Preview
+@Composable
+private fun PaidAmountsPreview() {
+  OpenSplitTheme {
+    AddExpenseScreen(
+        FakeAddExpenseComponent(
+            uiState =
+                previewUiState.copy(
+                    participants = previewParticipants.map { it.copy(paidAmount = "25000") }
+                ),
+            childFactory = { AddExpenseComponent.Child.PaidAmounts(it) },
         )
-        Text(
-            text = if (kotlin.math.abs(diff) < 0.01) "All settled" else "IRR ${diff} left",
-            style = MaterialTheme.typography.labelSmall,
-            color =
-                if (kotlin.math.abs(diff) < 0.01) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.error,
+    )
+  }
+}
+
+@Preview
+@Composable
+private fun QuickSplitPreview() {
+  OpenSplitTheme {
+    AddExpenseScreen(
+        FakeAddExpenseComponent(
+            uiState = previewUiState,
+            childFactory = { AddExpenseComponent.Child.QuickSplitSelection(it) },
         )
-      }
-    }
+    )
   }
 }

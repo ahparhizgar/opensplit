@@ -3,6 +3,7 @@ package com.opensplit.features.expense
 import com.opensplit.dto.expense.CreateExpenseRequest
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
+import com.opensplit.dto.expense.SplitMethod
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -15,6 +16,7 @@ interface ExpenseApi {
       title: String,
       amount: Double,
       participants: List<ParticipantShareDto>,
+      splitMethod: SplitMethod,
   ): ExpenseDto
 
   suspend fun getExpenses(householdId: String): List<ExpenseDto>
@@ -27,6 +29,7 @@ class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
       title: String,
       amount: Double,
       participants: List<ParticipantShareDto>,
+      splitMethod: SplitMethod,
   ): ExpenseDto {
     val response =
         client.post("households/$householdId/expenses") {
@@ -35,6 +38,7 @@ class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
                   title = title,
                   amount = amount,
                   participants = participants,
+                  splitMethod = splitMethod,
               )
           )
         }
