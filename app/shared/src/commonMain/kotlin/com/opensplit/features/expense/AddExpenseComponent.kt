@@ -1,14 +1,15 @@
 package com.opensplit.features.expense
 
 import com.ahparhizgar.katch.ApiCallError
+import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.stack.*
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
-import com.opensplit.domain.expense.SplitCalculator
 import com.opensplit.dto.expense.ParticipantShareDto
+import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SplitType
 import com.opensplit.features.household.HouseholdApi
 import com.opensplit.remote.fieldErrors
@@ -16,6 +17,7 @@ import com.opensplit.validation.expense.ExpenseValidation
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
 
 interface AddExpenseComponent {
   val uiState: Value<AddExpenseUiState>
@@ -65,7 +67,7 @@ interface AddExpenseComponent {
 
     class QuickSplitSelection(val component: AddExpenseComponent) : Child()
 
-    class AdjustSplit(val component: AddExpenseComponent) : Child()
+    class AdjustSplit(val component: AdjustSplitComponent) : Child()
   }
 
   interface Factory {
@@ -103,7 +105,7 @@ data class AddExpenseUiState(
     val amount: String = "",
     val isLoading: Boolean = false,
     val fieldErrors: Map<String, String> = emptyMap(),
-    val splitType: SplitType = SplitType.EQUALLY,
+    val splitMethod: SplitMethod = SplitMethod.Equally(emptyList()),
     val participants: List<ParticipantState> = emptyList(),
 )
 
@@ -112,6 +114,7 @@ class DefaultAddExpenseComponent(
     config: AddExpenseComponent.Config,
     private val expenseApi: ExpenseApi,
     private val householdApi: HouseholdApi,
+    private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
     private val onFinished: () -> Unit,
 ) : AddExpenseComponent, CContext by context {
   private val householdId = config.householdId
@@ -127,7 +130,7 @@ class DefaultAddExpenseComponent(
           serializer = AddExpenseChildConfig.serializer(),
           initialConfiguration = AddExpenseChildConfig.Main,
           handleBackButton = true,
-          childFactory = { config, _ ->
+          childFactory = { config, componentContext ->
             when (config) {
               is AddExpenseChildConfig.Main -> AddExpenseComponent.Child.Main(this)
               is AddExpenseChildConfig.PayerSelection ->
@@ -135,7 +138,19 @@ class DefaultAddExpenseComponent(
               is AddExpenseChildConfig.PaidAmounts -> AddExpenseComponent.Child.PaidAmounts(this)
               is AddExpenseChildConfig.QuickSplitSelection ->
                   AddExpenseComponent.Child.QuickSplitSelection(this)
-              is AddExpenseChildConfig.AdjustSplit -> AddExpenseComponent.Child.AdjustSplit(this)
+              is AddExpenseChildConfig.AdjustSplit ->
+                  AddExpenseComponent.Child.AdjustSplit(
+                      adjustSplitComponentFactory.create(
+                          context = childContext(key = "AdjustSplit"),
+                          initialParticipants = _uiState.value.participants,
+                          totalAmount = _uiState.value.amount.toDoubleOrNull() ?: 0.0,
+                          onDone = { splitMethod ->
+                            _uiState.update { it.copy(splitMethod = splitMethod) }
+                            recalculate()
+                            stackNavigation.pop()
+                          },
+                      )
+                  )
             }
           },
       )
@@ -158,7 +173,12 @@ class DefaultAddExpenseComponent(
                 isCurrentUser = member.isCurrentUser,
             )
           }
-      _uiState.update { it.copy(participants = participants) }
+      _uiState.update {
+        it.copy(
+            participants = participants,
+            splitMethod = SplitMethod.Equally(participants.map { p -> p.userId }),
+        )
+      }
 
       recalculate()
     } catch (ignore: Exception) {} finally {
@@ -196,7 +216,40 @@ class DefaultAddExpenseComponent(
   }
 
   override fun onSplitTypeChanged(splitType: SplitType) {
-    _uiState.update { it.copy(splitType = splitType) }
+    _uiState.update { state ->
+      val newMethod =
+          when (splitType) {
+            SplitType.EQUALLY ->
+                SplitMethod.Equally(state.participants.filter { it.isIncluded }.map { it.userId })
+            SplitType.EXACT ->
+                SplitMethod.Unequally(
+                    state.participants.associate {
+                      it.userId to (it.owedAmount.toDoubleOrNull() ?: 0.0)
+                    }
+                )
+            SplitType.PERCENTAGE ->
+                SplitMethod.Percentage(
+                    state.participants.associate {
+                      it.userId to (it.percentage.toDoubleOrNull() ?: 0.0)
+                    }
+                )
+            SplitType.SHARES ->
+                SplitMethod.Shares(
+                    state.participants.associate {
+                      it.userId to (it.shares.toDoubleOrNull() ?: 0.0)
+                    }
+                )
+            SplitType.ADJUSTMENT ->
+                SplitMethod.Adjustment(
+                    adjustments =
+                        state.participants.associate {
+                          it.userId to (it.adjustment.toDoubleOrNull() ?: 0.0)
+                        },
+                    equallyUserIds = state.participants.filter { it.isIncluded }.map { it.userId },
+                )
+          }
+      state.copy(splitMethod = newMethod)
+    }
     recalculate()
   }
 
@@ -221,7 +274,26 @@ class DefaultAddExpenseComponent(
   }
 
   override fun onParticipantInclusionChanged(userId: String, isIncluded: Boolean) {
-    updateParticipant(userId) { it.copy(isIncluded = isIncluded) }
+    _uiState.update { state ->
+      val updatedParticipants =
+          state.participants.map {
+            if (it.userId == userId) it.copy(isIncluded = isIncluded) else it
+          }
+      val currentMethod = state.splitMethod
+      val updatedMethod =
+          when (currentMethod) {
+            is SplitMethod.Equally ->
+                currentMethod.copy(
+                    userIds = updatedParticipants.filter { it.isIncluded }.map { it.userId }
+                )
+            is SplitMethod.Adjustment ->
+                currentMethod.copy(
+                    equallyUserIds = updatedParticipants.filter { it.isIncluded }.map { it.userId }
+                )
+            else -> currentMethod
+          }
+      state.copy(participants = updatedParticipants, splitMethod = updatedMethod)
+    }
     recalculate()
   }
 
@@ -260,39 +332,8 @@ class DefaultAddExpenseComponent(
   private fun recalculate() {
     val state = _uiState.value
     val amount = state.amount.toDoubleOrNull() ?: 0.0
-    val includedParticipants = state.participants.filter { it.isIncluded }
-
     val owedAmounts =
-        when (state.splitType) {
-          SplitType.EQUALLY ->
-              SplitCalculator.calculateEqual(amount, includedParticipants.map { it.userId })
-          SplitType.EXACT ->
-              SplitCalculator.calculateExact(
-                  state.participants.associate {
-                    it.userId to (it.owedAmount.toDoubleOrNull() ?: 0.0)
-                  }
-              )
-          SplitType.PERCENTAGE ->
-              SplitCalculator.calculatePercentage(
-                  amount,
-                  state.participants.associate {
-                    it.userId to (it.percentage.toDoubleOrNull() ?: 0.0)
-                  },
-              )
-          SplitType.SHARES ->
-              SplitCalculator.calculateShares(
-                  amount,
-                  state.participants.associate { it.userId to (it.shares.toDoubleOrNull() ?: 0.0) },
-              )
-          SplitType.ADJUSTMENT ->
-              SplitCalculator.calculateAdjustment(
-                  amount,
-                  state.participants.associate {
-                    it.userId to (it.adjustment.toDoubleOrNull() ?: 0.0)
-                  },
-                  includedParticipants.map { it.userId },
-              )
-        }
+        state.splitMethod.calculateOwedAmounts(amount).associate { it.userId to it.amount }
 
     _uiState.update { currentState ->
       currentState.copy(
@@ -360,7 +401,13 @@ class DefaultAddExpenseComponent(
 
     _uiState.update { it.copy(isLoading = true) }
     try {
-      expenseApi.createExpense(householdId, title, amount ?: 0.0, participantsDto)
+      expenseApi.createExpense(
+          householdId,
+          title,
+          amount ?: 0.0,
+          participantsDto,
+          state.splitMethod,
+      )
       onFinished()
     } catch (e: ApiCallError) {
       _uiState.update { it.copy(fieldErrors = e.fieldErrors) }
@@ -377,25 +424,40 @@ class DefaultAddExpenseComponent(
     }
   }
 
-  class Factory(private val expenseApi: ExpenseApi, private val householdApi: HouseholdApi) :
-      AddExpenseComponent.Factory {
+  class Factory(
+      private val expenseApi: ExpenseApi,
+      private val householdApi: HouseholdApi,
+      private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
+  ) : AddExpenseComponent.Factory {
     override fun create(
         context: CContext,
         config: AddExpenseComponent.Config,
         onFinished: () -> Unit,
     ): AddExpenseComponent =
-        DefaultAddExpenseComponent(context, config, expenseApi, householdApi, onFinished)
+        DefaultAddExpenseComponent(
+            context,
+            config,
+            expenseApi,
+            householdApi,
+            adjustSplitComponentFactory,
+            onFinished,
+        )
   }
 }
 
-class FakeAddExpenseComponent(uiState: AddExpenseUiState = AddExpenseUiState()) :
-    AddExpenseComponent {
+class FakeAddExpenseComponent(
+    uiState: AddExpenseUiState = AddExpenseUiState(),
+    childFactory: (AddExpenseComponent) -> AddExpenseComponent.Child = {
+      AddExpenseComponent.Child.Main(it)
+    },
+    adjustSplitComponent: AdjustSplitComponent = FakeAdjustSplitComponent(),
+) : AddExpenseComponent {
   override val uiState: Value<AddExpenseUiState> = MutableValue(uiState)
   override val stack: Value<ChildStack<*, AddExpenseComponent.Child>> =
       MutableValue(
           ChildStack(
               configuration = Unit,
-              instance = AddExpenseComponent.Child.Main(this),
+              instance = childFactory(this),
           )
       )
 

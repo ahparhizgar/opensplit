@@ -33,6 +33,7 @@ object Expenses : Table("expenses") {
   val amount = double("amount")
   val payerId = varchar("payer_id", 36)
   val createdAt = long("created_at")
+  val splitMethod = text("split_method")
 }
 
 object ExpenseParticipants : Table("expense_participants") {

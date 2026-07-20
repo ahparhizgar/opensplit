@@ -4,6 +4,7 @@ import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.expense.CreateExpenseRequest
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
+import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.household.CreateHouseholdRequest
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.testOpenSplit
@@ -36,6 +37,7 @@ class ExpenseRoutesTest {
                               netBalance = 0.0,
                           )
                       ),
+                  splitMethod = SplitMethod.Equally(listOf(household.members[0].userId)),
               )
           )
         }
@@ -75,6 +77,10 @@ class ExpenseRoutesTest {
                               netBalance = -40.0,
                           ),
                       ),
+                  splitMethod =
+                      SplitMethod.Exact(
+                          mapOf(household.members[0].userId to 60.0, "other-user" to 40.0)
+                      ),
               )
           )
         }
@@ -94,7 +100,14 @@ class ExpenseRoutesTest {
 
     val response =
         client.post("/households/${household.id}/expenses") {
-          setBody(CreateExpenseRequest(title = "", amount = -5.0, participants = emptyList()))
+          setBody(
+              CreateExpenseRequest(
+                  title = "",
+                  amount = -5.0,
+                  participants = emptyList(),
+                  splitMethod = SplitMethod.Equally(emptyList()),
+              )
+          )
         }
 
     assertEquals(HttpStatusCode.BadRequest, response.status)

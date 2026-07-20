@@ -37,6 +37,7 @@ class ExpenseService(
             payerId = payerId,
             createdAt = Instant.fromEpochMilliseconds(System.currentTimeMillis()),
             participants = participants,
+            splitMethod = request.splitMethod,
         )
     expenseRepository.createExpense(expense)
     return expense.toDto()

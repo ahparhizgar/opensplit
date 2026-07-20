@@ -20,6 +20,7 @@ data class ExpenseDto(
     val payerId: String,
     val createdAt: Instant,
     val participants: List<ParticipantShareDto> = emptyList(),
+    val splitMethod: SplitMethod,
 )
 
 @Serializable
@@ -27,6 +28,7 @@ data class CreateExpenseRequest(
     val title: String,
     val amount: Double,
     val participants: List<ParticipantShareDto>,
+    val splitMethod: SplitMethod,
 )
 
 @Serializable
