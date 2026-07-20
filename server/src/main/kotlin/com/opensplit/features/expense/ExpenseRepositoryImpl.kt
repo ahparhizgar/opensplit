@@ -4,7 +4,6 @@ import com.opensplit.database.ExpenseParticipants
 import com.opensplit.database.Expenses
 import java.util.*
 import kotlin.time.Instant
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.eq
