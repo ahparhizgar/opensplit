@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -21,10 +22,20 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.ui.OpenSplitTheme
 
 @Composable
-fun EquallySplitPage(component: EquallySplitComponent) {
+fun EquallySplitPage(component: EquallySplitComponent, onDone: () -> Unit = {}) {
   val uiState by component.uiState.subscribeAsState()
   Column(modifier = Modifier.fillMaxSize()) {
-    LazyColumn(modifier = Modifier.weight(1f)) {
+    LazyColumn(
+        modifier =
+            Modifier.weight(1f).onKeyEvent {
+              if (it.isCmdEnter()) {
+                onDone()
+                true
+              } else {
+                false
+              }
+            }
+    ) {
       items(component.initialParticipants) { id ->
         ListItem(
             headlineContent = { Text(id) },
