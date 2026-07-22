@@ -1,5 +1,6 @@
 package com.opensplit.features.expense
 
+import com.arkivanov.decompose.childContext
 import com.opensplit.component.CContext
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SplitType
@@ -34,12 +35,16 @@ class DefaultAdjustSplitComponent(
 
   private var currentSplitType = SplitType.EQUALLY
 
-  override val equallyComponent = DefaultEquallySplitComponent(this, initialParticipants)
+  override val equallyComponent =
+      DefaultEquallySplitComponent(childContext("equally"), initialParticipants)
   override val unequallyComponent =
-      DefaultUnequallySplitComponent(this, initialParticipants, totalAmount)
-  override val percentageComponent = DefaultPercentageSplitComponent(this, initialParticipants)
-  override val sharesComponent = DefaultSharesSplitComponent(this, initialParticipants)
-  override val adjustmentComponent = DefaultAdjustmentSplitComponent(this, initialParticipants)
+      DefaultUnequallySplitComponent(childContext("unequally"), initialParticipants, totalAmount)
+  override val percentageComponent =
+      DefaultPercentageSplitComponent(childContext("percentage"), initialParticipants)
+  override val sharesComponent =
+      DefaultSharesSplitComponent(childContext("shares"), initialParticipants)
+  override val adjustmentComponent =
+      DefaultAdjustmentSplitComponent(childContext("adjustment"), initialParticipants)
 
   override fun onTabChanged(splitType: SplitType) {
     currentSplitType = splitType
