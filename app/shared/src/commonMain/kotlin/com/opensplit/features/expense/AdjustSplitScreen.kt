@@ -47,12 +47,13 @@ fun AdjustSplitScreen(component: AdjustSplitComponent) {
         modifier = Modifier.weight(1f),
         key = { SplitType.entries[it].name },
     ) { page ->
+      val onDone = { component.onDoneClicked() }
       when (SplitType.entries[page]) {
-        SplitType.EQUALLY -> EquallySplitPage(component.equallyComponent)
-        SplitType.Unequally -> UnequallySplitPage(component.unequallyComponent)
-        SplitType.PERCENTAGE -> PercentageSplitPage(component.percentageComponent)
-        SplitType.SHARES -> SharesSplitPage(component.sharesComponent)
-        SplitType.ADJUSTMENT -> AdjustmentSplitPage(component.adjustmentComponent)
+        SplitType.EQUALLY -> EquallySplitPage(component.equallyComponent, onDone)
+        SplitType.Unequally -> UnequallySplitPage(component.unequallyComponent, onDone)
+        SplitType.PERCENTAGE -> PercentageSplitPage(component.percentageComponent, onDone)
+        SplitType.SHARES -> SharesSplitPage(component.sharesComponent, onDone)
+        SplitType.ADJUSTMENT -> AdjustmentSplitPage(component.adjustmentComponent, onDone)
       }
     }
   }
