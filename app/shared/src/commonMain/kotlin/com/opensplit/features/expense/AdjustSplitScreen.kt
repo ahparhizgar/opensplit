@@ -2,36 +2,20 @@ package com.opensplit.features.expense
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SecondaryScrollableTabRow
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.dto.expense.SplitType
 import com.opensplit.ui.OpenSplitTheme
 import kotlinx.coroutines.launch
@@ -69,185 +53,6 @@ fun AdjustSplitScreen(component: AdjustSplitComponent) {
         SplitType.PERCENTAGE -> PercentageSplitPage(component.percentageComponent)
         SplitType.SHARES -> SharesSplitPage(component.sharesComponent)
         SplitType.ADJUSTMENT -> AdjustmentSplitPage(component.adjustmentComponent)
-      }
-    }
-  }
-}
-
-@Composable
-private fun EquallySplitPage(component: EquallySplitComponent) {
-  val uiState by component.uiState.subscribeAsState()
-  Column(modifier = Modifier.fillMaxSize()) {
-    LazyColumn(modifier = Modifier.weight(1f)) {
-      items(component.initialParticipants) { id ->
-        ListItem(
-            headlineContent = { Text(id) },
-            //            supportingContent = { Text("IRR ${participant.owedAmount}") },
-            trailingContent = {
-              Checkbox(
-                  checked = id in uiState.userIds,
-                  onCheckedChange = { component.onParticipantInclusionChanged(id, it) },
-              )
-            },
-        )
-      }
-    }
-    Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
-      val includedCount = uiState.userIds.size
-      Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = "Split equally among $includedCount people",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-        )
-      }
-    }
-  }
-}
-
-@Composable
-private fun UnequallySplitPage(component: UnequallySplitComponent) {
-  val uiState by component.uiState.subscribeAsState()
-  Column(modifier = Modifier.fillMaxSize()) {
-    LazyColumn(modifier = Modifier.weight(1f)) {
-      items(component.initialParticipants) { id ->
-        ListItem(
-            headlineContent = { Text(id) },
-            trailingContent = {
-              TextField(
-                  modifier = Modifier.width(120.dp),
-                  value = uiState.amounts[id]?.toString() ?: "",
-                  onValueChange = { component.onParticipantAmountChanged(id, it) },
-                  placeholder = { Text("0.00") },
-                  prefix = { Text("IRR ") },
-                  colors = transparentTextFieldColors,
-                  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-              )
-            },
-        )
-      }
-    }
-    Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
-      val diff = uiState.remainingAmount
-      Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = "Total: IRR ${component.totalAmount - uiState.remainingAmount}",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            text =
-                if (kotlin.math.abs(diff) == 0.0) "All settled"
-                else if (diff > 0) "IRR ${diff} left" else "IRR ${-diff} over",
-            style = MaterialTheme.typography.labelSmall,
-            color =
-                if (kotlin.math.abs(diff) < 0.01) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.error,
-        )
-      }
-    }
-  }
-}
-
-@Composable
-private fun PercentageSplitPage(component: PercentageSplitComponent) {
-  val uiState by component.uiState.subscribeAsState()
-  Column(modifier = Modifier.fillMaxSize()) {
-    LazyColumn(modifier = Modifier.weight(1f)) {
-      items(component.initialParticipants) { id ->
-        ListItem(
-            headlineContent = { Text(id) },
-            supportingContent = { Text("IRR ${uiState.percentages[id]}") },
-            trailingContent = {
-              TextField(
-                  modifier = Modifier.width(100.dp),
-                  value = uiState.percentages[id] ?: "",
-                  onValueChange = { component.onParticipantPercentageChanged(id, it) },
-                  placeholder = { Text("0") },
-                  suffix = { Text("%") },
-                  colors = transparentTextFieldColors,
-                  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-              )
-            },
-        )
-      }
-    }
-    Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
-      val total = uiState.totalPercentage
-      val diff = 100.0 - total
-      Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = "Total: $total%",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            text = if (kotlin.math.abs(diff) < 0.01) "100% total" else "$diff% left",
-            style = MaterialTheme.typography.labelSmall,
-            color =
-                if (kotlin.math.abs(diff) < 0.01) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.error,
-        )
-      }
-    }
-  }
-}
-
-@Composable
-private fun SharesSplitPage(component: SharesSplitComponent) {
-  val uiState by component.uiState.subscribeAsState()
-  Column(modifier = Modifier.fillMaxSize()) {
-    LazyColumn(modifier = Modifier.weight(1f)) {
-      items(component.initialParticipants) { id ->
-        ListItem(
-            headlineContent = { Text(id) },
-            //            supportingContent = { Text("IRR $share") },
-            trailingContent = {
-              TextField(
-                  modifier = Modifier.width(100.dp),
-                  value = uiState.shares[id] ?: "",
-                  onValueChange = { component.onParticipantSharesChanged(id, it) },
-                  placeholder = { Text("0") },
-                  colors = transparentTextFieldColors,
-                  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-              )
-            },
-        )
-      }
-    }
-    Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
-      Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = "Total shares: ${uiState.totalShares}",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-        )
-      }
-    }
-  }
-}
-
-@Composable
-private fun AdjustmentSplitPage(component: AdjustmentSplitComponent) {
-  val uiState by component.uiState.subscribeAsState()
-  Column(modifier = Modifier.fillMaxSize()) {
-    LazyColumn(modifier = Modifier.weight(1f)) {
-      items(component.initialParticipants) { id ->
-        ListItem(
-            headlineContent = { Text(id) },
-            supportingContent = { Text("IRR ${uiState.adjustments[id]}") },
-            trailingContent = {
-              TextField(
-                  modifier = Modifier.width(120.dp),
-                  value = uiState.adjustments[id] ?: "",
-                  onValueChange = { component.onParticipantAdjustmentChanged(id, it) },
-                  placeholder = { Text("0.00") },
-                  prefix = { Text("+ IRR ") },
-                  colors = transparentTextFieldColors,
-                  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-              )
-            },
-        )
       }
     }
   }
