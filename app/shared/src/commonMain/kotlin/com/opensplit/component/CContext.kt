@@ -142,7 +142,8 @@ class FakeStackNavigation<C : Any> : StackNavigation<C> {
   ) {
     val oldStack = _stack.toList()
     _stack.clear()
-    _stack.addAll(transformer(oldStack))
+    val newStack = transformer(oldStack)
+    _stack.addAll(newStack)
     onComplete(_stack, oldStack)
   }
 
