@@ -30,6 +30,7 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
                 listOf(
                     HouseholdMemberDto(
                         userId = "user-1",
+                        name = "Amir",
                         email = "amir@example.com",
                         isOwner = true,
                         isCurrentUser = true,
@@ -50,6 +51,7 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
                 listOf(
                     HouseholdMemberDto(
                         userId = "user-1",
+                        name = "Amir",
                         email = "amir@example.com",
                         isOwner = false,
                         isCurrentUser = true,
@@ -70,12 +72,14 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
                 listOf(
                     HouseholdMemberDto(
                         userId = "user-1",
+                        name = "Amir",
                         email = "owner@example.com",
                         isOwner = true,
                         isCurrentUser = true,
                     ),
                     HouseholdMemberDto(
                         userId = "user-2",
+                        name = "Other",
                         email = email,
                         isOwner = false,
                     ),
@@ -99,12 +103,14 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
             listOf(
                 HouseholdMemberDto(
                     userId = "user-1",
+                    name = "Amir",
                     email = "amir@example.com",
                     isOwner = true,
                     isCurrentUser = true,
                 ),
                 HouseholdMemberDto(
                     userId = "user-2",
+                    name = "Other",
                     email = "other@example.com",
                     isOwner = false,
                     isCurrentUser = false,
