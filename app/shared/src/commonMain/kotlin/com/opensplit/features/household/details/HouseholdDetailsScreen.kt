@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.dto.household.FakeHouseholdDtoFactory
 import com.opensplit.ui.OpenSplitTheme
 
@@ -143,7 +144,16 @@ fun HouseholdDetailsScreen(
                       horizontalArrangement = Arrangement.SpaceBetween,
                       verticalAlignment = Alignment.CenterVertically,
                   ) {
-                    Text(text = expense.title, style = MaterialTheme.typography.bodyLarge)
+                    Column {
+                      Text(text = expense.title, style = MaterialTheme.typography.bodyLarge)
+                      if (expense.syncStatus == SyncStatus.PENDING) {
+                        Text(
+                            text = "Syncing...",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                      }
+                    }
                     Text(
                         text = "${expense.amount} IRR",
                         style = MaterialTheme.typography.bodyMedium,

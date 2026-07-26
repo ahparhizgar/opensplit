@@ -13,6 +13,7 @@ plugins {
   alias(libs.plugins.kotest) apply false
   alias(libs.plugins.ksp) apply false
   alias(libs.plugins.ktfmt)
+  alias(libs.plugins.androidx.room) apply false
 }
 
 tasks.register<KtfmtFormatTask>("ktfmtPrecommit") {

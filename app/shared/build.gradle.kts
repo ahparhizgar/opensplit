@@ -10,7 +10,10 @@ plugins {
   alias(libs.plugins.kotest)
   alias(libs.plugins.ksp)
   alias(libs.plugins.ktfmt)
+  alias(libs.plugins.androidx.room)
 }
+
+room3 { schemaDirectory("$projectDir/schemas") }
 
 kotlin {
   listOf(
@@ -32,7 +35,7 @@ kotlin {
 
   @OptIn(ExperimentalWasmDsl::class) wasmJs { browser() }
 
-  androidLibrary {
+  android {
     namespace = "com.opensplit.app.shared"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     minSdk = libs.versions.android.minSdk.get().toInt()
@@ -46,6 +49,8 @@ kotlin {
     androidMain.dependencies {
       implementation(libs.compose.uiToolingPreview)
       implementation(libs.ktor.clientOkHttp)
+      implementation(libs.androidx.sqlite.bundled)
+      implementation(libs.koin.android)
     }
     commonMain.dependencies {
       api(projects.core)
@@ -73,6 +78,7 @@ kotlin {
       implementation(libs.androidx.datastore.core)
       implementation(libs.androidx.datastore.preferences.core)
       implementation(libs.androidx.datastore.core.okio)
+      implementation(libs.androidx.room3.runtime)
     }
     commonTest.dependencies {
       implementation(libs.kotlin.test)
@@ -85,6 +91,7 @@ kotlin {
       implementation(compose.desktop.currentOs)
       implementation(libs.kotlinx.coroutinesSwing)
       implementation(libs.ktor.clientOkHttp)
+      implementation(libs.androidx.sqlite.bundled)
     }
     jvmTest.dependencies {
       implementation(compose.desktop.currentOs)
@@ -95,7 +102,13 @@ kotlin {
       implementation(libs.ktor.serverTestHost)
       implementation(libs.kotest.junit)
     }
-    wasmJsMain.dependencies { implementation(libs.androidx.datastore.core.okio) }
+    wasmJsMain.dependencies {
+      implementation(libs.androidx.datastore.core.okio)
+      implementation(libs.androidx.sqlite.web)
+    }
+    val iosSimulatorArm64Main by getting {
+      dependencies { implementation(libs.androidx.sqlite.bundled) }
+    }
     //        jsMain.dependencies {
     //            implementation(libs.wrappers.browser)
     //        }
@@ -105,4 +118,10 @@ kotlin {
 
 tasks.withType<Test>().configureEach { useJUnitPlatform() }
 
-dependencies { androidRuntimeClasspath(libs.compose.uiTooling) }
+dependencies {
+  androidRuntimeClasspath(libs.compose.uiTooling)
+  add("kspAndroid", libs.androidx.room3.compiler)
+  add("kspJvm", libs.androidx.room3.compiler)
+  add("kspWasmJs", libs.androidx.room3.compiler)
+  add("kspIosSimulatorArm64", libs.androidx.room3.compiler)
+}

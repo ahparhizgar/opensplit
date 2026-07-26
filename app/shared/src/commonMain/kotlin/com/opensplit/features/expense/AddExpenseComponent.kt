@@ -18,8 +18,9 @@ import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.dto.household.HouseholdMemberDto
-import com.opensplit.features.household.HouseholdApi
 import com.opensplit.remote.fieldErrors
+import com.opensplit.repository.ExpenseRepository
+import com.opensplit.repository.HouseholdRepository
 import com.opensplit.root.TopLevelDestinationConfig
 import com.opensplit.validation.expense.ExpenseValidation
 import kotlinx.coroutines.Job
@@ -151,8 +152,8 @@ data class AddExpenseUiState(
 class DefaultAddExpenseComponent(
     context: CContext,
     config: AddExpenseComponent.Config,
-    private val expenseApi: ExpenseApi,
-    private val householdApi: HouseholdApi,
+    private val expenseRepository: ExpenseRepository,
+    private val householdRepository: HouseholdRepository,
     household: HouseholdDto,
     me: HouseholdMemberDto,
     private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
@@ -219,25 +220,20 @@ class DefaultAddExpenseComponent(
   private fun loadMembers() = scope.launch {
     _uiState.update { it.copy(isLoading = true) }
     try {
-      val household = householdApi.getHousehold(householdId)
-      val participants =
-          household.members.map { member ->
-            ParticipantAmount(
-                userId = member.userId,
-                amount = 0.0,
-            )
-          }
-      _uiState.update {
-        it.copy(
-            splitMethod = SplitMethod.Equally(participants.map { p -> p.userId }),
-        )
+      val household = householdRepository.getHousehold(householdId)
+      if (household != null) {
+        val participants =
+            household.members.map { member ->
+              ParticipantAmount(userId = member.userId, amount = 0.0)
+            }
+        _uiState.update {
+          it.copy(
+              splitMethod = SplitMethod.Equally(participants.map { p -> p.userId }),
+          )
+        }
       }
     } finally {
-      _uiState.update {
-        it.copy(
-            isLoading = false,
-        )
-      }
+      _uiState.update { it.copy(isLoading = false) }
     }
   }
 
@@ -352,7 +348,6 @@ class DefaultAddExpenseComponent(
                     when (payAmounts) {
                       is PayAmounts.OnePerson ->
                           if (payAmounts.userId == it.userId) payAmounts.amount ?: 0.0 else 0.0
-
                       is PayAmounts.MultiplePeople ->
                           payAmounts.amounts.find { p -> p.userId == it.userId }?.amount ?: 0.0
                     }
@@ -367,12 +362,13 @@ class DefaultAddExpenseComponent(
 
     _uiState.update { it.copy(isLoading = true) }
     try {
-      expenseApi.createExpense(
-          householdId,
-          title,
-          amount,
-          participantsDto,
-          state.splitMethod,
+      expenseRepository.createExpense(
+          householdId = householdId,
+          title = title,
+          amount = amount,
+          payerId = participantsDto.firstOrNull { it.paidShare > 0 }?.userId ?: "",
+          participants = participantsDto,
+          splitMethod = state.splitMethod,
       )
       onFinished()
     } catch (e: ApiCallError) {
@@ -391,8 +387,8 @@ class DefaultAddExpenseComponent(
   }
 
   class Factory(
-      private val expenseApi: ExpenseApi,
-      private val householdApi: HouseholdApi,
+      private val expenseRepository: ExpenseRepository,
+      private val householdRepository: HouseholdRepository,
       private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
   ) : AddExpenseComponent.Factory {
     override fun create(
@@ -405,8 +401,8 @@ class DefaultAddExpenseComponent(
         DefaultAddExpenseComponent(
             context = context,
             config = config,
-            expenseApi = expenseApi,
-            householdApi = householdApi,
+            expenseRepository = expenseRepository,
+            householdRepository = householdRepository,
             household = household,
             me = me,
             adjustSplitComponentFactory = adjustSplitComponentFactory,

@@ -21,7 +21,14 @@ data class ExpenseDto(
     val createdAt: Instant,
     val participants: List<ParticipantShareDto> = emptyList(),
     val splitMethod: SplitMethod,
+    val syncStatus: SyncStatus = SyncStatus.SYNCED,
 )
+
+@Serializable
+enum class SyncStatus {
+  SYNCED,
+  PENDING,
+}
 
 @Serializable
 data class CreateExpenseRequest(
