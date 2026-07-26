@@ -20,6 +20,13 @@ pluginManagement {
     mavenCentral()
     gradlePluginPortal()
   }
+  resolutionStrategy {
+    eachPlugin {
+      if (requested.id.id == "androidx.room3") {
+        useModule("androidx.room3:room3-gradle-plugin:${requested.version}")
+      }
+    }
+  }
 }
 
 dependencyResolutionManagement {

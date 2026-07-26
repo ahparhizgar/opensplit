@@ -8,9 +8,9 @@ import com.opensplit.component.componentScope
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.features.expense.AddExpenseComponent
-import com.opensplit.features.expense.ExpenseApi
-import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
+import com.opensplit.repository.ExpenseRepository
+import com.opensplit.repository.HouseholdRepository
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,8 +48,8 @@ interface HouseholdDetailsComponent {
 class DefaultHouseholdDetailsComponent(
     context: CContext,
     config: HouseholdDetailsComponent.Config,
-    private val gateway: HouseholdApi,
-    private val expenseApi: ExpenseApi,
+    private val householdRepository: HouseholdRepository,
+    private val expenseRepository: ExpenseRepository,
 ) : HouseholdDetailsComponent, CContext by context {
 
   override val householdId: String = config.householdId
@@ -57,6 +57,11 @@ class DefaultHouseholdDetailsComponent(
   override val uiState: StateFlow<HouseholdDetailsComponent.UiState> = _uiState
 
   init {
+    componentScope().launch {
+      expenseRepository.getExpenses(householdId).collect { expenses ->
+        _uiState.update { it.copy(expenses = expenses) }
+      }
+    }
     doOnCreate { loadDetails() }
   }
 
@@ -86,9 +91,9 @@ class DefaultHouseholdDetailsComponent(
       componentScope().launch {
         _uiState.update { it.copy(isLoading = true) }
         try {
-          val household = gateway.getHousehold(householdId)
-          val expenses = expenseApi.getExpenses(householdId)
-          _uiState.update { it.copy(household = household, expenses = expenses, isLoading = false) }
+          val household = householdRepository.refreshHousehold(householdId)
+          expenseRepository.refreshExpenses(householdId)
+          _uiState.update { it.copy(household = household, isLoading = false) }
         } catch (e: Exception) {
           _uiState.update {
             it.copy(error = e.message ?: "Failed to load household details", isLoading = false)
@@ -97,14 +102,14 @@ class DefaultHouseholdDetailsComponent(
       }
 
   class Factory(
-      private val gateway: HouseholdApi,
-      private val expenseApi: ExpenseApi,
+      private val householdRepository: HouseholdRepository,
+      private val expenseRepository: ExpenseRepository,
   ) : HouseholdDetailsComponent.Factory {
     override fun create(
         cContext: CContext,
         config: HouseholdDetailsComponent.Config,
     ): HouseholdDetailsComponent =
-        DefaultHouseholdDetailsComponent(cContext, config, gateway, expenseApi)
+        DefaultHouseholdDetailsComponent(cContext, config, householdRepository, expenseRepository)
   }
 }
 

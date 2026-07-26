@@ -41,6 +41,7 @@ class DefaultRootComponent(
     cContext: CContext,
     private val componentProvider: ComponentProvider,
     private val tokenStorage: TokenStorage,
+    syncManager: com.opensplit.sync.SyncManager,
 ) : RootComponent, CContext by cContext {
   val scope = componentScope()
 
@@ -56,6 +57,7 @@ class DefaultRootComponent(
     @Suppress("UNCHECKED_CAST")
     cContext.navigation = rootNavigation as StackNavigation<Any>
     messageShower = messageHolder
+    syncManager.startSync()
 
     scope.launch {
       try {
@@ -120,9 +122,10 @@ class DefaultRootComponent(
   class Factory(
       private val componentProvider: ComponentProvider,
       private val tokenStorage: TokenStorage,
+      private val syncManager: com.opensplit.sync.SyncManager,
   ) : RootComponent.Factory {
     override fun create(context: CContext): RootComponent =
-        DefaultRootComponent(context, componentProvider, tokenStorage)
+        DefaultRootComponent(context, componentProvider, tokenStorage, syncManager)
   }
 }
 

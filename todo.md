@@ -1,12 +1,12 @@
 1. refactor backend structure using a Ktor course
 2. introduce SSE
 3. improve messages of default api call error messages
-4. server tests are too slow
-5. create currency and money model (use Int)
-6. start offline first approach
-7. make YOU and EQUALLY buttons
-8. when there is more than two participants, there would be no quick split option
-9. color for left and over
+4. create currency and money model (use Int)
+5. start offline first approach
+6. make YOU and EQUALLY buttons
+7. when there is more than two participants, there would be no quick split option
+8. color for left and over
+9. logs out when DB scheme is updated (why?)
 
 
 ### Done
@@ -17,3 +17,4 @@
 4. predictive back
 5. showing user messages automatically
 6. make the app keyboard friendly (e.g. login flow)
+7. server tests are too slow

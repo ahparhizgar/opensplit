@@ -9,9 +9,9 @@ import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.dto.household.FakeHouseholdDtoFactory
 import com.opensplit.dto.household.HouseholdDto
-import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
+import com.opensplit.repository.HouseholdRepository
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -47,12 +47,13 @@ data class MyHouseholdsUiState(
 
 class DefaultMyHouseholdsListComponent(
     context: CContext,
-    private val gateway: HouseholdApi,
+    private val repository: HouseholdRepository,
 ) : MyHouseholdsListComponent, CContext by context {
 
   private val scope = componentScope()
 
   init {
+    scope.launch { repository.getHouseholds().collect { updateState(it) } }
     doOnCreate { loadOverview() }
   }
 
@@ -67,8 +68,7 @@ class DefaultMyHouseholdsListComponent(
 
   override fun loadOverview() = scope.launch {
     try {
-      val result = gateway.loadOverview()
-      updateState(result)
+      repository.refreshHouseholds()
     } finally {
       _isLoading.value = false
     }
@@ -89,8 +89,7 @@ class DefaultMyHouseholdsListComponent(
   }
 
   override fun leaveHousehold(householdId: String) = scope.launch {
-    val result = gateway.leaveHousehold(householdId)
-    updateState(result)
+    repository.leaveHousehold(householdId)
   }
 
   override fun onAddHouseholdClick() {
@@ -102,10 +101,10 @@ class DefaultMyHouseholdsListComponent(
   }
 
   class Factory(
-      private val gateway: HouseholdApi,
+      private val repository: HouseholdRepository,
   ) : MyHouseholdsListComponent.Factory {
     override fun create(cContext: CContext): MyHouseholdsListComponent =
-        DefaultMyHouseholdsListComponent(cContext, gateway)
+        DefaultMyHouseholdsListComponent(cContext, repository)
   }
 }
 
