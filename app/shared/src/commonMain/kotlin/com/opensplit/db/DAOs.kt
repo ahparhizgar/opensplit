@@ -68,3 +68,12 @@ interface SyncQueueDao {
   @Query("DELETE FROM sync_queue WHERE entityId = :entityId")
   suspend fun removeByEntityId(entityId: String)
 }
+
+@Dao
+interface SyncMetadataDao {
+  @Query("SELECT value FROM sync_metadata WHERE `key` = :key")
+  suspend fun getMetadata(key: String): String?
+
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  suspend fun insertMetadata(metadata: SyncMetadataEntity)
+}

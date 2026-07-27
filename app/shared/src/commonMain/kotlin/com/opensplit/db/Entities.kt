@@ -38,13 +38,17 @@ data class ParticipantEntity(
 data class SyncQueueEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val operation: OperationType,
+    val entityType: String,
     val entityId: String,
-    val payloadJson: String,
+    val metadata: String? = null,
     val createdAt: Long,
 )
 
+@Entity(tableName = "sync_metadata")
+data class SyncMetadataEntity(@PrimaryKey val key: String, val value: String)
+
 enum class OperationType {
-  CREATE_EXPENSE,
-  UPDATE_EXPENSE,
-  DELETE_EXPENSE,
+  CREATE,
+  UPDATE,
+  DELETE,
 }

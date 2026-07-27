@@ -2,6 +2,7 @@ package com.opensplit.features.expense
 
 import com.opensplit.database.ExpenseParticipants
 import com.opensplit.database.Expenses
+import com.opensplit.features.sync.SyncRepository
 import java.util.*
 import kotlin.time.Instant
 import kotlinx.serialization.json.Json
@@ -10,7 +11,10 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.*
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
-class ExpenseRepositoryImpl(private val database: Database) : ExpenseRepository {
+class ExpenseRepositoryImpl(
+    private val database: Database,
+    private val syncRepository: SyncRepository,
+) : ExpenseRepository {
   override fun createExpense(expense: ExpenseRecord) {
     transaction(database) {
       Expenses.insert {
@@ -32,6 +36,8 @@ class ExpenseRepositoryImpl(private val database: Database) : ExpenseRepository 
           it[owedAmount] = participant.owedAmount
         }
       }
+
+      syncRepository.recordChange("EXPENSE", expense.id, "INSERT")
     }
   }
 
@@ -50,6 +56,14 @@ class ExpenseRepositoryImpl(private val database: Database) : ExpenseRepository 
           row.toExpenseRecord(participants)
         }
       }
+
+  override fun deleteExpense(expenseId: String) {
+    transaction(database) {
+      syncRepository.recordChange("EXPENSE", expenseId, "DELETE")
+      Expenses.deleteWhere { Expenses.id eq expenseId }
+      ExpenseParticipants.deleteWhere { ExpenseParticipants.expenseId eq expenseId }
+    }
+  }
 
   private fun ResultRow.toExpenseRecord(
       participants: List<ExpenseParticipantRecord>

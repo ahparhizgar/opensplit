@@ -10,12 +10,12 @@ import com.opensplit.db.SyncQueueDao
 import com.opensplit.db.SyncQueueEntity
 import com.opensplit.db.toDto
 import com.opensplit.db.toEntity
-import com.opensplit.dto.expense.CreateExpenseRequest
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.features.expense.ExpenseApi
+import com.opensplit.sync.SyncManager
 import com.opensplit.util.currentTimeMillis
 import com.opensplit.util.randomId
 import kotlin.time.Instant
@@ -28,6 +28,7 @@ class ExpenseRepository(
     private val expenseDao: ExpenseDao,
     private val syncQueueDao: SyncQueueDao,
     private val database: AppDatabase,
+    private val syncManager: SyncManager,
 ) {
 
   fun getExpenses(householdId: String): Flow<List<ExpenseDto>> {
@@ -79,20 +80,12 @@ class ExpenseRepository(
         )
 
     val participantEntities = participants.map { it.toEntity(expenseId) }
-    // TODO why to save two rows, when the expense entry has all we need to know?
-    val payload =
-        CreateExpenseRequest(
-            title = title,
-            amount = amount,
-            participants = participants,
-            splitMethod = splitMethod,
-        )
 
     val syncEntry =
         SyncQueueEntity(
-            operation = OperationType.CREATE_EXPENSE,
+            operation = OperationType.CREATE,
+            entityType = "EXPENSE",
             entityId = expenseId,
-            payloadJson = Json.encodeToString(payload),
             createdAt = now.toEpochMilliseconds(),
         )
 
@@ -102,5 +95,25 @@ class ExpenseRepository(
         syncQueueDao.enqueue(syncEntry)
       }
     }
+    syncManager.triggerSync()
+  }
+
+  suspend fun deleteExpense(householdId: String, expenseId: String) {
+    database.useWriterConnection { connection ->
+      connection.immediateTransaction {
+        expenseDao.deleteExpense(expenseId)
+        expenseDao.deleteParticipants(expenseId)
+        syncQueueDao.enqueue(
+            SyncQueueEntity(
+                operation = OperationType.DELETE,
+                entityType = "EXPENSE",
+                entityId = expenseId,
+                metadata = householdId,
+                createdAt = currentTimeMillis(),
+            )
+        )
+      }
+    }
+    syncManager.triggerSync()
   }
 }

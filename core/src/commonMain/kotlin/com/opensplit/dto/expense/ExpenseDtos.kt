@@ -34,6 +34,7 @@ enum class SyncStatus {
 data class CreateExpenseRequest(
     val title: String,
     val amount: Double,
+    val payerId: String,
     val participants: List<ParticipantShareDto>,
     val splitMethod: SplitMethod,
 )
