@@ -48,11 +48,17 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient = HttpClient {
 
   install(KatchPlugin) {
     extractPayload {
-      val body = it.body<ErrorResponse>()
-      ClientErrorExtras(
-          userMessage = body.generalError,
-          payload = body.errors,
-      )
+      if (it.contentType()?.match(ContentType.Application.Json) == true) {
+        val body = it.body<ErrorResponse>()
+        ClientErrorExtras(
+            userMessage = body.generalError,
+            payload = body.errors,
+        )
+      } else {
+        ClientErrorExtras(
+            userMessage = "Unknown server error: ${it.status}",
+        )
+      }
     }
   }
 }

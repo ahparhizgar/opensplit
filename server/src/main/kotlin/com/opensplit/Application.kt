@@ -5,6 +5,7 @@ import com.opensplit.features.auth.authModule
 import com.opensplit.features.expense.expenseModule
 import com.opensplit.features.health.healthModule
 import com.opensplit.features.household.householdModule
+import com.opensplit.features.sync.syncModule
 import com.opensplit.plugins.configureDependencies
 import com.opensplit.plugins.configureSecurity
 import com.opensplit.plugins.configureSerialization
@@ -29,5 +30,6 @@ fun Application.openSplit(isTest: Boolean = false) {
   authModule()
   householdModule()
   expenseModule()
+  syncModule()
   healthModule()
 }

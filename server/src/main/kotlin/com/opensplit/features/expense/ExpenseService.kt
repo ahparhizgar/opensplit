@@ -2,6 +2,7 @@ package com.opensplit.features.expense
 
 import com.opensplit.dto.expense.CreateExpenseRequest
 import com.opensplit.dto.expense.ExpenseDto
+import com.opensplit.features.auth.UserPrincipal
 import com.opensplit.features.household.HouseholdRepository
 import java.util.*
 import kotlin.time.Instant
@@ -12,10 +13,9 @@ class ExpenseService(
 ) {
   fun createExpense(
       householdId: String,
-      payerId: String,
       request: CreateExpenseRequest,
   ): ExpenseDto {
-    if (!householdRepository.hasMembership(householdId, payerId)) {
+    if (!householdRepository.hasMembership(householdId, request.payerId)) {
       throw NotAMemberException()
     }
 
@@ -34,7 +34,7 @@ class ExpenseService(
             householdId = householdId,
             title = request.title,
             amount = request.amount,
-            payerId = payerId,
+            payerId = request.payerId,
             createdAt = Instant.fromEpochMilliseconds(System.currentTimeMillis()),
             participants = participants,
             splitMethod = request.splitMethod,
@@ -45,5 +45,12 @@ class ExpenseService(
 
   fun getExpenses(householdId: String): List<ExpenseDto> {
     return expenseRepository.findExpensesByHouseholdId(householdId).map { it.toDto() }
+  }
+
+  fun deleteExpense(user: UserPrincipal, householdId: String, expenseId: String) {
+    if (!householdRepository.hasMembership(householdId, user.userId)) {
+      throw NotAMemberException()
+    }
+    expenseRepository.deleteExpense(expenseId)
   }
 }

@@ -4,4 +4,6 @@ interface ExpenseRepository {
   fun createExpense(expense: ExpenseRecord)
 
   fun findExpensesByHouseholdId(householdId: String): List<ExpenseRecord>
+
+  fun deleteExpense(expenseId: String)
 }

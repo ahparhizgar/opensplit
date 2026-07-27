@@ -8,6 +8,7 @@ import com.opensplit.features.auth.authKoinModule
 import com.opensplit.features.auth.testAuthKoinModule
 import com.opensplit.features.expense.expenseKoinModule
 import com.opensplit.features.household.householdKoinModule
+import com.opensplit.features.sync.syncKoinModule
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import org.koin.dsl.module
@@ -31,6 +32,7 @@ fun Application.configureDependencies(isTest: Boolean) {
         authKoinModule(),
         householdKoinModule(),
         expenseKoinModule(),
+        syncKoinModule(),
     )
     if (isTest) {
       modules(testAuthKoinModule())

@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
             ExpenseEntity::class,
             ParticipantEntity::class,
             SyncQueueEntity::class,
+            SyncMetadataEntity::class,
         ],
     version = 1,
 )
@@ -25,6 +26,8 @@ abstract class AppDatabase : RoomDatabase() {
   abstract fun expenseDao(): ExpenseDao
 
   abstract fun syncQueueDao(): SyncQueueDao
+
+  abstract fun syncMetadataDao(): SyncMetadataDao
 }
 
 // The Room compiler generates the `actual` implementations.

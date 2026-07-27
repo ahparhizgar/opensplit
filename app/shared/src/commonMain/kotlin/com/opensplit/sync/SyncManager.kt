@@ -2,88 +2,164 @@ package com.opensplit.sync
 
 import androidx.room3.immediateTransaction
 import androidx.room3.useWriterConnection
-import com.opensplit.db.AppDatabase
-import com.opensplit.db.ExpenseDao
-import com.opensplit.db.OperationType
-import com.opensplit.db.SyncQueueDao
-import com.opensplit.db.SyncQueueEntity
-import com.opensplit.db.toEntity
-import com.opensplit.dto.expense.CreateExpenseRequest
+import com.opensplit.db.*
 import com.opensplit.dto.expense.SyncStatus
+import com.opensplit.dto.sync.SyncResponse
 import com.opensplit.features.expense.ExpenseApi
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
+import com.opensplit.features.household.HouseholdApi
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 
 class SyncManager(
     private val expenseApi: ExpenseApi,
-    private val syncQueueDao: SyncQueueDao,
-    private val expenseDao: ExpenseDao,
+    private val householdApi: HouseholdApi,
+    private val syncApi: SyncApi,
     private val database: AppDatabase,
 ) {
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-  private var syncJob: Job? = null
+  private val syncQueueDao = database.syncQueueDao()
+  private val expenseDao = database.expenseDao()
+  private val householdDao = database.householdDao()
+  private val syncMetadataDao = database.syncMetadataDao()
+  private val syncMutex = Mutex()
 
   fun startSync() {
-    if (syncJob?.isActive == true) return
-    syncJob = scope.launch {
+    scope.launch {
       while (isActive) {
-        try {
-          val queue = syncQueueDao.getQueue().first()
-          if (queue.isNotEmpty()) {
-            processQueue(queue)
-          }
-        } catch (_: Exception) {
-          // ignore
-        }
-        delay(5000)
+        sync()
+        delay(30.seconds) // Longer delay for background sync
       }
     }
   }
 
-  private suspend fun processQueue(queue: List<SyncQueueEntity>) {
+  fun triggerSync() {
+    scope.launch { sync() }
+  }
+
+  suspend fun sync() {
+    if (syncMutex.isLocked) return
+    syncMutex.withLock {
+      try {
+        processOutbox()
+        val lastVersion = syncMetadataDao.getMetadata("last_sync_version")?.toLong() ?: 0L
+        val response = syncApi.getChanges(lastVersion)
+        applyChanges(response)
+      } catch (_: Exception) {
+        // ignore
+      }
+    }
+  }
+
+  private suspend fun processOutbox() {
+    val queue = syncQueueDao.getQueue().first()
     for (entry in queue) {
       try {
-        when (entry.operation) {
-          OperationType.CREATE_EXPENSE -> {
-            val payload = Json.decodeFromString<CreateExpenseRequest>(entry.payloadJson)
-            val localExpense = expenseDao.getExpense(entry.entityId)
-            if (localExpense != null) {
-              val result =
-                  expenseApi.createExpense(
-                      householdId = localExpense.householdId,
-                      title = payload.title,
-                      amount = payload.amount,
-                      participants = payload.participants,
-                      splitMethod = payload.splitMethod,
-                  )
+        when (entry.entityType) {
+          "EXPENSE" -> processExpenseOperation(entry)
+          "HOUSEHOLD" -> processHouseholdOperation(entry)
+        }
+      } catch (_: Exception) {
+        // skip and retry later
+      }
+    }
+  }
 
-              database.useWriterConnection { connection ->
-                connection.immediateTransaction {
-                  expenseDao.deleteExpense(localExpense.id)
-                  expenseDao.deleteParticipants(localExpense.id)
+  private suspend fun processExpenseOperation(entry: SyncQueueEntity) {
+    val expense = expenseDao.getExpense(entry.entityId)
+    val participants = expenseDao.getParticipants(entry.entityId)
 
-                  val serverEntity = result.toEntity(SyncStatus.SYNCED)
-                  val serverParticipants = result.participants.map { it.toEntity(result.id) }
-                  expenseDao.insertExpenseWithParticipants(serverEntity, serverParticipants)
+    when (entry.operation) {
+      OperationType.CREATE -> {
+        if (expense != null) {
+          val result =
+              expenseApi.createExpense(
+                  householdId = expense.householdId,
+                  title = expense.title,
+                  amount = expense.amount,
+                  payerId = expense.payerId,
+                  participants = participants.map { it.toDto() },
+                  splitMethod = Json.decodeFromString(expense.splitMethodJson),
+              )
 
-                  syncQueueDao.dequeue(entry)
-                }
-              }
-            } else {
+          database.useWriterConnection { connection ->
+            connection.immediateTransaction {
+              expenseDao.deleteExpense(entry.entityId)
+              expenseDao.deleteParticipants(entry.entityId)
+
+              val serverEntity = result.toEntity(SyncStatus.SYNCED)
+              val serverParticipants = result.participants.map { it.toEntity(result.id) }
+              expenseDao.insertExpenseWithParticipants(serverEntity, serverParticipants)
+
               syncQueueDao.dequeue(entry)
             }
           }
-          else -> {}
+        } else {
+          syncQueueDao.dequeue(entry)
         }
-      } catch (_: Exception) {
-        // skip
+      }
+      OperationType.DELETE -> {
+        val householdId = entry.metadata
+        if (householdId != null) {
+          expenseApi.deleteExpense(householdId, entry.entityId)
+        }
+        syncQueueDao.dequeue(entry)
+      }
+      else -> {}
+    }
+  }
+
+  private suspend fun processHouseholdOperation(entry: SyncQueueEntity) {
+    val household = householdDao.getHousehold(entry.entityId)
+    when (entry.operation) {
+      OperationType.CREATE -> {
+        if (household != null) {
+          val result = householdApi.createHousehold(household.name)
+          database.useWriterConnection { connection ->
+            connection.immediateTransaction {
+              householdDao.deleteById(entry.entityId)
+              householdDao.insertHouseholds(listOf(result.toEntity()))
+              syncQueueDao.dequeue(entry)
+            }
+          }
+        } else {
+          syncQueueDao.dequeue(entry)
+        }
+      }
+      OperationType.DELETE -> {
+        householdApi.leaveHousehold(entry.entityId)
+        syncQueueDao.dequeue(entry)
+      }
+      else -> {}
+    }
+  }
+
+  private suspend fun applyChanges(response: SyncResponse) {
+    database.useWriterConnection { connection ->
+      connection.immediateTransaction {
+        response.changedEntities.households.forEach { dto ->
+          householdDao.insertHouseholds(listOf(dto.toEntity()))
+        }
+
+        response.changedEntities.expenses.forEach { dto ->
+          val entity = dto.toEntity(SyncStatus.SYNCED)
+          val participants = dto.participants.map { it.toEntity(dto.id) }
+          expenseDao.insertExpenseWithParticipants(entity, participants)
+        }
+
+        response.deletedEntities.households.forEach { id -> householdDao.deleteById(id) }
+
+        response.deletedEntities.expenses.forEach { id ->
+          expenseDao.deleteExpense(id)
+          expenseDao.deleteParticipants(id)
+        }
+
+        syncMetadataDao.insertMetadata(
+            SyncMetadataEntity("last_sync_version", response.latestVersion.toString())
+        )
       }
     }
   }

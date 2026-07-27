@@ -6,6 +6,7 @@ import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SplitMethod
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -15,11 +16,14 @@ interface ExpenseApi {
       householdId: String,
       title: String,
       amount: Double,
+      payerId: String,
       participants: List<ParticipantShareDto>,
       splitMethod: SplitMethod,
   ): ExpenseDto
 
   suspend fun getExpenses(householdId: String): List<ExpenseDto>
+
+  suspend fun deleteExpense(householdId: String, expenseId: String)
 }
 
 class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
@@ -28,6 +32,7 @@ class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
       householdId: String,
       title: String,
       amount: Double,
+      payerId: String,
       participants: List<ParticipantShareDto>,
       splitMethod: SplitMethod,
   ): ExpenseDto {
@@ -37,6 +42,7 @@ class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
               CreateExpenseRequest(
                   title = title,
                   amount = amount,
+                  payerId = payerId,
                   participants = participants,
                   splitMethod = splitMethod,
               )
@@ -48,5 +54,9 @@ class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
   override suspend fun getExpenses(householdId: String): List<ExpenseDto> {
     val response = client.get("households/$householdId/expenses")
     return response.body<List<ExpenseDto>>()
+  }
+
+  override suspend fun deleteExpense(householdId: String, expenseId: String) {
+    client.delete("households/$householdId/expenses/$expenseId")
   }
 }

@@ -8,6 +8,7 @@ class DatabaseInitializer(private val database: Database) {
   fun init() {
     transaction(database) {
       SchemaUtils.createMissingTablesAndColumns(
+          ChangeLog,
           Users,
           Households,
           Memberships,

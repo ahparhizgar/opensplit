@@ -3,6 +3,7 @@ package com.opensplit.features.household
 import com.opensplit.database.Households
 import com.opensplit.database.Memberships
 import com.opensplit.database.Users
+import com.opensplit.features.sync.SyncRepository
 import kotlin.uuid.Uuid
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
@@ -16,7 +17,10 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 
-class HouseholdRepositoryImpl(private val database: Database) : HouseholdRepository {
+class HouseholdRepositoryImpl(
+    private val database: Database,
+    private val syncRepository: SyncRepository,
+) : HouseholdRepository {
   override fun loadHouseholds(userId: String): List<HouseholdDetailRecord> =
       transaction(database) {
         // TODO fix N+1 query
@@ -55,11 +59,15 @@ class HouseholdRepositoryImpl(private val database: Database) : HouseholdReposit
           it[Households.ownerId] = ownerId
           it[Households.inviteCode] = inviteCode
         }
+        val membershipId = Uuid.random().toString()
         Memberships.insert {
-          it[Memberships.id] = Uuid.random().toString()
+          it[Memberships.id] = membershipId
           it[Memberships.householdId] = targetHouseholdId
           it[Memberships.userId] = ownerId
         }
+
+        syncRepository.recordChange("HOUSEHOLD", targetHouseholdId, "INSERT")
+        syncRepository.recordChange("MEMBERSHIP", membershipId, "INSERT")
 
         HouseholdRecord(
             id = targetHouseholdId,
@@ -101,11 +109,13 @@ class HouseholdRepositoryImpl(private val database: Database) : HouseholdReposit
               .where { (Memberships.householdId eq householdId) and (Memberships.userId eq userId) }
               .any()
       if (!alreadyMember) {
+        val membershipId = Uuid.random().toString()
         Memberships.insert {
-          it[Memberships.id] = Uuid.random().toString()
+          it[Memberships.id] = membershipId
           it[Memberships.householdId] = householdId
           it[Memberships.userId] = userId
         }
+        syncRepository.recordChange("MEMBERSHIP", membershipId, "INSERT")
       }
     }
   }
@@ -164,6 +174,15 @@ class HouseholdRepositoryImpl(private val database: Database) : HouseholdReposit
             it[Households.ownerId] = nextOwner[Memberships.userId]
           }
         }
+      }
+
+      val membershipsToDelete =
+          Memberships.selectAll()
+              .where { (Memberships.householdId eq householdId) and (Memberships.userId eq userId) }
+              .map { it[Memberships.id] }
+
+      membershipsToDelete.forEach { membershipId ->
+        syncRepository.recordChange("MEMBERSHIP", membershipId, "DELETE")
       }
 
       Memberships.deleteWhere {

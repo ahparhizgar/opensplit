@@ -107,11 +107,11 @@ tasks.register("waitForHealth") {
           println("Health endpoint returned HTTP $code; retrying...")
         }
       } catch (e: Exception) {
-        println("Health check failed: ${'$'}{e.message}; retrying...")
+        println("Health check failed: ${e.message}; retrying...")
       }
       if (System.currentTimeMillis() - start > timeoutMs) {
         throw GradleException(
-            "Timed out waiting for server health endpoint after ${'$'}{timeoutMs/1000} seconds"
+            "Timed out waiting for server health endpoint after ${timeoutMs/1000} seconds"
         )
       }
       Thread.sleep(2000)
