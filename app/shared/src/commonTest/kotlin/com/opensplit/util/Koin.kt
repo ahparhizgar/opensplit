@@ -7,11 +7,13 @@ import com.opensplit.di.appModule
 import com.opensplit.fake.FakeAuthApi
 import com.opensplit.fake.FakeExpenseApi
 import com.opensplit.fake.FakeHouseholdApi
+import com.opensplit.fake.FakeSyncApi
 import com.opensplit.features.auth.AuthApi
 import com.opensplit.features.auth.NoOpTokenStorage
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.expense.ExpenseApi
 import com.opensplit.features.household.HouseholdApi
+import com.opensplit.sync.SyncApi
 import io.kotest.core.spec.Spec
 import kotlinx.coroutines.Dispatchers
 import org.koin.dsl.bind
@@ -51,4 +53,5 @@ fun integrationTestModule() = module {
   single { NoOpTokenStorage() }.bind<TokenStorage>()
   single { FakeHouseholdApi() }.bind<HouseholdApi>()
   single { FakeExpenseApi() }.bind<ExpenseApi>()
+  single { FakeSyncApi() }.bind<SyncApi>()
 }

@@ -15,6 +15,7 @@ import com.opensplit.features.household.KtorHouseholdApi
 import com.opensplit.ktor.createHttpClient
 import com.opensplit.repository.ExpenseRepository
 import com.opensplit.repository.HouseholdRepository
+import com.opensplit.sync.KtorSyncApi
 import com.opensplit.sync.SyncApi
 import com.opensplit.sync.SyncManager
 import org.koin.core.module.dsl.factoryOf
@@ -31,7 +32,7 @@ fun othersModule() = module {
   factoryOf(::KtorAuthApi).bind<AuthApi>()
   factoryOf(::KtorHouseholdApi).bind<HouseholdApi>()
   factoryOf(::KtorExpenseApi).bind<ExpenseApi>()
-  factoryOf(::SyncApi)
+  factoryOf(::KtorSyncApi).bind<SyncApi>()
 
   single {
     getRoomDatabase(
