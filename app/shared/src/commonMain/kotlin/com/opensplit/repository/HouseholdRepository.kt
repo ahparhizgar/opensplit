@@ -11,6 +11,7 @@ import com.opensplit.db.toDto
 import com.opensplit.db.toEntity
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.features.household.HouseholdApi
+import com.opensplit.sync.SyncManager
 import com.opensplit.util.currentTimeMillis
 import com.opensplit.util.randomId
 import kotlinx.coroutines.flow.Flow
@@ -20,7 +21,7 @@ class HouseholdRepository(
     private val api: HouseholdApi,
     private val dao: HouseholdDao,
     private val database: AppDatabase,
-    private val syncManager: com.opensplit.sync.SyncManager,
+    private val syncManager: SyncManager,
 ) {
   fun getHouseholds(): Flow<List<HouseholdDto>> {
     return dao.getHouseholds().map { entities -> entities.map { it.toDto() } }

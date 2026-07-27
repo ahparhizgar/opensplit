@@ -6,8 +6,12 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 
-class SyncApi(private val client: HttpClient) {
-  suspend fun getChanges(sinceVersion: Long): SyncResponse {
+interface SyncApi {
+  suspend fun getChanges(sinceVersion: Long): SyncResponse
+}
+
+class KtorSyncApi(private val client: HttpClient) : SyncApi {
+  override suspend fun getChanges(sinceVersion: Long): SyncResponse {
     return client.get("/sync") { parameter("sinceVersion", sinceVersion) }.body()
   }
 }

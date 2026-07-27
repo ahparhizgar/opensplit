@@ -14,6 +14,7 @@ class FakeExpenseApi : ExpenseApi, FakeService {
       householdId: String,
       title: String,
       amount: Double,
+      payerId: String,
       participants: List<ParticipantShareDto>,
       splitMethod: SplitMethod,
   ): ExpenseDto = fakeApiCall {
@@ -22,7 +23,7 @@ class FakeExpenseApi : ExpenseApi, FakeService {
         householdId = householdId,
         title = title,
         amount = amount,
-        payerId = participants.firstOrNull { it.paidShare > 0 }?.userId ?: "user-1",
+        payerId = payerId,
         createdAt = Instant.fromEpochMilliseconds(123456789L),
         participants = participants,
         splitMethod = splitMethod,
@@ -31,5 +32,9 @@ class FakeExpenseApi : ExpenseApi, FakeService {
 
   override suspend fun getExpenses(householdId: String): List<ExpenseDto> = fakeApiCall {
     emptyList()
+  }
+
+  override suspend fun deleteExpense(householdId: String, expenseId: String) = fakeApiCall {
+    // No-op
   }
 }

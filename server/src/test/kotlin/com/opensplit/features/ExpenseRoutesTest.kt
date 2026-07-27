@@ -28,6 +28,7 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Pizza",
                   amount = 25.0,
+                  payerId = household.members[0].userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
@@ -62,6 +63,7 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Groceries",
                   amount = 100.0,
+                  payerId = household.members[0].userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
@@ -104,6 +106,7 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "",
                   amount = -5.0,
+                  payerId = "",
                   participants = emptyList(),
                   splitMethod = SplitMethod.Equally(emptyList()),
               )
