@@ -3,13 +3,12 @@ package com.opensplit.e2e.component
 import com.arkivanov.decompose.DecomposeSettings
 import com.opensplit.assertLogin
 import com.opensplit.assertWelcome
-import com.opensplit.component.defaultCContext
+import com.opensplit.component.TestCContext
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.root.RootComponent
 import com.opensplit.splash.SplashDestination
 import com.opensplit.util.MainDispatcherExtension
-import com.opensplit.util.createComponentContext
 import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
 import io.kotest.core.spec.style.BehaviorSpec
@@ -27,9 +26,8 @@ class ComponentE2eAuthTest : BehaviorSpec() {
         )
     Given("app opens for first time") {
       val koin by integrationKoin()
-      var root by testValue {
-        koin.get<RootComponent.Factory>().create(defaultCContext(createComponentContext()))
-      }
+      val context by testValue { TestCContext() }
+      var root by testValue { koin.get<RootComponent.Factory>().create(context) }
       Then("shows welcome screen") {
         println(coroutineContext[ContinuationInterceptor.Key])
         root.assertSplash()
