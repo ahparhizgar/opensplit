@@ -28,7 +28,7 @@ object FakeHouseholdMemberDtoFactory {
           isCurrentUser = isCurrentUser,
       )
 
-  fun create1() = create("user-1", "AmirHossein (you)", 10.15, true)
+  fun create1() = create("user-1", "Amir Hossein Parhizgar", 10.15, true)
 
   fun create2() = create("user-2", "Ali Bagherifam", -10.15)
 
