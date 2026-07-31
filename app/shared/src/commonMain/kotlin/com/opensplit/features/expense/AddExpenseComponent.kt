@@ -65,11 +65,11 @@ interface AddExpenseComponent {
   sealed class Child {
     class Main(val component: AddExpenseComponent) : Child()
 
-    class PayerSelection(val component: AddExpenseComponent) : Child()
+    class WhoPaid(val component: WhoPaidComponent) : Child()
 
     class PaidAmounts(val component: PaidAmountsComponent) : Child()
 
-    class QuickSplitSelection(val component: AddExpenseComponent) : Child()
+    class QuickSplitSelection(val component: QuickSplitComponent) : Child()
 
     class AdjustSplit(val component: AdjustSplitComponent) : Child()
   }
@@ -157,6 +157,8 @@ class DefaultAddExpenseComponent(
     household: HouseholdDto,
     me: HouseholdMemberDto,
     private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
+    private val whoPaidComponentFactory: WhoPaidComponent.Factory,
+    private val quickSplitComponentFactory: QuickSplitComponent.Factory,
     private val onFinished: () -> Unit,
 ) : AddExpenseComponent, CContext by context {
   private val householdId = config.householdId
@@ -182,7 +184,22 @@ class DefaultAddExpenseComponent(
             when (config) {
               is AddExpenseChildConfig.Main -> AddExpenseComponent.Child.Main(this)
               is AddExpenseChildConfig.PayerSelection ->
-                  AddExpenseComponent.Child.PayerSelection(this)
+                  AddExpenseComponent.Child.WhoPaid(
+                      whoPaidComponentFactory.create(
+                          context = componentContext,
+                          allParticipants = _uiState.value.allParticipants,
+                          selectedUserId =
+                              (_uiState.value.payAmounts as? PayAmountsUiState.OnePerson)?.userId,
+                          onParticipantSelected = { userId ->
+                            val currentAmount =
+                                (_uiState.value.payAmounts as? PayAmountsUiState.OnePerson)?.amount
+                                    ?: ""
+                            setPaidAmounts(PayAmountsUiState.OnePerson(userId, currentAmount))
+                            stackNavigation.pop()
+                          },
+                          onMultiplePeopleClicked = { navigateToPaidAmounts() },
+                      )
+                  )
               is AddExpenseChildConfig.PaidAmounts ->
                   AddExpenseComponent.Child.PaidAmounts(
                       DefaultPaidAmountsComponent.Factory()
@@ -196,7 +213,19 @@ class DefaultAddExpenseComponent(
                           )
                   )
               is AddExpenseChildConfig.QuickSplitSelection ->
-                  AddExpenseComponent.Child.QuickSplitSelection(this)
+                  AddExpenseComponent.Child.QuickSplitSelection(
+                      quickSplitComponentFactory.create(
+                          context = componentContext,
+                          allParticipants = _uiState.value.allParticipants,
+                          amountSum = _uiState.value.amountSum,
+                          onOptionSelected = { amounts, method ->
+                            setPaidAmounts(amounts)
+                            setSplitMethod(method)
+                            stackNavigation.pop()
+                          },
+                          onAdjustSplitClicked = { navigateToAdjustSplit() },
+                      )
+                  )
               is AddExpenseChildConfig.AdjustSplit ->
                   AddExpenseComponent.Child.AdjustSplit(
                       adjustSplitComponentFactory.create(
@@ -390,6 +419,8 @@ class DefaultAddExpenseComponent(
       private val expenseRepository: ExpenseRepository,
       private val householdRepository: HouseholdRepository,
       private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
+      private val whoPaidComponentFactory: WhoPaidComponent.Factory,
+      private val quickSplitComponentFactory: QuickSplitComponent.Factory,
   ) : AddExpenseComponent.Factory {
     override fun create(
         context: CContext,
@@ -406,6 +437,8 @@ class DefaultAddExpenseComponent(
             household = household,
             me = me,
             adjustSplitComponentFactory = adjustSplitComponentFactory,
+            whoPaidComponentFactory = whoPaidComponentFactory,
+            quickSplitComponentFactory = quickSplitComponentFactory,
             onFinished = onFinished,
         )
   }

@@ -14,6 +14,10 @@ import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.AdjustSplitComponent
 import com.opensplit.features.expense.DefaultAddExpenseComponent
 import com.opensplit.features.expense.DefaultAdjustSplitComponent
+import com.opensplit.features.expense.DefaultQuickSplitComponent
+import com.opensplit.features.expense.DefaultWhoPaidComponent
+import com.opensplit.features.expense.QuickSplitComponent
+import com.opensplit.features.expense.WhoPaidComponent
 import com.opensplit.features.household.createjoin.CreateHouseholdComponent
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.createjoin.DefaultCreateHouseholdComponent
@@ -48,4 +52,6 @@ fun decomposeModule() = module {
   factoryOf(DefaultHouseholdSettingsComponent::Factory).bind<HouseholdSettingsComponent.Factory>()
   factoryOf(DefaultAddExpenseComponent::Factory).bind<AddExpenseComponent.Factory>()
   factoryOf(DefaultAdjustSplitComponent::Factory).bind<AdjustSplitComponent.Factory>()
+  factoryOf(DefaultWhoPaidComponent::Factory).bind<WhoPaidComponent.Factory>()
+  factoryOf(DefaultQuickSplitComponent::Factory).bind<QuickSplitComponent.Factory>()
 }
