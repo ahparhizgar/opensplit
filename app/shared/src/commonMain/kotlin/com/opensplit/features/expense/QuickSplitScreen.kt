@@ -14,15 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.ui.OpenSplitTheme
 
 @Composable
 fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifier) {
   val uiState by component.uiState.subscribeAsState()
-  // TODO order is not guaranteed
-  val you = uiState.allParticipants[0]
-  val other = uiState.allParticipants[1]
   Column(
       modifier = modifier.fillMaxSize(),
       verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -30,7 +26,9 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
     ListItem(
         modifier =
             Modifier.clickable {
-              component.onOptionSelected(you, SplitMethod.Equally(uiState.allParticipants))
+              component.onOptionSelected(
+                  QuickSplitComponent.QuickSplitOption.YOU_PAID_SPLIT_EQUALLY
+              )
             },
         headlineContent = { Text("You paid, split equally.") },
     )
@@ -38,8 +36,7 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
         modifier =
             Modifier.clickable {
               component.onOptionSelected(
-                  you,
-                  SplitMethod.Unequally(mapOf(other to uiState.amountSum)),
+                  QuickSplitComponent.QuickSplitOption.YOU_ARE_OWED_FULL_AMOUNT
               )
             },
         headlineContent = { Text("You are owed the full amount.") },
@@ -47,19 +44,20 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
     ListItem(
         modifier =
             Modifier.clickable {
-              component.onOptionSelected(other, SplitMethod.Equally(uiState.allParticipants))
+              component.onOptionSelected(
+                  QuickSplitComponent.QuickSplitOption.OTHER_PAID_SPLIT_EQUALLY
+              )
             },
-        headlineContent = { Text("$other paid, split equally.") },
+        headlineContent = { Text("${uiState.other?.name} paid, split equally.") },
     )
     ListItem(
         modifier =
             Modifier.clickable {
               component.onOptionSelected(
-                  other,
-                  SplitMethod.Unequally(mapOf(you to uiState.amountSum)),
+                  QuickSplitComponent.QuickSplitOption.OTHER_IS_OWED_FULL_AMOUNT
               )
             },
-        headlineContent = { Text("$other is owed the full amount.") },
+        headlineContent = { Text("${uiState.other?.name} is owed the full amount.") },
     )
 
     Button(
