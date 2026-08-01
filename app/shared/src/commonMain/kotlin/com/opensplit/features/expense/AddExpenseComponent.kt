@@ -21,6 +21,7 @@ import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.remote.fieldErrors
 import com.opensplit.repository.ExpenseRepository
 import com.opensplit.repository.HouseholdRepository
+import com.opensplit.repository.ProfileRepository
 import com.opensplit.root.TopLevelDestinationConfig
 import com.opensplit.validation.expense.ExpenseValidation
 import kotlinx.coroutines.Job
@@ -58,8 +59,6 @@ interface AddExpenseComponent {
   @Serializable
   data class Config(
       val householdId: String,
-      val household: Household,
-      val me: Member,
   ) : TopLevelDestinationConfig
 
   sealed class Child {
@@ -78,8 +77,6 @@ interface AddExpenseComponent {
     fun create(
         context: CContext,
         config: Config,
-        household: Household,
-        me: Member,
         onFinished: () -> Unit,
     ): AddExpenseComponent
   }
@@ -135,6 +132,7 @@ sealed interface PayAmounts {
 
 data class AddExpenseUiState(
     val allParticipants: List<String>,
+    val participants: List<Member> = emptyList(),
     val payAmounts: PayAmountsUiState,
     val title: String = "",
     val fieldErrors: Map<String, String> = emptyMap(),
@@ -147,6 +145,15 @@ data class AddExpenseUiState(
         is PayAmounts.OnePerson -> payAmountsDomain.amount ?: 0.0
         is PayAmounts.MultiplePeople -> payAmountsDomain.amounts.sumOf { it.amount }
       }
+
+  fun getParticipantName(userId: String): String {
+    val member = participants.find { it.userId == userId }
+    return when {
+      member?.isCurrentUser == true -> "you"
+      member != null -> member.name
+      else -> userId
+    }
+  }
 }
 
 class DefaultAddExpenseComponent(
@@ -154,19 +161,20 @@ class DefaultAddExpenseComponent(
     config: AddExpenseComponent.Config,
     private val expenseRepository: ExpenseRepository,
     private val householdRepository: HouseholdRepository,
-    household: Household,
-    me: Member,
+    private val profileRepository: ProfileRepository,
     private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
     private val whoPaidComponentFactory: WhoPaidComponent.Factory,
     private val quickSplitComponentFactory: QuickSplitComponent.Factory,
     private val onFinished: () -> Unit,
 ) : AddExpenseComponent, CContext by context {
   private val householdId = config.householdId
+  private var loadedHousehold: Household? = null
   private val _uiState =
       MutableValue(
           AddExpenseUiState(
-              allParticipants = household.members.map { it.userId },
-              payAmounts = PayAmountsUiState.OnePerson(userId = me.userId, amount = ""),
+              allParticipants = emptyList(),
+              participants = emptyList(),
+              payAmounts = PayAmountsUiState.OnePerson(userId = "", amount = ""),
           )
       )
   override val uiState: Value<AddExpenseUiState> = _uiState
@@ -205,7 +213,7 @@ class DefaultAddExpenseComponent(
                       DefaultPaidAmountsComponent.Factory()
                           .create(
                               initial = _uiState.value.payAmountsDomain,
-                              household = household,
+                              household = loadedHousehold!!,
                               onDone = { amounts ->
                                 setPaidAmounts(amounts)
                                 stackNavigation.pop()
@@ -252,12 +260,25 @@ class DefaultAddExpenseComponent(
     try {
       val household = householdRepository.getHousehold(householdId)
       if (household != null) {
+        loadedHousehold = household
+        val currentUserId = profileRepository.profile.value?.id
         val participants =
             household.members.map { member ->
               ParticipantAmount(userId = member.userId, amount = 0.0)
             }
         _uiState.update {
           it.copy(
+              allParticipants = household.members.map { it.userId },
+              participants = household.members,
+              payAmounts =
+                  if (
+                      it.payAmounts is PayAmountsUiState.OnePerson && it.payAmounts.userId.isEmpty()
+                  )
+                      PayAmountsUiState.OnePerson(
+                          userId = currentUserId ?: household.members.first().userId,
+                          amount = it.payAmounts.amount,
+                      )
+                  else it.payAmounts,
               splitMethod = SplitMethod.Equally(participants.map { p -> p.userId }),
           )
         }
@@ -372,8 +393,8 @@ class DefaultAddExpenseComponent(
                     },
                 allParticipants = state.allParticipants.toSet(),
             )
-            .map { it ->
-              var paidShare =
+            .map {
+              val paidShare =
                   state.payAmountsDomain.let { payAmounts ->
                     when (payAmounts) {
                       is PayAmounts.OnePerson ->
@@ -419,6 +440,7 @@ class DefaultAddExpenseComponent(
   class Factory(
       private val expenseRepository: ExpenseRepository,
       private val householdRepository: HouseholdRepository,
+      private val profileRepository: ProfileRepository,
       private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
       private val whoPaidComponentFactory: WhoPaidComponent.Factory,
       private val quickSplitComponentFactory: QuickSplitComponent.Factory,
@@ -426,8 +448,6 @@ class DefaultAddExpenseComponent(
     override fun create(
         context: CContext,
         config: AddExpenseComponent.Config,
-        household: Household,
-        me: Member,
         onFinished: () -> Unit,
     ): AddExpenseComponent =
         DefaultAddExpenseComponent(
@@ -435,8 +455,7 @@ class DefaultAddExpenseComponent(
             config = config,
             expenseRepository = expenseRepository,
             householdRepository = householdRepository,
-            household = household,
-            me = me,
+            profileRepository = profileRepository,
             adjustSplitComponentFactory = adjustSplitComponentFactory,
             whoPaidComponentFactory = whoPaidComponentFactory,
             quickSplitComponentFactory = quickSplitComponentFactory,

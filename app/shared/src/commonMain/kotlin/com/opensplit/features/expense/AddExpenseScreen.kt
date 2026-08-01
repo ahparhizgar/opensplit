@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.ui.OpenSplitTheme
 
@@ -127,8 +128,7 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
         when (uiState.payAmountsDomain) {
           is PayAmounts.MultiplePeople -> "Multiple people"
           is PayAmounts.OnePerson -> {
-            // TODO convert to name
-            uiState.payAmountsDomain.userId
+            uiState.getParticipantName(uiState.payAmountsDomain.userId)
           }
         }
 
@@ -156,14 +156,15 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
   }
 }
 
-val previewParticipants = listOf("user1-----", "user2++++++++", "user3#####")
+val previewParticipants = FakeMemberFactory.createList()
 
 val previewUiState =
     AddExpenseUiState(
         title = "Dinner at restaurant",
-        splitMethod = SplitMethod.Equally(previewParticipants.map { it }),
-        allParticipants = previewParticipants,
-        payAmounts = PayAmountsUiState.OnePerson(previewParticipants[0], "20"),
+        splitMethod = SplitMethod.Equally(previewParticipants.map { it.userId }),
+        allParticipants = previewParticipants.map { it.userId },
+        participants = previewParticipants,
+        payAmounts = PayAmountsUiState.OnePerson(previewParticipants[0].userId, "20"),
     )
 
 @Preview

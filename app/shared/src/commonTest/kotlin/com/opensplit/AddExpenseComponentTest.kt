@@ -4,7 +4,6 @@ import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.opensplit.component.defaultCContext
 import com.opensplit.component.fakeStack
-import com.opensplit.domain.FakeHouseholdFactory
 import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.PayAmountsUiState
 import com.opensplit.features.household.details.HouseholdDetailsComponent
@@ -57,16 +56,12 @@ class AddExpenseComponentTest :
 
       Given("an AddExpenseComponent") {
         var onFinishedCalled by testValue { false }
-        val household = FakeHouseholdFactory.create(id = "h1")
-        val me = household.members.first { it.isCurrentUser }
         val addExpenseComponent by testValue {
           koin
               .get<AddExpenseComponent.Factory>()
               .create(
                   defaultCContext(createComponentContext()),
-                  AddExpenseComponent.Config("h1", household, me),
-                  household,
-                  me,
+                  AddExpenseComponent.Config("h1"),
                   onFinished = { onFinishedCalled = true },
               )
         }
