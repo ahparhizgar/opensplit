@@ -24,6 +24,13 @@ data class AuthResult(
 )
 
 @Serializable
+data class UserProfile(
+    val id: String,
+    val name: String?,
+    val email: String,
+)
+
+@Serializable
 data class ErrorResponse(
     val generalError: String,
     val errors: Map<String, String> = emptyMap(),

@@ -13,8 +13,10 @@ import com.opensplit.features.expense.KtorExpenseApi
 import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.KtorHouseholdApi
 import com.opensplit.ktor.createHttpClient
+import com.opensplit.repository.DataStoreProfileRepository
 import com.opensplit.repository.ExpenseRepository
 import com.opensplit.repository.HouseholdRepository
+import com.opensplit.repository.ProfileRepository
 import com.opensplit.sync.KtorSyncApi
 import com.opensplit.sync.SyncApi
 import com.opensplit.sync.SyncManager
@@ -29,6 +31,7 @@ fun othersModule() = module {
   factoryOf(::createHttpClient)
   singleOf(::createDataStore)
   singleOf(::DataStoreTokenStorage).bind<TokenStorage>()
+  singleOf(::DataStoreProfileRepository).bind<ProfileRepository>()
   factoryOf(::KtorAuthApi).bind<AuthApi>()
   factoryOf(::KtorHouseholdApi).bind<HouseholdApi>()
   factoryOf(::KtorExpenseApi).bind<ExpenseApi>()
