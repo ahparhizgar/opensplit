@@ -17,7 +17,9 @@ import com.opensplit.repository.InMemoryProfileRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.sync.SyncApi
 import io.kotest.core.spec.Spec
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.koin.dsl.bind
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
@@ -44,6 +46,7 @@ fun uiKoin() =
         .koin
 
 fun integrationTestModule() = module {
+  single { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
   single { DataDir(":memory:") }
   single {
     getRoomDatabase(

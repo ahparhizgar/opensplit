@@ -20,6 +20,9 @@ import com.opensplit.repository.ProfileRepository
 import com.opensplit.sync.KtorSyncApi
 import com.opensplit.sync.SyncApi
 import com.opensplit.sync.SyncManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -36,11 +39,12 @@ fun othersModule() = module {
   factoryOf(::KtorHouseholdApi).bind<HouseholdApi>()
   factoryOf(::KtorExpenseApi).bind<ExpenseApi>()
   factoryOf(::KtorSyncApi).bind<SyncApi>()
+  single { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
 
   single {
     getRoomDatabase(
         get<AppDatabaseBuilderFactory>().createBuilder(get()),
-        kotlinx.coroutines.Dispatchers.Default,
+        Dispatchers.Default,
     )
   }
   single { get<AppDatabase>().householdDao() }

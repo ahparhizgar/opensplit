@@ -4,6 +4,7 @@ import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.dto.household.HouseholdDto
+import com.opensplit.dto.household.HouseholdMemberDto
 import kotlinx.serialization.json.Json
 
 fun HouseholdDto.toEntity() =
@@ -15,9 +16,7 @@ fun HouseholdDto.toEntity() =
         isOwner = isOwner,
     )
 
-fun HouseholdEntity.toDto(
-    members: List<com.opensplit.dto.household.HouseholdMemberDto> = emptyList()
-) =
+fun HouseholdEntity.toDto(members: List<HouseholdMemberDto>) =
     HouseholdDto(
         id = id,
         name = name,
@@ -25,6 +24,31 @@ fun HouseholdEntity.toDto(
         inviteLink = inviteLink,
         balance = balance,
         isOwner = isOwner,
+    )
+
+fun HouseholdWithMembers.toDto() = household.toDto(members.map { it.toDto() })
+
+fun HouseholdMemberDto.toEntity(householdId: String) =
+    MemberEntity(
+        householdId = householdId,
+        userId = userId,
+        name = name,
+        email = email,
+        isOwner = isOwner,
+        isCurrentUser = isCurrentUser,
+        balance = balance,
+        balanceCurrency = balanceCurrency,
+    )
+
+fun MemberEntity.toDto() =
+    HouseholdMemberDto(
+        userId = userId,
+        name = name,
+        email = email,
+        isOwner = isOwner,
+        isCurrentUser = isCurrentUser,
+        balance = balance,
+        balanceCurrency = balanceCurrency,
     )
 
 fun ExpenseDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED) =
