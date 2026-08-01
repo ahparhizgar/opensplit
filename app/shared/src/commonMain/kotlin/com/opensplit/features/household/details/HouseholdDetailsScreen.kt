@@ -36,8 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.opensplit.domain.FakeHouseholdFactory
 import com.opensplit.dto.expense.SyncStatus
-import com.opensplit.dto.household.FakeHouseholdDtoFactory
 import com.opensplit.ui.OpenSplitTheme
 
 @Composable
@@ -189,7 +189,7 @@ fun HouseholdDetailsScreenPreview() {
             FakeHouseholdDetailsComponent(
                 uiState =
                     HouseholdDetailsComponent.UiState(
-                        household = FakeHouseholdDtoFactory.create(members = emptyList())
+                        household = FakeHouseholdFactory.create(members = emptyList())
                     )
             ),
     )
@@ -204,7 +204,7 @@ fun HouseholdDetailsScreenWithMemberPreview() {
         component =
             FakeHouseholdDetailsComponent(
                 uiState =
-                    HouseholdDetailsComponent.UiState(household = FakeHouseholdDtoFactory.create())
+                    HouseholdDetailsComponent.UiState(household = FakeHouseholdFactory.create())
             ),
     )
   }

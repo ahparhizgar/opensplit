@@ -1,5 +1,9 @@
 package com.opensplit.db
 
+import com.opensplit.domain.Expense
+import com.opensplit.domain.Household
+import com.opensplit.domain.Member
+import com.opensplit.domain.ParticipantShare
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SyncStatus
@@ -28,6 +32,26 @@ fun HouseholdEntity.toDto(members: List<HouseholdMemberDto>) =
 
 fun HouseholdWithMembers.toDto() = household.toDto(members.map { it.toDto() })
 
+fun HouseholdWithMembers.toDomain() =
+    Household(
+        id = household.id,
+        name = household.name,
+        members = members.map { it.toDomain() },
+        isOwner = household.isOwner,
+        inviteLink = household.inviteLink,
+        balance = household.balance,
+    )
+
+fun HouseholdDto.toDomain() =
+    Household(
+        id = id,
+        name = name,
+        members = members.map { it.toDomain() },
+        isOwner = isOwner,
+        inviteLink = inviteLink,
+        balance = balance,
+    )
+
 fun HouseholdMemberDto.toEntity(householdId: String) =
     MemberEntity(
         householdId = householdId,
@@ -42,6 +66,28 @@ fun HouseholdMemberDto.toEntity(householdId: String) =
 
 fun MemberEntity.toDto() =
     HouseholdMemberDto(
+        userId = userId,
+        name = name,
+        email = email,
+        isOwner = isOwner,
+        isCurrentUser = isCurrentUser,
+        balance = balance,
+        balanceCurrency = balanceCurrency,
+    )
+
+fun MemberEntity.toDomain() =
+    Member(
+        userId = userId,
+        name = name,
+        email = email,
+        isOwner = isOwner,
+        isCurrentUser = isCurrentUser,
+        balance = balance,
+        balanceCurrency = balanceCurrency,
+    )
+
+fun HouseholdMemberDto.toDomain() =
+    Member(
         userId = userId,
         name = name,
         email = email,
@@ -76,6 +122,41 @@ fun ExpenseEntity.toDto(participants: List<ParticipantShareDto>) =
         syncStatus = syncStatus,
     )
 
+fun ExpenseEntity.toDomain(participants: List<ParticipantShare>) =
+    Expense(
+        id = id,
+        householdId = householdId,
+        title = title,
+        amount = amount,
+        payerId = payerId,
+        createdAt = kotlin.time.Instant.fromEpochMilliseconds(createdAtEpochMillis),
+        participants = participants,
+        splitMethod = Json.decodeFromString(splitMethodJson),
+        syncStatus = syncStatus,
+    )
+
+fun ExpenseDto.toDomain() =
+    Expense(
+        id = id,
+        householdId = householdId,
+        title = title,
+        amount = amount,
+        payerId = payerId,
+        createdAt = createdAt,
+        participants = participants.map { it.toDomain() },
+        splitMethod = splitMethod,
+        syncStatus = syncStatus,
+    )
+
+fun ParticipantShare.toEntity(expenseId: String) =
+    ParticipantEntity(
+        expenseId = expenseId,
+        userId = userId,
+        paidShare = paidShare,
+        owedShare = owedShare,
+        netBalance = netBalance,
+    )
+
 fun ParticipantShareDto.toEntity(expenseId: String) =
     ParticipantEntity(
         expenseId = expenseId,
@@ -87,6 +168,22 @@ fun ParticipantShareDto.toEntity(expenseId: String) =
 
 fun ParticipantEntity.toDto() =
     ParticipantShareDto(
+        userId = userId,
+        paidShare = paidShare,
+        owedShare = owedShare,
+        netBalance = netBalance,
+    )
+
+fun ParticipantEntity.toDomain() =
+    ParticipantShare(
+        userId = userId,
+        paidShare = paidShare,
+        owedShare = owedShare,
+        netBalance = netBalance,
+    )
+
+fun ParticipantShareDto.toDomain() =
+    ParticipantShare(
         userId = userId,
         paidShare = paidShare,
         owedShare = owedShare,

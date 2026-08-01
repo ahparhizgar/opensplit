@@ -13,11 +13,11 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
+import com.opensplit.domain.Household
+import com.opensplit.domain.Member
+import com.opensplit.domain.ParticipantShare
 import com.opensplit.dto.expense.ParticipantAmount
-import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SplitMethod
-import com.opensplit.dto.household.HouseholdDto
-import com.opensplit.dto.household.HouseholdMemberDto
 import com.opensplit.remote.fieldErrors
 import com.opensplit.repository.ExpenseRepository
 import com.opensplit.repository.HouseholdRepository
@@ -58,8 +58,8 @@ interface AddExpenseComponent {
   @Serializable
   data class Config(
       val householdId: String,
-      val household: HouseholdDto,
-      val me: HouseholdMemberDto,
+      val household: Household,
+      val me: Member,
   ) : TopLevelDestinationConfig
 
   sealed class Child {
@@ -78,8 +78,8 @@ interface AddExpenseComponent {
     fun create(
         context: CContext,
         config: Config,
-        household: HouseholdDto,
-        me: HouseholdMemberDto,
+        household: Household,
+        me: Member,
         onFinished: () -> Unit,
     ): AddExpenseComponent
   }
@@ -154,8 +154,8 @@ class DefaultAddExpenseComponent(
     config: AddExpenseComponent.Config,
     private val expenseRepository: ExpenseRepository,
     private val householdRepository: HouseholdRepository,
-    household: HouseholdDto,
-    me: HouseholdMemberDto,
+    household: Household,
+    me: Member,
     private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
     private val whoPaidComponentFactory: WhoPaidComponent.Factory,
     private val quickSplitComponentFactory: QuickSplitComponent.Factory,
@@ -356,7 +356,7 @@ class DefaultAddExpenseComponent(
       return@launch
     }
 
-    val participantsDto =
+    val participantsDomain =
         state.splitMethod
             .calculateOwedAmounts(
                 payAmounts =
@@ -382,7 +382,7 @@ class DefaultAddExpenseComponent(
                           payAmounts.amounts.find { p -> p.userId == it.userId }?.amount ?: 0.0
                     }
                   }
-              ParticipantShareDto(
+              ParticipantShare(
                   userId = it.userId,
                   paidShare = paidShare,
                   owedShare = it.amount,
@@ -396,8 +396,8 @@ class DefaultAddExpenseComponent(
           householdId = householdId,
           title = title,
           amount = amount,
-          payerId = participantsDto.firstOrNull { it.paidShare > 0 }?.userId ?: "",
-          participants = participantsDto,
+          payerId = participantsDomain.firstOrNull { it.paidShare > 0 }?.userId ?: "",
+          participants = participantsDomain,
           splitMethod = state.splitMethod,
       )
       onFinished()
@@ -426,8 +426,8 @@ class DefaultAddExpenseComponent(
     override fun create(
         context: CContext,
         config: AddExpenseComponent.Config,
-        household: HouseholdDto,
-        me: HouseholdMemberDto,
+        household: Household,
+        me: Member,
         onFinished: () -> Unit,
     ): AddExpenseComponent =
         DefaultAddExpenseComponent(

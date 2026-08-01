@@ -5,8 +5,8 @@ import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
-import com.opensplit.dto.expense.ExpenseDto
-import com.opensplit.dto.household.HouseholdDto
+import com.opensplit.domain.Expense
+import com.opensplit.domain.Household
 import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.repository.ExpenseRepository
@@ -37,9 +37,9 @@ interface HouseholdDetailsComponent {
   }
 
   data class UiState(
-      val household: HouseholdDto? = null,
+      val household: Household? = null,
       // should be out of UiState because loads
-      val expenses: List<ExpenseDto> = emptyList(),
+      val expenses: List<Expense> = emptyList(),
       val isLoading: Boolean = false,
       val error: String? = null,
   )
@@ -115,15 +115,7 @@ class DefaultHouseholdDetailsComponent(
 
 class FakeHouseholdDetailsComponent(
     override val householdId: String = "h12345",
-    uiState: HouseholdDetailsComponent.UiState =
-        HouseholdDetailsComponent.UiState(
-            HouseholdDto(
-                id = householdId,
-                name = "Fake Household",
-                members = emptyList(),
-                inviteLink = "https://opensplit.com/join/fake-code",
-            )
-        ),
+    uiState: HouseholdDetailsComponent.UiState = HouseholdDetailsComponent.UiState(),
 ) : HouseholdDetailsComponent {
   override val uiState: StateFlow<HouseholdDetailsComponent.UiState> = MutableStateFlow(uiState)
 }

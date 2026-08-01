@@ -47,7 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.AndroidUiModes.UI_MODE_NIGHT_YES
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.opensplit.dto.household.HouseholdMemberDto
+import com.opensplit.domain.Member
 import com.opensplit.ui.OpenSplitTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -227,7 +227,7 @@ private fun SettingsActionItem(
 }
 
 @Composable
-private fun MemberItem(member: HouseholdMemberDto, modifier: Modifier = Modifier) {
+private fun MemberItem(member: Member, modifier: Modifier = Modifier) {
   Row(
       modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
       verticalAlignment = Alignment.CenterVertically,

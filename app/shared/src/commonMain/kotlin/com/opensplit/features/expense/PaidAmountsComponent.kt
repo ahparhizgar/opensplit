@@ -3,10 +3,10 @@ package com.opensplit.features.expense
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
+import com.opensplit.domain.FakeHouseholdFactory
+import com.opensplit.domain.FakeMemberFactory
+import com.opensplit.domain.Household
 import com.opensplit.dto.expense.ParticipantAmount
-import com.opensplit.dto.household.FakeHouseholdDtoFactory
-import com.opensplit.dto.household.FakeHouseholdMemberDtoFactory
-import com.opensplit.dto.household.HouseholdDto
 
 interface PaidAmountsComponent {
   val uiState: Value<PaidAmountsUiState>
@@ -18,7 +18,7 @@ interface PaidAmountsComponent {
   interface Factory {
     fun create(
         initial: PayAmounts,
-        household: HouseholdDto,
+        household: Household,
         onDone: (PayAmountsUiState) -> Unit,
     ): PaidAmountsComponent
   }
@@ -33,7 +33,7 @@ data class PaidAmountsUiState(
 
 class DefaultPaidAmountsComponent(
     initial: PayAmounts,
-    household: HouseholdDto,
+    household: Household,
     private val onDone: (PayAmountsUiState) -> Unit,
 ) : PaidAmountsComponent {
 
@@ -96,7 +96,7 @@ class DefaultPaidAmountsComponent(
   class Factory : PaidAmountsComponent.Factory {
     override fun create(
         initial: PayAmounts,
-        household: HouseholdDto,
+        household: Household,
         onDone: (PayAmountsUiState) -> Unit,
     ): PaidAmountsComponent {
       return DefaultPaidAmountsComponent(initial = initial, household = household, onDone = onDone)
@@ -105,9 +105,11 @@ class DefaultPaidAmountsComponent(
 }
 
 class FakePaidAmountsComponent(
-    initial: PayAmounts =
-        PayAmounts.OnePerson(FakeHouseholdMemberDtoFactory.create1().userId, 100.0),
-    household: HouseholdDto = FakeHouseholdDtoFactory.create(),
+    initial: PayAmounts = PayAmounts.OnePerson("user-1", 100.0),
+    household: Household =
+        FakeHouseholdFactory.create(
+            members = listOf(FakeMemberFactory.create(userId = "user-1", isCurrentUser = true))
+        ),
     private val onDone: (PayAmounts) -> Unit = {},
 ) : PaidAmountsComponent {
 
