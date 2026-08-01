@@ -1,21 +1,29 @@
 package com.opensplit.features.expense
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.dto.expense.SplitType
 import com.opensplit.ui.OpenSplitTheme
 import kotlinx.coroutines.launch
@@ -25,6 +33,7 @@ import kotlinx.coroutines.launch
 fun AdjustSplitScreen(component: AdjustSplitComponent) {
   val pagerState = rememberPagerState(pageCount = { SplitType.entries.size })
   val scope = rememberCoroutineScope()
+  val payerName by component.payerName.subscribeAsState()
 
   LaunchedEffect(pagerState) {
     snapshotFlow { pagerState.currentPage }
@@ -32,6 +41,12 @@ fun AdjustSplitScreen(component: AdjustSplitComponent) {
   }
 
   Column(modifier = Modifier.fillMaxSize()) {
+    ListItem(
+        headlineContent = { Text("Paid by $payerName") },
+        trailingContent = { Icon(Icons.Default.Edit, contentDescription = null) },
+        modifier = Modifier.clickable { component.onPayerClicked() },
+    )
+
     SecondaryScrollableTabRow(selectedTabIndex = pagerState.currentPage) {
       SplitType.entries.forEachIndexed { index, type ->
         Tab(
