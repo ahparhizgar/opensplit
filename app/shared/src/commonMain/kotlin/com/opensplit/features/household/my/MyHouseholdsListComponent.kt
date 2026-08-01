@@ -7,8 +7,8 @@ import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
-import com.opensplit.dto.household.FakeHouseholdDtoFactory
-import com.opensplit.dto.household.HouseholdDto
+import com.opensplit.domain.FakeHouseholdFactory
+import com.opensplit.domain.Household
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.repository.HouseholdRepository
@@ -40,7 +40,7 @@ interface MyHouseholdsListComponent {
 }
 
 data class MyHouseholdsUiState(
-    val households: List<HouseholdDto> = emptyList(),
+    val households: List<Household> = emptyList(),
     val overallBalance: Double = 0.0,
     val overallCurrency: String = "IRR",
 )
@@ -74,7 +74,7 @@ class DefaultMyHouseholdsListComponent(
     }
   }
 
-  private fun updateState(households: List<HouseholdDto>) {
+  private fun updateState(households: List<Household>) {
     _uiState.update {
       it.copy(
           households = households,
@@ -110,26 +110,7 @@ class DefaultMyHouseholdsListComponent(
 
 class FakeMyHouseholdsListComponent(
     uiState: MyHouseholdsUiState =
-        MyHouseholdsUiState(
-            households =
-                listOf(
-                    FakeHouseholdDtoFactory.create(
-                            id = "1",
-                            name = "Amirs House",
-                        )
-                        .copy(balance = 10.15),
-                    FakeHouseholdDtoFactory.create(
-                        id = "2",
-                        name = "203.3",
-                    ),
-                    FakeHouseholdDtoFactory.create(
-                        id = "3",
-                        name = "Shomal Trip",
-                    ),
-                ),
-            overallBalance = 10.15,
-            overallCurrency = "IRR",
-        ),
+        MyHouseholdsUiState(households = listOf(FakeHouseholdFactory.create())),
     override val isLoading: MutableValue<Boolean> = MutableValue(false),
     override val isSettledExpanded: MutableValue<Boolean> = MutableValue(false),
 ) : MyHouseholdsListComponent {

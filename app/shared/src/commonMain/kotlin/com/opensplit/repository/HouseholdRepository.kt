@@ -7,9 +7,9 @@ import com.opensplit.db.HouseholdDao
 import com.opensplit.db.HouseholdEntity
 import com.opensplit.db.OperationType
 import com.opensplit.db.SyncQueueEntity
-import com.opensplit.db.toDto
+import com.opensplit.db.toDomain
 import com.opensplit.db.toEntity
-import com.opensplit.dto.household.HouseholdDto
+import com.opensplit.domain.Household
 import com.opensplit.features.household.HouseholdApi
 import com.opensplit.sync.SyncManager
 import com.opensplit.util.currentTimeMillis
@@ -23,8 +23,8 @@ class HouseholdRepository(
     private val database: AppDatabase,
     private val syncManager: SyncManager,
 ) {
-  fun getHouseholds(): Flow<List<HouseholdDto>> {
-    return dao.getHouseholdsWithMembers().map { entities -> entities.map { it.toDto() } }
+  fun getHouseholds(): Flow<List<Household>> {
+    return dao.getHouseholdsWithMembers().map { entities -> entities.map { it.toDomain() } }
   }
 
   suspend fun refreshHouseholds() {
@@ -38,14 +38,14 @@ class HouseholdRepository(
     }
   }
 
-  suspend fun getHousehold(id: String): HouseholdDto? {
-    return dao.getHouseholdWithMembers(id)?.toDto()
+  suspend fun getHousehold(id: String): Household? {
+    return dao.getHouseholdWithMembers(id)?.toDomain()
   }
 
-  suspend fun refreshHousehold(id: String): HouseholdDto {
+  suspend fun refreshHousehold(id: String): Household {
     val result = api.getHousehold(id)
     dao.insertHouseholdWithMembers(result.toEntity(), result.members.map { it.toEntity(result.id) })
-    return result
+    return result.toDomain()
   }
 
   suspend fun createHousehold(name: String) {

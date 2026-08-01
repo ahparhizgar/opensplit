@@ -5,9 +5,9 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
+import com.opensplit.domain.FakeMemberFactory
+import com.opensplit.domain.Member
 import com.opensplit.dto.expense.SplitMethod
-import com.opensplit.dto.household.FakeHouseholdMemberDtoFactory
-import com.opensplit.dto.household.HouseholdMemberDto
 import com.opensplit.repository.HouseholdRepository
 import com.opensplit.repository.ProfileRepository
 import kotlinx.coroutines.launch
@@ -40,8 +40,8 @@ interface QuickSplitComponent {
 
 data class QuickSplitUiState(
     val amountSum: Double,
-    val you: HouseholdMemberDto? = null,
-    val other: HouseholdMemberDto? = null,
+    val you: Member? = null,
+    val other: Member? = null,
 )
 
 class DefaultQuickSplitComponent(
@@ -153,8 +153,8 @@ class FakeQuickSplitComponent(
     uiState: QuickSplitUiState =
         QuickSplitUiState(
             amountSum = 100.0,
-            you = FakeHouseholdMemberDtoFactory.create1(),
-            other = FakeHouseholdMemberDtoFactory.create2(),
+            you = FakeMemberFactory.create1(),
+            other = FakeMemberFactory.create2(),
         )
 ) : QuickSplitComponent {
   override val uiState: Value<QuickSplitUiState> = MutableValue(uiState)

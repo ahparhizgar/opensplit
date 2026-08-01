@@ -8,10 +8,10 @@ import com.opensplit.db.ExpenseEntity
 import com.opensplit.db.OperationType
 import com.opensplit.db.SyncQueueDao
 import com.opensplit.db.SyncQueueEntity
-import com.opensplit.db.toDto
+import com.opensplit.db.toDomain
 import com.opensplit.db.toEntity
-import com.opensplit.dto.expense.ExpenseDto
-import com.opensplit.dto.expense.ParticipantShareDto
+import com.opensplit.domain.Expense
+import com.opensplit.domain.ParticipantShare
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.features.expense.ExpenseApi
@@ -31,12 +31,12 @@ class ExpenseRepository(
     private val syncManager: SyncManager,
 ) {
 
-  fun getExpenses(householdId: String): Flow<List<ExpenseDto>> {
+  fun getExpenses(householdId: String): Flow<List<Expense>> {
     return expenseDao.getExpenses(householdId).map { entities ->
       entities.map { entity ->
         // TODO should we optimize this 1+n query?
-        val participants = expenseDao.getParticipants(entity.id).map { it.toDto() }
-        entity.toDto(participants)
+        val participants = expenseDao.getParticipants(entity.id).map { it.toDomain() }
+        entity.toDomain(participants)
       }
     }
   }
@@ -61,7 +61,7 @@ class ExpenseRepository(
       title: String,
       amount: Double,
       payerId: String,
-      participants: List<ParticipantShareDto>,
+      participants: List<ParticipantShare>,
       splitMethod: SplitMethod,
   ) {
     val expenseId = "local_" + randomId()
