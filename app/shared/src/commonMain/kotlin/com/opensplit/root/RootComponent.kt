@@ -111,8 +111,6 @@ class DefaultRootComponent(
                   context = cContext,
                   config = config,
                   onFinished = { rootNavigation.pop() },
-                  household = config.household,
-                  me = config.me,
               )
 
       else -> error("Destination not defined in createChild")
