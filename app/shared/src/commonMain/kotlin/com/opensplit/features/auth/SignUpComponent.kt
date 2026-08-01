@@ -5,8 +5,10 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.pop
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
+import com.opensplit.dto.auth.UserProfile
 import com.opensplit.remote.fieldErrors
 import com.opensplit.remote.userMessage
+import com.opensplit.repository.ProfileRepository
 import com.opensplit.validation.auth.AuthValidation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,6 +54,7 @@ class DefaultSignUpComponent(
     private val navigation: StackNavigation<AuthConfig>,
     private val gateway: AuthApi,
     private val tokenStorage: TokenStorage,
+    private val profileRepository: ProfileRepository,
     private val onAuthenticated: () -> Unit,
 ) : SignUpComponent {
   private val scope = context.componentScope()
@@ -92,6 +95,13 @@ class DefaultSignUpComponent(
       try {
         val result = gateway.signUp(current.email, current.password)
         tokenStorage.saveAccessToken(result.session.accessToken)
+        profileRepository.setProfile(
+            UserProfile(
+                id = result.session.userId,
+                name = result.session.name,
+                email = result.session.email,
+            )
+        )
         onAuthenticated()
       } catch (e: ApiCallError) {
         _state.update {
@@ -104,13 +114,21 @@ class DefaultSignUpComponent(
   class Factory(
       private val gateway: AuthApi,
       private val tokenStorage: TokenStorage,
+      private val profileRepository: ProfileRepository,
   ) : SignUpComponent.Factory {
     override fun create(
         context: CContext,
         navigation: StackNavigation<AuthConfig>,
         onAuthenticated: () -> Unit,
     ): SignUpComponent =
-        DefaultSignUpComponent(context, navigation, gateway, tokenStorage, onAuthenticated)
+        DefaultSignUpComponent(
+            context,
+            navigation,
+            gateway,
+            tokenStorage,
+            profileRepository,
+            onAuthenticated,
+        )
   }
 }
 

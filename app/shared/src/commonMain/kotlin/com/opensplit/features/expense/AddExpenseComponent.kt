@@ -218,6 +218,7 @@ class DefaultAddExpenseComponent(
                           context = componentContext,
                           allParticipants = _uiState.value.allParticipants,
                           amountSum = _uiState.value.amountSum,
+                          householdId = householdId,
                           onOptionSelected = { amounts, method ->
                             setPaidAmounts(amounts)
                             setSplitMethod(method)

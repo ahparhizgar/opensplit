@@ -6,7 +6,9 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.pushNew
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
+import com.opensplit.dto.auth.UserProfile
 import com.opensplit.remote.fieldErrors
+import com.opensplit.repository.ProfileRepository
 import com.opensplit.validation.auth.AuthValidation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,6 +50,7 @@ class DefaultLoginComponent(
     private val navigation: StackNavigation<AuthConfig>,
     private val gateway: AuthApi,
     private val tokenStorage: TokenStorage,
+    private val profileRepository: ProfileRepository,
     private val onAuthenticated: () -> Unit,
 ) : LoginComponent {
   private val scope = context.componentScope()
@@ -80,6 +83,13 @@ class DefaultLoginComponent(
       try {
         val result = gateway.signIn(current.email, current.password)
         tokenStorage.saveAccessToken(result.session.accessToken)
+        profileRepository.setProfile(
+            UserProfile(
+                id = result.session.userId,
+                name = result.session.name,
+                email = result.session.email,
+            )
+        )
         onAuthenticated()
       } catch (e: ClientError) {
         _state.update {
@@ -102,13 +112,21 @@ class DefaultLoginComponent(
   class Factory(
       private val gateway: AuthApi,
       private val tokenStorage: TokenStorage,
+      private val profileRepository: ProfileRepository,
   ) : LoginComponent.Factory {
     override fun create(
         context: CContext,
         navigation: StackNavigation<AuthConfig>,
         onAuthenticated: () -> Unit,
     ): LoginComponent =
-        DefaultLoginComponent(context, navigation, gateway, tokenStorage, onAuthenticated)
+        DefaultLoginComponent(
+            context,
+            navigation,
+            gateway,
+            tokenStorage,
+            profileRepository,
+            onAuthenticated,
+        )
   }
 }
 

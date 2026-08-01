@@ -13,6 +13,8 @@ import com.opensplit.features.auth.NoOpTokenStorage
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.expense.ExpenseApi
 import com.opensplit.features.household.HouseholdApi
+import com.opensplit.repository.InMemoryProfileRepository
+import com.opensplit.repository.ProfileRepository
 import com.opensplit.sync.SyncApi
 import io.kotest.core.spec.Spec
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +53,7 @@ fun integrationTestModule() = module {
   }
   single { FakeAuthApi() }.bind<AuthApi>()
   single { NoOpTokenStorage() }.bind<TokenStorage>()
+  single { InMemoryProfileRepository() }.bind<ProfileRepository>()
   single { FakeHouseholdApi() }.bind<HouseholdApi>()
   single { FakeExpenseApi() }.bind<ExpenseApi>()
   single { FakeSyncApi() }.bind<SyncApi>()
