@@ -24,21 +24,27 @@ class HouseholdRepository(
     private val syncManager: SyncManager,
 ) {
   fun getHouseholds(): Flow<List<HouseholdDto>> {
-    return dao.getHouseholds().map { entities -> entities.map { it.toDto() } }
+    return dao.getHouseholdsWithMembers().map { entities -> entities.map { it.toDto() } }
   }
 
   suspend fun refreshHouseholds() {
     val result = api.loadOverview()
-    dao.insertHouseholds(result.map { it.toEntity() })
+    database.useWriterConnection { connection ->
+      connection.immediateTransaction {
+        result.forEach { dto ->
+          dao.insertHouseholdWithMembers(dto.toEntity(), dto.members.map { it.toEntity(dto.id) })
+        }
+      }
+    }
   }
 
   suspend fun getHousehold(id: String): HouseholdDto? {
-    return dao.getHousehold(id)?.toDto()
+    return dao.getHouseholdWithMembers(id)?.toDto()
   }
 
   suspend fun refreshHousehold(id: String): HouseholdDto {
     val result = api.getHousehold(id)
-    dao.insertHouseholds(listOf(result.toEntity()))
+    dao.insertHouseholdWithMembers(result.toEntity(), result.members.map { it.toEntity(result.id) })
     return result
   }
 
@@ -63,7 +69,7 @@ class HouseholdRepository(
 
     database.useWriterConnection { connection ->
       connection.immediateTransaction {
-        dao.insertHouseholds(listOf(entity))
+        dao.insertHouseholdWithMembers(entity, emptyList())
         database.syncQueueDao().enqueue(syncEntry)
       }
     }
@@ -81,7 +87,7 @@ class HouseholdRepository(
 
     database.useWriterConnection { connection ->
       connection.immediateTransaction {
-        dao.deleteById(householdId)
+        dao.deleteHousehold(householdId)
         database.syncQueueDao().enqueue(syncEntry)
       }
     }

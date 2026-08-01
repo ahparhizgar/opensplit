@@ -10,6 +10,14 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HouseholdDao {
+  @Transaction
+  @Query("SELECT * FROM households")
+  fun getHouseholdsWithMembers(): Flow<List<HouseholdWithMembers>>
+
+  @Transaction
+  @Query("SELECT * FROM households WHERE id = :id")
+  suspend fun getHouseholdWithMembers(id: String): HouseholdWithMembers?
+
   @Query("SELECT * FROM households") fun getHouseholds(): Flow<List<HouseholdEntity>>
 
   @Query("SELECT * FROM households WHERE id = :id")
@@ -17,6 +25,25 @@ interface HouseholdDao {
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun insertHouseholds(households: List<HouseholdEntity>)
+
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  suspend fun insertMembers(members: List<MemberEntity>)
+
+  @Query("DELETE FROM household_members WHERE householdId = :householdId")
+  suspend fun deleteMembersByHousehold(householdId: String)
+
+  @Transaction
+  suspend fun insertHouseholdWithMembers(household: HouseholdEntity, members: List<MemberEntity>) {
+    insertHouseholds(listOf(household))
+    deleteMembersByHousehold(household.id)
+    insertMembers(members)
+  }
+
+  @Transaction
+  suspend fun deleteHousehold(id: String) {
+    deleteMembersByHousehold(id)
+    deleteById(id)
+  }
 
   @Query("DELETE FROM households WHERE id = :id") suspend fun deleteById(id: String)
 

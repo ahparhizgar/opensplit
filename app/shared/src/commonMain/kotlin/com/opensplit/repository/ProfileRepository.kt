@@ -5,35 +5,42 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.opensplit.dto.auth.UserProfile
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 interface ProfileRepository {
-  val profile: Flow<UserProfile?>
+  val profile: StateFlow<UserProfile?>
 
   suspend fun setProfile(profile: UserProfile?)
 }
 
 class InMemoryProfileRepository : ProfileRepository {
   private val _profile = MutableStateFlow<UserProfile?>(null)
-  override val profile: Flow<UserProfile?> = _profile
+  override val profile: StateFlow<UserProfile?> = _profile
 
   override suspend fun setProfile(profile: UserProfile?) {
     _profile.value = profile
   }
 }
 
-class DataStoreProfileRepository(private val dataStore: DataStore<Preferences>) :
-    ProfileRepository {
+class DataStoreProfileRepository(
+    scope: CoroutineScope,
+    private val dataStore: DataStore<Preferences>,
+) : ProfileRepository {
 
-  override val profile: Flow<UserProfile?> =
-      dataStore.data.map { prefs ->
-        val id = prefs[KEY_ID] ?: return@map null
-        val name = prefs[KEY_NAME]
-        val email = prefs[KEY_EMAIL] ?: return@map null
-        UserProfile(id = id, name = name, email = email)
-      }
+  override val profile: StateFlow<UserProfile?> =
+      dataStore.data
+          .map { prefs ->
+            val id = prefs[KEY_ID] ?: return@map null
+            val name = prefs[KEY_NAME]
+            val email = prefs[KEY_EMAIL] ?: return@map null
+            UserProfile(id = id, name = name, email = email)
+          }
+          .stateIn(scope, SharingStarted.Eagerly, null)
 
   override suspend fun setProfile(profile: UserProfile?) {
     dataStore.edit { prefs ->

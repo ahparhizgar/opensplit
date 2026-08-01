@@ -9,6 +9,7 @@ import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.household.FakeHouseholdMemberDtoFactory
 import com.opensplit.dto.household.HouseholdMemberDto
 import com.opensplit.repository.HouseholdRepository
+import com.opensplit.repository.ProfileRepository
 import kotlinx.coroutines.launch
 
 interface QuickSplitComponent {
@@ -51,6 +52,7 @@ class DefaultQuickSplitComponent(
     private val onOptionSelected: (PayAmountsUiState, SplitMethod) -> Unit,
     private val onAdjustSplitClicked: () -> Unit,
     private val repository: HouseholdRepository,
+    private val profileRepository: ProfileRepository,
 ) : QuickSplitComponent, CContext by context {
 
   private val _uiState = MutableValue(QuickSplitUiState(amountSum))
@@ -59,13 +61,19 @@ class DefaultQuickSplitComponent(
 
   init {
     scope.launch {
-      val members = repository.getHousehold(householdId)!!.members
-      val firstMember = members.find { it.userId == allParticipants[0] }
-      val secondMember = members.find { it.userId == allParticipants[1] }
-      _uiState.update {
-        // Todo find out which one is the current user and set it as "you"
-        it.copy(you = firstMember, other = secondMember)
-      }
+      val household = repository.getHousehold(householdId)
+      val members =
+          if (household == null || household.members.isEmpty()) {
+            repository.refreshHousehold(householdId).members
+          } else {
+            household.members
+          }
+
+      val currentUserId = profileRepository.profile.value?.id
+      val otherMember = members.firstOrNull { it.userId != currentUserId }
+      val firstMember = members.firstOrNull { it.userId == currentUserId }
+
+      _uiState.update { it.copy(you = firstMember, other = otherMember) }
     }
   }
 
@@ -117,6 +125,7 @@ class DefaultQuickSplitComponent(
 
   class Factory(
       private val repository: HouseholdRepository,
+      private val profileRepository: ProfileRepository,
   ) : QuickSplitComponent.Factory {
     override fun create(
         context: CContext,
@@ -131,6 +140,7 @@ class DefaultQuickSplitComponent(
           allParticipants = allParticipants,
           amountSum = amountSum,
           repository = repository,
+          profileRepository = profileRepository,
           onOptionSelected = onOptionSelected,
           onAdjustSplitClicked = onAdjustSplitClicked,
           householdId = householdId,

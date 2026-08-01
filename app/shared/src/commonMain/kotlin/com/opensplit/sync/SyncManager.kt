@@ -120,8 +120,11 @@ class SyncManager(
           val result = householdApi.createHousehold(household.name)
           database.useWriterConnection { connection ->
             connection.immediateTransaction {
-              householdDao.deleteById(entry.entityId)
-              householdDao.insertHouseholds(listOf(result.toEntity()))
+              householdDao.deleteHousehold(entry.entityId)
+              householdDao.insertHouseholdWithMembers(
+                  result.toEntity(),
+                  result.members.map { it.toEntity(result.id) },
+              )
               syncQueueDao.dequeue(entry)
             }
           }
@@ -141,7 +144,10 @@ class SyncManager(
     database.useWriterConnection { connection ->
       connection.immediateTransaction {
         response.changedEntities.households.forEach { dto ->
-          householdDao.insertHouseholds(listOf(dto.toEntity()))
+          householdDao.insertHouseholdWithMembers(
+              dto.toEntity(),
+              dto.members.map { it.toEntity(dto.id) },
+          )
         }
 
         response.changedEntities.expenses.forEach { dto ->
@@ -150,7 +156,7 @@ class SyncManager(
           expenseDao.insertExpenseWithParticipants(entity, participants)
         }
 
-        response.deletedEntities.households.forEach { id -> householdDao.deleteById(id) }
+        response.deletedEntities.households.forEach { id -> householdDao.deleteHousehold(id) }
 
         response.deletedEntities.expenses.forEach { id ->
           expenseDao.deleteExpense(id)

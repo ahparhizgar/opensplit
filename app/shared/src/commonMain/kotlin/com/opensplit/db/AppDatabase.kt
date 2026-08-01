@@ -12,12 +12,13 @@ import kotlinx.coroutines.Dispatchers
     entities =
         [
             HouseholdEntity::class,
+            MemberEntity::class,
             ExpenseEntity::class,
             ParticipantEntity::class,
             SyncQueueEntity::class,
             SyncMetadataEntity::class,
         ],
-    version = 1,
+    version = 3,
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
