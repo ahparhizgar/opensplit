@@ -1,6 +1,8 @@
 package com.opensplit.features.expense
 
 import com.arkivanov.decompose.childContext
+import com.arkivanov.decompose.value.MutableValue
+import com.arkivanov.decompose.value.Value
 import com.opensplit.component.CContext
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SplitType
@@ -11,8 +13,11 @@ interface AdjustSplitComponent {
   val percentageComponent: PercentageSplitComponent
   val sharesComponent: SharesSplitComponent
   val adjustmentComponent: AdjustmentSplitComponent
+  val payerName: Value<String>
 
   fun onTabChanged(splitType: SplitType)
+
+  fun onPayerClicked()
 
   fun onDoneClicked()
 
@@ -21,6 +26,8 @@ interface AdjustSplitComponent {
         context: CContext,
         initialParticipants: List<String>,
         totalAmount: Double,
+        payerName: Value<String>,
+        onPayerClicked: () -> Unit,
         onDone: (SplitMethod) -> Unit,
     ): AdjustSplitComponent
   }
@@ -30,6 +37,8 @@ class DefaultAdjustSplitComponent(
     context: CContext,
     initialParticipants: List<String>,
     totalAmount: Double,
+    override val payerName: Value<String>,
+    private val onPayerClicked: () -> Unit,
     private val onDone: (SplitMethod) -> Unit,
 ) : AdjustSplitComponent, CContext by context {
 
@@ -48,6 +57,10 @@ class DefaultAdjustSplitComponent(
 
   override fun onTabChanged(splitType: SplitType) {
     currentSplitType = splitType
+  }
+
+  override fun onPayerClicked() {
+    onPayerClicked.invoke()
   }
 
   override fun onDoneClicked() {
@@ -86,9 +99,18 @@ class DefaultAdjustSplitComponent(
         context: CContext,
         initialParticipants: List<String>,
         totalAmount: Double,
+        payerName: Value<String>,
+        onPayerClicked: () -> Unit,
         onDone: (SplitMethod) -> Unit,
     ): AdjustSplitComponent =
-        DefaultAdjustSplitComponent(context, initialParticipants, totalAmount, onDone)
+        DefaultAdjustSplitComponent(
+            context,
+            initialParticipants,
+            totalAmount,
+            payerName,
+            onPayerClicked,
+            onDone,
+        )
   }
 }
 
@@ -98,8 +120,11 @@ class FakeAdjustSplitComponent(
     override val percentageComponent: PercentageSplitComponent = FakePercentageSplitComponent(),
     override val sharesComponent: SharesSplitComponent = FakeSharesSplitComponent(),
     override val adjustmentComponent: AdjustmentSplitComponent = FakeAdjustmentSplitComponent(),
+    override val payerName: Value<String> = MutableValue("AmirHossein"),
 ) : AdjustSplitComponent {
   override fun onTabChanged(splitType: SplitType) {}
+
+  override fun onPayerClicked() {}
 
   override fun onDoneClicked() {}
 }

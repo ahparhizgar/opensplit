@@ -24,7 +24,7 @@ interface PaidAmountsComponent {
   }
 }
 
-data class ParticipantValue(val userId: String, val value: String)
+data class ParticipantValue(val userId: String, val name: String, val value: String)
 
 data class PaidAmountsUiState(
     val allParticipantAmounts: List<ParticipantValue>,
@@ -52,17 +52,19 @@ class DefaultPaidAmountsComponent(
                           if (member.userId == initial.userId)
                               ParticipantValue(
                                   initial.userId,
+                                  member.name,
                                   initial.amount.toString(),
                               )
-                          else ParticipantValue(member.userId, "")
+                          else ParticipantValue(member.userId, member.name, "")
                         }
 
                     is PayAmounts.MultiplePeople ->
                         household.members.map { member ->
                           initial.amounts
                               .find { it.userId == member.userId }
-                              ?.let { ParticipantValue(member.userId, it.amount.toString()) }
-                              ?: ParticipantValue(member.userId, "")
+                              ?.let {
+                                ParticipantValue(member.userId, member.name, it.amount.toString())
+                              } ?: ParticipantValue(member.userId, member.name, "")
                         }
                   },
           )
@@ -128,17 +130,19 @@ class FakePaidAmountsComponent(
                           if (member.userId == initial.userId)
                               ParticipantValue(
                                   initial.userId,
+                                  member.name,
                                   initial.amount.toString(),
                               )
-                          else ParticipantValue(member.userId, "")
+                          else ParticipantValue(member.userId, member.name, "")
                         }
 
                     is PayAmounts.MultiplePeople ->
                         household.members.map { member ->
                           initial.amounts
                               .find { it.userId == member.userId }
-                              ?.let { ParticipantValue(member.userId, it.amount.toString()) }
-                              ?: ParticipantValue(member.userId, "")
+                              ?.let {
+                                ParticipantValue(member.userId, member.name, it.amount.toString())
+                              } ?: ParticipantValue(member.userId, member.name, "")
                         }
                   },
           )

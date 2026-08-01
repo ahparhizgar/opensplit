@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.input.key.onKeyEvent
@@ -23,6 +24,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
@@ -44,6 +46,23 @@ fun UnequallySplitPage(component: UnequallySplitComponent, onDone: () -> Unit = 
               }
             }
     ) {
+      item {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+          Text(
+              text = "Split by exact amounts",
+              style = MaterialTheme.typography.titleMedium,
+              fontWeight = FontWeight.Bold,
+          )
+          Text(
+              text = "Specify exactly how much each person owes.",
+              style = MaterialTheme.typography.bodyMedium,
+              textAlign = TextAlign.Center,
+          )
+        }
+      }
       itemsIndexed(component.initialParticipants) { index, id ->
         ListItem(
             headlineContent = { Text(id) },

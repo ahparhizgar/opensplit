@@ -10,6 +10,7 @@ import com.arkivanov.decompose.router.stack.popTo
 import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.decompose.value.operator.map
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
@@ -195,7 +196,7 @@ class DefaultAddExpenseComponent(
                   AddExpenseComponent.Child.WhoPaid(
                       whoPaidComponentFactory.create(
                           context = componentContext,
-                          allParticipants = _uiState.value.allParticipants,
+                          participants = _uiState.value.participants,
                           selectedUserId =
                               (_uiState.value.payAmounts as? PayAmountsUiState.OnePerson)?.userId,
                           onParticipantSelected = { userId ->
@@ -241,6 +242,15 @@ class DefaultAddExpenseComponent(
                           context = componentContext,
                           initialParticipants = _uiState.value.allParticipants,
                           totalAmount = _uiState.value.payAmountsDomain.sum(),
+                          payerName =
+                              _uiState.map { state ->
+                                when (state.payAmountsDomain) {
+                                  is PayAmounts.MultiplePeople -> "Multiple people"
+                                  is PayAmounts.OnePerson ->
+                                      state.getParticipantName(state.payAmountsDomain.userId)
+                                }
+                              },
+                          onPayerClicked = { navigateToPayerSelection() },
                           onDone = { splitMethod ->
                             _uiState.update { it.copy(splitMethod = splitMethod) }
                             stackNavigation.navigate { it.dropLast(2) }
@@ -316,6 +326,7 @@ class DefaultAddExpenseComponent(
                               listOf(
                                   ParticipantValue(
                                       userId = userId,
+                                      name = it.getParticipantName(userId),
                                       value = amount,
                                   )
                               )

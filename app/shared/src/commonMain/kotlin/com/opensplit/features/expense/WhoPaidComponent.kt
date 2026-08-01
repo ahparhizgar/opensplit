@@ -3,6 +3,7 @@ package com.opensplit.features.expense
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.opensplit.component.CContext
+import com.opensplit.domain.Member
 
 interface WhoPaidComponent {
   val uiState: Value<WhoPaidUiState>
@@ -14,7 +15,7 @@ interface WhoPaidComponent {
   interface Factory {
     fun create(
         context: CContext,
-        allParticipants: List<String>,
+        participants: List<Member>,
         selectedUserId: String?,
         onParticipantSelected: (String) -> Unit,
         onMultiplePeopleClicked: () -> Unit,
@@ -23,13 +24,13 @@ interface WhoPaidComponent {
 }
 
 data class WhoPaidUiState(
-    val allParticipants: List<String>,
+    val participants: List<Member>,
     val selectedUserId: String?,
 )
 
 class DefaultWhoPaidComponent(
     context: CContext,
-    allParticipants: List<String>,
+    participants: List<Member>,
     selectedUserId: String?,
     private val onParticipantSelected: (String) -> Unit,
     private val onMultiplePeopleClicked: () -> Unit,
@@ -38,7 +39,7 @@ class DefaultWhoPaidComponent(
   private val _uiState =
       MutableValue(
           WhoPaidUiState(
-              allParticipants = allParticipants,
+              participants = participants,
               selectedUserId = selectedUserId,
           )
       )
@@ -46,24 +47,24 @@ class DefaultWhoPaidComponent(
   override val uiState: Value<WhoPaidUiState> = _uiState
 
   override fun onParticipantSelected(userId: String) {
-    onParticipantSelected(userId)
+    onParticipantSelected.invoke(userId)
   }
 
   override fun onMultiplePeopleClicked() {
-    onMultiplePeopleClicked()
+    onMultiplePeopleClicked.invoke()
   }
 
   class Factory : WhoPaidComponent.Factory {
     override fun create(
         context: CContext,
-        allParticipants: List<String>,
+        participants: List<Member>,
         selectedUserId: String?,
         onParticipantSelected: (String) -> Unit,
         onMultiplePeopleClicked: () -> Unit,
     ): WhoPaidComponent {
       return DefaultWhoPaidComponent(
           context = context,
-          allParticipants = allParticipants,
+          participants = participants,
           selectedUserId = selectedUserId,
           onParticipantSelected = onParticipantSelected,
           onMultiplePeopleClicked = onMultiplePeopleClicked,
@@ -72,9 +73,8 @@ class DefaultWhoPaidComponent(
   }
 }
 
-class FakeWhoPaidComponent(
-    uiState: WhoPaidUiState = WhoPaidUiState(listOf("user1", "user2"), "user1")
-) : WhoPaidComponent {
+class FakeWhoPaidComponent(uiState: WhoPaidUiState = WhoPaidUiState(emptyList(), "user1")) :
+    WhoPaidComponent {
   override val uiState: Value<WhoPaidUiState> = MutableValue(uiState)
 
   override fun onParticipantSelected(userId: String) {}
