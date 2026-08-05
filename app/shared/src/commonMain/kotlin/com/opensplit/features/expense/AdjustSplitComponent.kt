@@ -4,6 +4,7 @@ import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.opensplit.component.CContext
+import com.opensplit.domain.Member
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SplitType
 
@@ -24,7 +25,7 @@ interface AdjustSplitComponent {
   interface Factory {
     fun create(
         context: CContext,
-        initialParticipants: List<String>,
+        participants: List<Member>,
         totalAmount: Double,
         payerName: Value<String>,
         onPayerClicked: () -> Unit,
@@ -35,7 +36,7 @@ interface AdjustSplitComponent {
 
 class DefaultAdjustSplitComponent(
     context: CContext,
-    initialParticipants: List<String>,
+    participants: List<Member>,
     totalAmount: Double,
     override val payerName: Value<String>,
     private val onPayerClicked: () -> Unit,
@@ -45,15 +46,14 @@ class DefaultAdjustSplitComponent(
   private var currentSplitType = SplitType.EQUALLY
 
   override val equallyComponent =
-      DefaultEquallySplitComponent(childContext("equally"), initialParticipants)
+      DefaultEquallySplitComponent(childContext("equally"), participants)
   override val unequallyComponent =
-      DefaultUnequallySplitComponent(childContext("unequally"), initialParticipants, totalAmount)
+      DefaultUnequallySplitComponent(childContext("unequally"), participants, totalAmount)
   override val percentageComponent =
-      DefaultPercentageSplitComponent(childContext("percentage"), initialParticipants)
-  override val sharesComponent =
-      DefaultSharesSplitComponent(childContext("shares"), initialParticipants)
+      DefaultPercentageSplitComponent(childContext("percentage"), participants)
+  override val sharesComponent = DefaultSharesSplitComponent(childContext("shares"), participants)
   override val adjustmentComponent =
-      DefaultAdjustmentSplitComponent(childContext("adjustment"), initialParticipants)
+      DefaultAdjustmentSplitComponent(childContext("adjustment"), participants)
 
   override fun onTabChanged(splitType: SplitType) {
     currentSplitType = splitType
@@ -97,7 +97,7 @@ class DefaultAdjustSplitComponent(
   class Factory : AdjustSplitComponent.Factory {
     override fun create(
         context: CContext,
-        initialParticipants: List<String>,
+        participants: List<Member>,
         totalAmount: Double,
         payerName: Value<String>,
         onPayerClicked: () -> Unit,
@@ -105,7 +105,7 @@ class DefaultAdjustSplitComponent(
     ): AdjustSplitComponent =
         DefaultAdjustSplitComponent(
             context,
-            initialParticipants,
+            participants,
             totalAmount,
             payerName,
             onPayerClicked,

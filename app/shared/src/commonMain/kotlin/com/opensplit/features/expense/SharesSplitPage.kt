@@ -26,6 +26,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.ui.OpenSplitTheme
 
 @Composable
@@ -44,22 +45,22 @@ fun SharesSplitPage(component: SharesSplitComponent, onDone: () -> Unit = {}) {
               }
             }
     ) {
-      itemsIndexed(component.initialParticipants) { index, id ->
+      itemsIndexed(component.participants) { index, member ->
         ListItem(
-            headlineContent = { Text(id) },
+            headlineContent = { Text(if (member.isCurrentUser) "you" else member.name) },
             trailingContent = {
               val style = MaterialTheme.typography.bodyMedium
               TextField(
                   modifier = Modifier.width(100.dp),
-                  value = uiState.shares[id] ?: "",
-                  onValueChange = { component.onParticipantSharesChanged(id, it) },
+                  value = uiState.shares[member.userId] ?: "",
+                  onValueChange = { component.onParticipantSharesChanged(member.userId, it) },
                   placeholder = { Text(text = "0", style = style) },
                   colors = transparentTextFieldColors,
                   keyboardOptions =
                       KeyboardOptions(
                           keyboardType = KeyboardType.Number,
                           imeAction =
-                              if (index < component.initialParticipants.lastIndex) ImeAction.Next
+                              if (index < component.participants.lastIndex) ImeAction.Next
                               else ImeAction.Done,
                       ),
                   keyboardActions =
@@ -92,7 +93,7 @@ private fun SharesSplitPreview() {
   OpenSplitTheme {
     SharesSplitPage(
         FakeSharesSplitComponent(
-            initialParticipants = listOf("Alice", "Bob"),
+            participants = FakeMemberFactory.createList(),
             uiState =
                 SharesSplitUiState(shares = mapOf("Alice" to "2", "Bob" to "1"), totalShares = 3),
         )

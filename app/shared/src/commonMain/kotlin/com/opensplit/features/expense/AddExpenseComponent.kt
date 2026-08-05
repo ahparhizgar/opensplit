@@ -240,7 +240,7 @@ class DefaultAddExpenseComponent(
                   AddExpenseComponent.Child.AdjustSplit(
                       adjustSplitComponentFactory.create(
                           context = componentContext,
-                          initialParticipants = _uiState.value.allParticipants,
+                          participants = _uiState.value.participants,
                           totalAmount = _uiState.value.payAmountsDomain.sum(),
                           payerName =
                               _uiState.map { state ->

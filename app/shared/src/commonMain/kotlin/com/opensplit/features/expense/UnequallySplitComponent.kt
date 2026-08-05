@@ -4,6 +4,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
+import com.opensplit.domain.Member
 
 data class UnequallySplitUiState(
     val amounts: Map<String, String> = emptyMap(),
@@ -12,7 +13,7 @@ data class UnequallySplitUiState(
 
 interface UnequallySplitComponent {
   val uiState: Value<UnequallySplitUiState>
-  val initialParticipants: List<String>
+  val participants: List<Member>
   val totalAmount: Double
 
   fun onParticipantAmountChanged(userId: String, amount: String)
@@ -20,7 +21,7 @@ interface UnequallySplitComponent {
 
 class DefaultUnequallySplitComponent(
     context: CContext,
-    override val initialParticipants: List<String>,
+    override val participants: List<Member>,
     override val totalAmount: Double,
 ) : UnequallySplitComponent, CContext by context {
   private val _uiState = MutableValue(UnequallySplitUiState(remainingAmount = totalAmount))
@@ -44,7 +45,7 @@ class DefaultUnequallySplitComponent(
 }
 
 class FakeUnequallySplitComponent(
-    override val initialParticipants: List<String> = emptyList(),
+    override val participants: List<Member> = emptyList(),
     override val totalAmount: Double = 0.0,
     uiState: UnequallySplitUiState = UnequallySplitUiState(remainingAmount = totalAmount),
 ) : UnequallySplitComponent {

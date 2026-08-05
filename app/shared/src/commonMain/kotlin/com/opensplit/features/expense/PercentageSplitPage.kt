@@ -26,6 +26,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.ui.OpenSplitTheme
 
 @Composable
@@ -44,15 +45,15 @@ fun PercentageSplitPage(component: PercentageSplitComponent, onDone: () -> Unit 
               }
             }
     ) {
-      itemsIndexed(component.initialParticipants) { index, id ->
+      itemsIndexed(component.participants) { index, member ->
         ListItem(
-            headlineContent = { Text(id) },
+            headlineContent = { Text(if (member.isCurrentUser) "you" else member.name) },
             trailingContent = {
               val style = MaterialTheme.typography.bodyMedium
               TextField(
                   modifier = Modifier.width(100.dp),
-                  value = uiState.percentages[id] ?: "",
-                  onValueChange = { component.onParticipantPercentageChanged(id, it) },
+                  value = uiState.percentages[member.userId] ?: "",
+                  onValueChange = { component.onParticipantPercentageChanged(member.userId, it) },
                   placeholder = { Text(text = "0", style = style) },
                   suffix = { Text("%") },
                   colors = transparentTextFieldColors,
@@ -60,7 +61,7 @@ fun PercentageSplitPage(component: PercentageSplitComponent, onDone: () -> Unit 
                       KeyboardOptions(
                           keyboardType = KeyboardType.Decimal,
                           imeAction =
-                              if (index < component.initialParticipants.lastIndex) ImeAction.Next
+                              if (index < component.participants.lastIndex) ImeAction.Next
                               else ImeAction.Done,
                       ),
                   keyboardActions =
@@ -102,7 +103,7 @@ private fun PercentageSplitPreview() {
   OpenSplitTheme {
     PercentageSplitPage(
         FakePercentageSplitComponent(
-            initialParticipants = listOf("Alice", "Bob"),
+            participants = FakeMemberFactory.createList(),
             uiState =
                 PercentageSplitUiState(
                     percentages = mapOf("Alice" to "50"),

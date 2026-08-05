@@ -4,25 +4,26 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
+import com.opensplit.domain.Member
 
 data class AdjustmentSplitUiState(
     val adjustments: Map<String, String> = emptyMap(),
-    val allParticipants: List<String> = emptyList(),
+    val participants: List<Member> = emptyList(),
     val totalAdjustment: Double = 0.0,
 )
 
 interface AdjustmentSplitComponent {
   val uiState: Value<AdjustmentSplitUiState>
-  val initialParticipants: List<String>
+  val participants: List<Member>
 
   fun onParticipantAdjustmentChanged(userId: String, adjustment: String)
 }
 
 class DefaultAdjustmentSplitComponent(
     context: CContext,
-    override val initialParticipants: List<String>,
+    override val participants: List<Member>,
 ) : AdjustmentSplitComponent, CContext by context {
-  private val _uiState = MutableValue(AdjustmentSplitUiState(allParticipants = initialParticipants))
+  private val _uiState = MutableValue(AdjustmentSplitUiState(participants = participants))
   override val uiState: Value<AdjustmentSplitUiState> = _uiState
 
   override fun onParticipantAdjustmentChanged(userId: String, adjustment: String) {
@@ -33,8 +34,8 @@ class DefaultAdjustmentSplitComponent(
 }
 
 class FakeAdjustmentSplitComponent(
-    override val initialParticipants: List<String> = emptyList(),
-    uiState: AdjustmentSplitUiState = AdjustmentSplitUiState(allParticipants = initialParticipants),
+    override val participants: List<Member> = emptyList(),
+    uiState: AdjustmentSplitUiState = AdjustmentSplitUiState(participants = participants),
 ) : AdjustmentSplitComponent {
   override val uiState: Value<AdjustmentSplitUiState> = MutableValue(uiState)
 
