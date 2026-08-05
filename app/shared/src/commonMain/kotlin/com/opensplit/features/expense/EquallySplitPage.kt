@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.ui.OpenSplitTheme
 
 @Composable
@@ -36,13 +37,13 @@ fun EquallySplitPage(component: EquallySplitComponent, onDone: () -> Unit = {}) 
               }
             }
     ) {
-      items(component.initialParticipants) { id ->
+      items(component.participants) { member ->
         ListItem(
-            headlineContent = { Text(id) },
+            headlineContent = { Text(if (member.isCurrentUser) "you" else member.name) },
             trailingContent = {
               Checkbox(
-                  checked = id in uiState.userIds,
-                  onCheckedChange = { component.onParticipantInclusionChanged(id, it) },
+                  checked = member.userId in uiState.userIds,
+                  onCheckedChange = { component.onParticipantInclusionChanged(member.userId, it) },
               )
             },
         )
@@ -67,7 +68,7 @@ private fun EquallySplitPreview() {
   OpenSplitTheme {
     EquallySplitPage(
         FakeEquallySplitComponent(
-            initialParticipants = listOf("Alice", "Bob", "Charlie"),
+            participants = FakeMemberFactory.createList(),
             uiState = EquallySplitUiState(userIds = setOf("Alice", "Bob")),
         )
     )

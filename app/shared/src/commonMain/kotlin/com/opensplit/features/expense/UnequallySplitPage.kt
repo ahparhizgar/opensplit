@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.ui.OpenSplitTheme
 
 @Composable
@@ -63,15 +64,15 @@ fun UnequallySplitPage(component: UnequallySplitComponent, onDone: () -> Unit = 
           )
         }
       }
-      itemsIndexed(component.initialParticipants) { index, id ->
+      itemsIndexed(component.participants) { index, member ->
         ListItem(
-            headlineContent = { Text(id) },
+            headlineContent = { Text(if (member.isCurrentUser) "you" else member.name) },
             trailingContent = {
               val style = MaterialTheme.typography.bodyMedium
               TextField(
                   modifier = Modifier.width(120.dp),
-                  value = uiState.amounts[id] ?: "",
-                  onValueChange = { component.onParticipantAmountChanged(id, it) },
+                  value = uiState.amounts[member.userId] ?: "",
+                  onValueChange = { component.onParticipantAmountChanged(member.userId, it) },
                   placeholder = { Text(text = "0.00", style = style) },
                   prefix = { Text("IRR ") },
                   colors = transparentTextFieldColors,
@@ -79,7 +80,7 @@ fun UnequallySplitPage(component: UnequallySplitComponent, onDone: () -> Unit = 
                       KeyboardOptions(
                           keyboardType = KeyboardType.Decimal,
                           imeAction =
-                              if (index < component.initialParticipants.lastIndex) ImeAction.Next
+                              if (index < component.participants.lastIndex) ImeAction.Next
                               else ImeAction.Done,
                       ),
                   keyboardActions =
@@ -122,7 +123,7 @@ private fun UnequallySplitPreview() {
   OpenSplitTheme {
     UnequallySplitPage(
         FakeUnequallySplitComponent(
-            initialParticipants = listOf("Alice", "Bob"),
+            participants = FakeMemberFactory.createList(),
             totalAmount = 1000.0,
             uiState =
                 UnequallySplitUiState(amounts = mapOf("Alice" to "600"), remainingAmount = 400.0),

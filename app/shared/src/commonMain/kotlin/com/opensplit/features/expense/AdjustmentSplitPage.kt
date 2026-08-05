@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.ui.OpenSplitTheme
 
 @Composable
@@ -40,16 +41,16 @@ fun AdjustmentSplitPage(component: AdjustmentSplitComponent, onDone: () -> Unit 
               }
             }
     ) {
-      itemsIndexed(component.initialParticipants) { index, id ->
+      itemsIndexed(component.participants) { index, member ->
         ListItem(
-            headlineContent = { Text(id) },
-            supportingContent = { Text("IRR ${uiState.adjustments[id] ?: "0.00"}") },
+            headlineContent = { Text(if (member.isCurrentUser) "you" else member.name) },
+            supportingContent = { Text("IRR ${uiState.adjustments[member.userId] ?: "0.00"}") },
             trailingContent = {
               val style = MaterialTheme.typography.bodyMedium
               TextField(
                   modifier = Modifier.width(120.dp),
-                  value = uiState.adjustments[id] ?: "",
-                  onValueChange = { component.onParticipantAdjustmentChanged(id, it) },
+                  value = uiState.adjustments[member.userId] ?: "",
+                  onValueChange = { component.onParticipantAdjustmentChanged(member.userId, it) },
                   placeholder = { Text(text = "0.00", style = style) },
                   prefix = { Text("+ IRR ") },
                   colors = transparentTextFieldColors,
@@ -57,7 +58,7 @@ fun AdjustmentSplitPage(component: AdjustmentSplitComponent, onDone: () -> Unit 
                       KeyboardOptions(
                           keyboardType = KeyboardType.Decimal,
                           imeAction =
-                              if (index < component.initialParticipants.lastIndex) ImeAction.Next
+                              if (index < component.participants.lastIndex) ImeAction.Next
                               else ImeAction.Done,
                       ),
                   keyboardActions =
@@ -81,7 +82,7 @@ private fun AdjustmentSplitPreview() {
   OpenSplitTheme {
     AdjustmentSplitPage(
         FakeAdjustmentSplitComponent(
-            initialParticipants = listOf("Alice", "Bob"),
+            participants = FakeMemberFactory.createList(),
             uiState = AdjustmentSplitUiState(adjustments = mapOf("Alice" to "100.00")),
         )
     )

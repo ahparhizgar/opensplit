@@ -4,6 +4,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
+import com.opensplit.domain.Member
 
 data class PercentageSplitUiState(
     val percentages: Map<String, String> = emptyMap(),
@@ -12,14 +13,14 @@ data class PercentageSplitUiState(
 
 interface PercentageSplitComponent {
   val uiState: Value<PercentageSplitUiState>
-  val initialParticipants: List<String>
+  val participants: List<Member>
 
   fun onParticipantPercentageChanged(userId: String, percentage: String)
 }
 
 class DefaultPercentageSplitComponent(
     context: CContext,
-    override val initialParticipants: List<String>,
+    override val participants: List<Member>,
 ) : PercentageSplitComponent, CContext by context {
   private val _uiState = MutableValue(PercentageSplitUiState())
   override val uiState: Value<PercentageSplitUiState> = _uiState
@@ -44,7 +45,7 @@ class DefaultPercentageSplitComponent(
 }
 
 class FakePercentageSplitComponent(
-    override val initialParticipants: List<String> = emptyList(),
+    override val participants: List<Member> = emptyList(),
     uiState: PercentageSplitUiState = PercentageSplitUiState(),
 ) : PercentageSplitComponent {
   override val uiState: Value<PercentageSplitUiState> = MutableValue(uiState)

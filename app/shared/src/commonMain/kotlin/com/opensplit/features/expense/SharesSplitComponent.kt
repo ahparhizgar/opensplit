@@ -4,6 +4,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
+import com.opensplit.domain.Member
 
 data class SharesSplitUiState(
     val shares: Map<String, String> = emptyMap(),
@@ -12,14 +13,14 @@ data class SharesSplitUiState(
 
 interface SharesSplitComponent {
   val uiState: Value<SharesSplitUiState>
-  val initialParticipants: List<String>
+  val participants: List<Member>
 
   fun onParticipantSharesChanged(userId: String, shares: String)
 }
 
 class DefaultSharesSplitComponent(
     context: CContext,
-    override val initialParticipants: List<String>,
+    override val participants: List<Member>,
 ) : SharesSplitComponent, CContext by context {
   private val _uiState = MutableValue(SharesSplitUiState())
   override val uiState: Value<SharesSplitUiState> = _uiState
@@ -38,7 +39,7 @@ class DefaultSharesSplitComponent(
 }
 
 class FakeSharesSplitComponent(
-    override val initialParticipants: List<String> = emptyList(),
+    override val participants: List<Member> = emptyList(),
     uiState: SharesSplitUiState = SharesSplitUiState(),
 ) : SharesSplitComponent {
   override val uiState: Value<SharesSplitUiState> = MutableValue(uiState)
