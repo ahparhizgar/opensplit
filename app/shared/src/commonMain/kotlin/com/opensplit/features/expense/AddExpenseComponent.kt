@@ -221,21 +221,41 @@ class DefaultAddExpenseComponent(
                               },
                           )
                   )
-              is AddExpenseChildConfig.QuickSplitSelection ->
-                  AddExpenseComponent.Child.QuickSplitSelection(
-                      quickSplitComponentFactory.create(
-                          context = componentContext,
-                          allParticipants = _uiState.value.allParticipants,
-                          amountSum = _uiState.value.amountSum,
-                          householdId = householdId,
-                          onOptionSelected = { amounts, method ->
-                            setPaidAmounts(amounts)
-                            setSplitMethod(method)
-                            stackNavigation.pop()
-                          },
-                          onAdjustSplitClicked = { navigateToAdjustSplit() },
-                      )
-                  )
+              is AddExpenseChildConfig.QuickSplitSelection -> {
+                val state = _uiState.value
+                val currentUserId = profileRepository.profile.value?.id ?: ""
+                val otherId =
+                    state.participants.firstOrNull { it.userId != currentUserId }?.userId ?: ""
+                val amountText =
+                    when (val p = state.payAmounts) {
+                      is PayAmountsUiState.OnePerson -> p.amount
+                      is PayAmountsUiState.MultiplePeople -> state.amountSum.toString()
+                    }
+                AddExpenseComponent.Child.QuickSplitSelection(
+                    quickSplitComponentFactory.create(
+                        context = componentContext,
+                        allParticipants = state.allParticipants,
+                        amountText = amountText,
+                        amountSum = state.amountSum,
+                        householdId = householdId,
+                        initialOption =
+                            QuickSplitComponent.getOption(
+                                payAmounts = state.payAmounts,
+                                splitMethod = state.splitMethod,
+                                youId = currentUserId,
+                                otherId = otherId,
+                                amountSum = state.amountSum,
+                                allParticipants = state.allParticipants,
+                            ),
+                        onOptionSelected = { amounts, method ->
+                          setPaidAmounts(amounts)
+                          setSplitMethod(method)
+                          stackNavigation.pop()
+                        },
+                        onAdjustSplitClicked = { navigateToAdjustSplit() },
+                    )
+                )
+              }
               is AddExpenseChildConfig.AdjustSplit ->
                   AddExpenseComponent.Child.AdjustSplit(
                       adjustSplitComponentFactory.create(
