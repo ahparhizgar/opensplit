@@ -4,7 +4,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +34,13 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               )
             },
         headlineContent = { Text("You paid, split equally.") },
+        trailingContent = {
+          if (
+              uiState.selectedOption == QuickSplitComponent.QuickSplitOption.YOU_PAID_SPLIT_EQUALLY
+          ) {
+            Icon(Icons.Default.Check, contentDescription = null)
+          }
+        },
     )
     ListItem(
         modifier =
@@ -40,6 +50,14 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               )
             },
         headlineContent = { Text("You are owed the full amount.") },
+        trailingContent = {
+          if (
+              uiState.selectedOption ==
+                  QuickSplitComponent.QuickSplitOption.YOU_ARE_OWED_FULL_AMOUNT
+          ) {
+            Icon(Icons.Default.Check, contentDescription = null)
+          }
+        },
     )
     ListItem(
         modifier =
@@ -49,6 +67,14 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               )
             },
         headlineContent = { Text("${uiState.other?.name} paid, split equally.") },
+        trailingContent = {
+          if (
+              uiState.selectedOption ==
+                  QuickSplitComponent.QuickSplitOption.OTHER_PAID_SPLIT_EQUALLY
+          ) {
+            Icon(Icons.Default.Check, contentDescription = null)
+          }
+        },
     )
     ListItem(
         modifier =
@@ -58,6 +84,14 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               )
             },
         headlineContent = { Text("${uiState.other?.name} is owed the full amount.") },
+        trailingContent = {
+          if (
+              uiState.selectedOption ==
+                  QuickSplitComponent.QuickSplitOption.OTHER_IS_OWED_FULL_AMOUNT
+          ) {
+            Icon(Icons.Default.Check, contentDescription = null)
+          }
+        },
     )
 
     Button(
