@@ -74,7 +74,7 @@ fun snackbarExceptionHandler(messageShower: MessageShower, scope: CoroutineScope
         scope.launch {
           messageShower.showSnackbar(
               SnackbarMessage(
-                  content = exception.userMessage ?: "An error occurred",
+                  content = exception.userMessage,
                   tone = UserMessage.Tone.Error,
               )
           )
