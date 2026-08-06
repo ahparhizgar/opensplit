@@ -23,9 +23,9 @@ interface EquallySplitComponent {
 class DefaultEquallySplitComponent(
     context: CContext,
     override val participants: List<Member>,
+    initialUserIds: Set<String> = participants.map { it.userId }.toSet(),
 ) : EquallySplitComponent, CContext by context {
-  private val _uiState =
-      MutableValue(EquallySplitUiState(userIds = participants.map { it.userId }.toSet()))
+  private val _uiState = MutableValue(EquallySplitUiState(userIds = initialUserIds))
   override val uiState: Value<EquallySplitUiState> = _uiState
 
   override fun onParticipantInclusionChanged(userId: String, isIncluded: Boolean) {

@@ -94,8 +94,7 @@ private fun SharesSplitPreview() {
     SharesSplitPage(
         FakeSharesSplitComponent(
             participants = FakeMemberFactory.createList(),
-            uiState =
-                SharesSplitUiState(shares = mapOf("Alice" to "2", "Bob" to "1"), totalShares = 3),
+            uiState = SharesSplitUiState(shares = mapOf("Alice" to "2", "Bob" to "1")),
         )
     )
   }

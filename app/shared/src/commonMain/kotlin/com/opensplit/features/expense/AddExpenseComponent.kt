@@ -293,6 +293,7 @@ class DefaultAddExpenseComponent(
                           context = componentContext,
                           participants = _uiState.value.participants,
                           totalAmount = _uiState.value.payAmountsDomain.sum(),
+                          initialSplitMethod = _uiState.value.splitMethod,
                           payerName =
                               _uiState.map { state ->
                                 when (state.payAmountsDomain) {

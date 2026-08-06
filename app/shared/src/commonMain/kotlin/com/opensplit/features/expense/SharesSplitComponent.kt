@@ -8,8 +8,10 @@ import com.opensplit.domain.Member
 
 data class SharesSplitUiState(
     val shares: Map<String, String> = emptyMap(),
-    val totalShares: Int = 0,
-)
+) {
+  val totalShares: Int
+    get() = shares.values.sumOf { it.toIntOrNull() ?: 0 }
+}
 
 interface SharesSplitComponent {
   val uiState: Value<SharesSplitUiState>
@@ -21,20 +23,13 @@ interface SharesSplitComponent {
 class DefaultSharesSplitComponent(
     context: CContext,
     override val participants: List<Member>,
+    initialShares: Map<String, String> = emptyMap(),
 ) : SharesSplitComponent, CContext by context {
-  private val _uiState = MutableValue(SharesSplitUiState())
+  private val _uiState = MutableValue(SharesSplitUiState(shares = initialShares))
   override val uiState: Value<SharesSplitUiState> = _uiState
 
   override fun onParticipantSharesChanged(userId: String, shares: String) {
     _uiState.update { state -> state.copy(shares = state.shares + Pair(userId, shares)) }
-    updateTotal()
-  }
-
-  private fun updateTotal() {
-    _uiState.update { state ->
-      val total = state.shares.values.sumOf { it.toIntOrNull() ?: 0 }
-      state.copy(totalShares = total)
-    }
   }
 }
 

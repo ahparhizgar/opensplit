@@ -21,8 +21,9 @@ interface PercentageSplitComponent {
 class DefaultPercentageSplitComponent(
     context: CContext,
     override val participants: List<Member>,
+    initialPercentages: Map<String, String> = emptyMap(),
 ) : PercentageSplitComponent, CContext by context {
-  private val _uiState = MutableValue(PercentageSplitUiState())
+  private val _uiState = MutableValue(PercentageSplitUiState(percentages = initialPercentages))
   override val uiState: Value<PercentageSplitUiState> = _uiState
 
   init {

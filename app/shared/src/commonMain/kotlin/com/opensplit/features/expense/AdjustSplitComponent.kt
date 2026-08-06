@@ -7,6 +7,7 @@ import com.opensplit.component.CContext
 import com.opensplit.domain.Member
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SplitType
+import com.opensplit.util.formatAmount
 
 interface AdjustSplitComponent {
   val equallyComponent: EquallySplitComponent
@@ -15,6 +16,7 @@ interface AdjustSplitComponent {
   val sharesComponent: SharesSplitComponent
   val adjustmentComponent: AdjustmentSplitComponent
   val payerName: Value<String>
+  val initialSplitType: SplitType
 
   fun onTabChanged(splitType: SplitType)
 
@@ -27,6 +29,7 @@ interface AdjustSplitComponent {
         context: CContext,
         participants: List<Member>,
         totalAmount: Double,
+        initialSplitMethod: SplitMethod,
         payerName: Value<String>,
         onPayerClicked: () -> Unit,
         onDone: (SplitMethod) -> Unit,
@@ -38,22 +41,67 @@ class DefaultAdjustSplitComponent(
     context: CContext,
     participants: List<Member>,
     totalAmount: Double,
+    initialSplitMethod: SplitMethod,
     override val payerName: Value<String>,
     private val onPayerClicked: () -> Unit,
     private val onDone: (SplitMethod) -> Unit,
 ) : AdjustSplitComponent, CContext by context {
 
-  private var currentSplitType = SplitType.EQUALLY
+  override val initialSplitType =
+      when (initialSplitMethod) {
+        is SplitMethod.Equally -> SplitType.EQUALLY
+        is SplitMethod.Unequally -> SplitType.Unequally
+        is SplitMethod.Percentage -> SplitType.PERCENTAGE
+        is SplitMethod.Shares -> SplitType.SHARES
+        is SplitMethod.Adjustment -> SplitType.ADJUSTMENT
+      }
+
+  private var currentSplitType = initialSplitType
 
   override val equallyComponent =
-      DefaultEquallySplitComponent(childContext("equally"), participants)
+      DefaultEquallySplitComponent(
+          childContext("equally"),
+          participants,
+          initialUserIds =
+              (initialSplitMethod as? SplitMethod.Equally)?.userIds?.toSet()
+                  ?: participants.map { it.userId }.toSet(),
+      )
   override val unequallyComponent =
-      DefaultUnequallySplitComponent(childContext("unequally"), participants, totalAmount)
+      DefaultUnequallySplitComponent(
+          childContext("unequally"),
+          participants,
+          totalAmount,
+          initialAmounts =
+              (initialSplitMethod as? SplitMethod.Unequally)?.amounts?.mapValues {
+                it.value.toString()
+              } ?: emptyMap(),
+      )
   override val percentageComponent =
-      DefaultPercentageSplitComponent(childContext("percentage"), participants)
-  override val sharesComponent = DefaultSharesSplitComponent(childContext("shares"), participants)
+      DefaultPercentageSplitComponent(
+          childContext("percentage"),
+          participants,
+          initialPercentages =
+              (initialSplitMethod as? SplitMethod.Percentage)?.percentages?.mapValues {
+                it.value.toString()
+              } ?: emptyMap(),
+      )
+  override val sharesComponent =
+      DefaultSharesSplitComponent(
+          childContext("shares"),
+          participants,
+          initialShares =
+              (initialSplitMethod as? SplitMethod.Shares)?.shares?.mapValues { it.value.toString() }
+                  ?: emptyMap(),
+      )
   override val adjustmentComponent =
-      DefaultAdjustmentSplitComponent(childContext("adjustment"), participants)
+      DefaultAdjustmentSplitComponent(
+          context = childContext("adjustment"),
+          participants = participants,
+          initialAdjustments =
+              (initialSplitMethod as? SplitMethod.Adjustment)?.adjustments?.mapValues {
+                it.value.formatAmount()
+              } ?: emptyMap(),
+      )
 
   override fun onTabChanged(splitType: SplitType) {
     currentSplitType = splitType
@@ -99,17 +147,19 @@ class DefaultAdjustSplitComponent(
         context: CContext,
         participants: List<Member>,
         totalAmount: Double,
+        initialSplitMethod: SplitMethod,
         payerName: Value<String>,
         onPayerClicked: () -> Unit,
         onDone: (SplitMethod) -> Unit,
     ): AdjustSplitComponent =
         DefaultAdjustSplitComponent(
-            context,
-            participants,
-            totalAmount,
-            payerName,
-            onPayerClicked,
-            onDone,
+            context = context,
+            participants = participants,
+            totalAmount = totalAmount,
+            initialSplitMethod = initialSplitMethod,
+            payerName = payerName,
+            onPayerClicked = onPayerClicked,
+            onDone = onDone,
         )
   }
 }
@@ -121,6 +171,7 @@ class FakeAdjustSplitComponent(
     override val sharesComponent: SharesSplitComponent = FakeSharesSplitComponent(),
     override val adjustmentComponent: AdjustmentSplitComponent = FakeAdjustmentSplitComponent(),
     override val payerName: Value<String> = MutableValue("AmirHossein"),
+    override val initialSplitType: SplitType = SplitType.EQUALLY,
 ) : AdjustSplitComponent {
   override fun onTabChanged(splitType: SplitType) {}
 

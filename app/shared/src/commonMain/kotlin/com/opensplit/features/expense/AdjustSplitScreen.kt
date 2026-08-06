@@ -31,7 +31,11 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdjustSplitScreen(component: AdjustSplitComponent) {
-  val pagerState = rememberPagerState(pageCount = { SplitType.entries.size })
+  val pagerState =
+      rememberPagerState(
+          initialPage = SplitType.entries.indexOf(component.initialSplitType),
+          pageCount = { SplitType.entries.size },
+      )
   val scope = rememberCoroutineScope()
   val payerName by component.payerName.subscribeAsState()
 
