@@ -7,6 +7,7 @@ import com.opensplit.features.health.healthModule
 import com.opensplit.features.household.householdModule
 import com.opensplit.features.sync.syncModule
 import com.opensplit.plugins.configureDependencies
+import com.opensplit.plugins.configureHTTP
 import com.opensplit.plugins.configureSecurity
 import com.opensplit.plugins.configureSerialization
 import io.ktor.server.application.Application
@@ -20,6 +21,7 @@ fun main() {
 }
 
 fun Application.openSplit(isTest: Boolean = false) {
+  configureHTTP(isTest)
   configureDependencies(isTest)
   configureSerialization()
   configureSecurity()

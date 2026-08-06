@@ -1,5 +1,6 @@
 package com.opensplit.plugins
 
+import com.opensplit.config.AppConfig
 import com.opensplit.config.DatabaseConfig
 import com.opensplit.database.DatabaseInitializer
 import com.opensplit.database.connectDatabase
@@ -18,6 +19,13 @@ fun Application.configureDependencies(isTest: Boolean) {
   install(Koin) {
     modules(
         module {
+          single<AppConfig> {
+            if (isTest) {
+              AppConfig.test()
+            } else {
+              AppConfig.fromEnvironment(developmentMode)
+            }
+          }
           single<DatabaseConfig> {
             if (isTest) {
               DatabaseConfig.test()
