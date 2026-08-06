@@ -15,11 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.colorSchemeExtended
 import com.opensplit.util.formatAmount
 
 @Composable
@@ -27,8 +27,6 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
   val uiState by component.uiState.subscribeAsState()
   val amountSum = uiState.amountSum
   val otherName = uiState.other?.name ?: "Other"
-
-  val youOweColor = Color(0xFFE28B52)
 
   Column(
       modifier = modifier.fillMaxSize(),
@@ -47,7 +45,7 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               {
                 Text(
                     text = "$otherName owes you IRR ${(amountSum / 2).formatAmount()}",
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorSchemeExtended.youAreOwed,
                 )
               }
             } else null,
@@ -72,7 +70,7 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               {
                 Text(
                     text = "$otherName owes you IRR ${amountSum.formatAmount()}",
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorSchemeExtended.youAreOwed,
                 )
               }
             } else null,
@@ -98,7 +96,7 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               {
                 Text(
                     text = "You owe $otherName IRR ${(amountSum / 2).formatAmount()}",
-                    color = youOweColor,
+                    color = MaterialTheme.colorSchemeExtended.youOwe,
                 )
               }
             } else null,
@@ -124,7 +122,7 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               {
                 Text(
                     text = "You owe $otherName IRR ${amountSum.formatAmount()}",
-                    color = youOweColor,
+                    color = MaterialTheme.colorSchemeExtended.youOwe,
                 )
               }
             } else null,

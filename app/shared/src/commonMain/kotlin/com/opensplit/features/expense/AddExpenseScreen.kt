@@ -56,6 +56,7 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.colorSchemeExtended
 import com.opensplit.util.formatAmount
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -353,7 +354,7 @@ private fun BottomActionRow(householdName: String) {
       Icon(
           Icons.Default.Group,
           contentDescription = null,
-          tint = Color(0xFFE28B52),
+          tint = MaterialTheme.colorSchemeExtended.youOwe,
           modifier = Modifier.size(24.dp),
       )
       Spacer(modifier = Modifier.width(8.dp))

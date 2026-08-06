@@ -49,6 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.opensplit.domain.Member
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.colorSchemeExtended
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -256,7 +257,9 @@ private fun MemberItem(member: Member, modifier: Modifier = Modifier) {
     }
     Column(horizontalAlignment = Alignment.End) {
       val balanceText = if (member.balance >= 0) "gets back" else "owes"
-      val balanceColor = if (member.balance >= 0) Color(0xFF4CAF50) else Color(0xFFE91E63)
+      val balanceColor =
+          if (member.balance >= 0) MaterialTheme.colorSchemeExtended.youAreOwed
+          else MaterialTheme.colorSchemeExtended.youOwe
 
       Text(
           text = balanceText,
