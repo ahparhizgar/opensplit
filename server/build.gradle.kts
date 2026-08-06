@@ -15,7 +15,7 @@ version = "1.0.0"
 application {
   mainClass.set("com.opensplit.ApplicationKt")
 
-  val isDevelopment: Boolean = project.providers.gradleProperty("development").isPresent
+  val isDevelopment: Boolean = project.findProperty("development")?.toString()?.toBoolean() == true
   applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 

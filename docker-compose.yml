@@ -27,6 +27,7 @@ services:
       POSTGRES_USER: opensplit
       POSTGRES_PASSWORD: opensplitpass
       JWT_SECRET: dev-secret-change-in-production
+      DEVELOPMENT: "true"
     ports:
       - "8080:8080"
     restart: on-failure
