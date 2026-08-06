@@ -9,7 +9,7 @@ import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SplitType
 import com.opensplit.util.formatAmount
 
-interface AdjustSplitComponent {
+interface MoreSplitOptionsComponent {
   val equallyComponent: EquallySplitComponent
   val unequallyComponent: UnequallySplitComponent
   val percentageComponent: PercentageSplitComponent
@@ -33,11 +33,11 @@ interface AdjustSplitComponent {
         payerName: Value<String>,
         onPayerClicked: () -> Unit,
         onDone: (SplitMethod) -> Unit,
-    ): AdjustSplitComponent
+    ): MoreSplitOptionsComponent
   }
 }
 
-class DefaultAdjustSplitComponent(
+class DefaultMoreSplitOptionsComponent(
     context: CContext,
     participants: List<Member>,
     totalAmount: Double,
@@ -45,7 +45,7 @@ class DefaultAdjustSplitComponent(
     override val payerName: Value<String>,
     private val onPayerClicked: () -> Unit,
     private val onDone: (SplitMethod) -> Unit,
-) : AdjustSplitComponent, CContext by context {
+) : MoreSplitOptionsComponent, CContext by context {
 
   override val initialSplitType =
       when (initialSplitMethod) {
@@ -142,7 +142,7 @@ class DefaultAdjustSplitComponent(
     onDone(method)
   }
 
-  class Factory : AdjustSplitComponent.Factory {
+  class Factory : MoreSplitOptionsComponent.Factory {
     override fun create(
         context: CContext,
         participants: List<Member>,
@@ -151,8 +151,8 @@ class DefaultAdjustSplitComponent(
         payerName: Value<String>,
         onPayerClicked: () -> Unit,
         onDone: (SplitMethod) -> Unit,
-    ): AdjustSplitComponent =
-        DefaultAdjustSplitComponent(
+    ): MoreSplitOptionsComponent =
+        DefaultMoreSplitOptionsComponent(
             context = context,
             participants = participants,
             totalAmount = totalAmount,
@@ -164,7 +164,7 @@ class DefaultAdjustSplitComponent(
   }
 }
 
-class FakeAdjustSplitComponent(
+class FakeMoreSplitOptionsComponent(
     override val equallyComponent: EquallySplitComponent = FakeEquallySplitComponent(),
     override val unequallyComponent: UnequallySplitComponent = FakeUnequallySplitComponent(),
     override val percentageComponent: PercentageSplitComponent = FakePercentageSplitComponent(),
@@ -172,7 +172,7 @@ class FakeAdjustSplitComponent(
     override val adjustmentComponent: AdjustmentSplitComponent = FakeAdjustmentSplitComponent(),
     override val payerName: Value<String> = MutableValue("AmirHossein"),
     override val initialSplitType: SplitType = SplitType.EQUALLY,
-) : AdjustSplitComponent {
+) : MoreSplitOptionsComponent {
   override fun onTabChanged(splitType: SplitType) {}
 
   override fun onPayerClicked() {}
