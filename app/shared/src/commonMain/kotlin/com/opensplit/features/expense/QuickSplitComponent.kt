@@ -102,7 +102,7 @@ class DefaultQuickSplitComponent(
       val household = repository.getHousehold(householdId)
       val members =
           if (household == null || household.members.isEmpty()) {
-            repository.refreshHousehold(householdId).members
+            repository.refreshHousehold(householdId)?.members ?: emptyList()
           } else {
             household.members
           }

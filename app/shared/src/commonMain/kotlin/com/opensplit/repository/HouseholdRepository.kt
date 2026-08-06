@@ -27,14 +27,22 @@ class HouseholdRepository(
     return dao.getHouseholdsWithMembers().map { entities -> entities.map { it.toDomain() } }
   }
 
+  fun observeHousehold(id: String): Flow<Household?> {
+    return dao.observeHouseholdWithMembers(id).map { it?.toDomain() }
+  }
+
   suspend fun refreshHouseholds() {
-    val result = api.loadOverview()
-    database.useWriterConnection { connection ->
-      connection.immediateTransaction {
-        result.forEach { dto ->
-          dao.insertHouseholdWithMembers(dto.toEntity(), dto.members.map { it.toEntity(dto.id) })
+    try {
+      val result = api.loadOverview()
+      database.useWriterConnection { connection ->
+        connection.immediateTransaction {
+          result.forEach { dto ->
+            dao.insertHouseholdWithMembers(dto.toEntity(), dto.members.map { it.toEntity(dto.id) })
+          }
         }
       }
+    } catch (e: Exception) {
+      // Ignore errors for background refresh in offline-first
     }
   }
 
@@ -42,10 +50,17 @@ class HouseholdRepository(
     return dao.getHouseholdWithMembers(id)?.toDomain()
   }
 
-  suspend fun refreshHousehold(id: String): Household {
-    val result = api.getHousehold(id)
-    dao.insertHouseholdWithMembers(result.toEntity(), result.members.map { it.toEntity(result.id) })
-    return result.toDomain()
+  suspend fun refreshHousehold(id: String): Household? {
+    return try {
+      val result = api.getHousehold(id)
+      dao.insertHouseholdWithMembers(
+          result.toEntity(),
+          result.members.map { it.toEntity(result.id) },
+      )
+      result.toDomain()
+    } catch (e: Exception) {
+      null
+    }
   }
 
   suspend fun createHousehold(name: String) {

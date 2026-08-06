@@ -43,16 +43,20 @@ class ExpenseRepository(
 
   // TODO Should we only get unsynced expenses?
   suspend fun refreshExpenses(householdId: String) {
-    val result = api.getExpenses(householdId)
-    database.useWriterConnection { connection ->
-      connection.immediateTransaction {
-        result.forEach { dto ->
-          val entity = dto.toEntity(SyncStatus.SYNCED)
-          val participants = dto.participants.map { p -> p.toEntity(dto.id) }
-          expenseDao.insertExpenseWithParticipants(entity, participants)
-          syncQueueDao.removeByEntityId(dto.id)
+    try {
+      val result = api.getExpenses(householdId)
+      database.useWriterConnection { connection ->
+        connection.immediateTransaction {
+          result.forEach { dto ->
+            val entity = dto.toEntity(SyncStatus.SYNCED)
+            val participants = dto.participants.map { p -> p.toEntity(dto.id) }
+            expenseDao.insertExpenseWithParticipants(entity, participants)
+            syncQueueDao.removeByEntityId(dto.id)
+          }
         }
       }
+    } catch (_: Exception) {
+      // Ignore errors for background refresh in offline-first
     }
   }
 

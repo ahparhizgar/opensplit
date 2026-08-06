@@ -58,11 +58,16 @@ class DefaultHouseholdDetailsComponent(
 
   init {
     componentScope().launch {
+      householdRepository.observeHousehold(householdId).collect { household ->
+        _uiState.update { it.copy(household = household) }
+      }
+    }
+    componentScope().launch {
       expenseRepository.getExpenses(householdId).collect { expenses ->
         _uiState.update { it.copy(expenses = expenses) }
       }
     }
-    doOnCreate { loadDetails() }
+    doOnCreate { refresh() }
   }
 
   override fun onAddMemberClicked() {
@@ -81,18 +86,12 @@ class DefaultHouseholdDetailsComponent(
     navigation.pop()
   }
 
-  private fun loadDetails() =
+  private fun refresh() =
       componentScope().launch {
         _uiState.update { it.copy(isLoading = true) }
-        try {
-          val household = householdRepository.refreshHousehold(householdId)
-          expenseRepository.refreshExpenses(householdId)
-          _uiState.update { it.copy(household = household, isLoading = false) }
-        } catch (e: Exception) {
-          _uiState.update {
-            it.copy(error = e.message ?: "Failed to load household details", isLoading = false)
-          }
-        }
+        householdRepository.refreshHousehold(householdId)
+        expenseRepository.refreshExpenses(householdId)
+        _uiState.update { it.copy(isLoading = false) }
       }
 
   class Factory(
