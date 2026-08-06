@@ -16,6 +16,10 @@ interface HouseholdDao {
 
   @Transaction
   @Query("SELECT * FROM households WHERE id = :id")
+  fun observeHouseholdWithMembers(id: String): Flow<HouseholdWithMembers?>
+
+  @Transaction
+  @Query("SELECT * FROM households WHERE id = :id")
   suspend fun getHouseholdWithMembers(id: String): HouseholdWithMembers?
 
   @Query("SELECT * FROM households") fun getHouseholds(): Flow<List<HouseholdEntity>>
