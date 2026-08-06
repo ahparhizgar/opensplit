@@ -72,7 +72,7 @@ interface AddExpenseComponent {
 
     class QuickSplitSelection(val component: QuickSplitComponent) : Child()
 
-    class AdjustSplit(val component: AdjustSplitComponent) : Child()
+    class MoreSplitOptions(val component: MoreSplitOptionsComponent) : Child()
   }
 
   interface Factory {
@@ -94,7 +94,7 @@ sealed class AddExpenseChildConfig {
 
   @Serializable data object QuickSplitSelection : AddExpenseChildConfig()
 
-  @Serializable data object AdjustSplit : AddExpenseChildConfig()
+  @Serializable data object MoreSplitOptions : AddExpenseChildConfig()
 }
 
 data class ParticipantState(
@@ -194,7 +194,7 @@ class DefaultAddExpenseComponent(
     private val expenseRepository: ExpenseRepository,
     private val householdRepository: HouseholdRepository,
     private val profileRepository: ProfileRepository,
-    private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
+    private val moreSplitOptionsComponentFactory: MoreSplitOptionsComponent.Factory,
     private val whoPaidComponentFactory: WhoPaidComponent.Factory,
     private val quickSplitComponentFactory: QuickSplitComponent.Factory,
     private val onFinished: () -> Unit,
@@ -287,9 +287,9 @@ class DefaultAddExpenseComponent(
                     )
                 )
               }
-              is AddExpenseChildConfig.AdjustSplit ->
-                  AddExpenseComponent.Child.AdjustSplit(
-                      adjustSplitComponentFactory.create(
+              is AddExpenseChildConfig.MoreSplitOptions ->
+                  AddExpenseComponent.Child.MoreSplitOptions(
+                      moreSplitOptionsComponentFactory.create(
                           context = componentContext,
                           participants = _uiState.value.participants,
                           totalAmount = _uiState.value.payAmountsDomain.sum(),
@@ -305,7 +305,10 @@ class DefaultAddExpenseComponent(
                           onPayerClicked = { navigateToPayerSelection() },
                           onDone = { splitMethod ->
                             _uiState.update { it.copy(splitMethod = splitMethod) }
-                            stackNavigation.navigate { it.dropLast(2) }
+                            stackNavigation.navigate {
+                              it.filterNot { c -> c is AddExpenseChildConfig.QuickSplitSelection }
+                                  .dropLast(1)
+                            }
                           },
                       )
                   )
@@ -419,7 +422,7 @@ class DefaultAddExpenseComponent(
   }
 
   override fun navigateToAdjustSplit() {
-    stackNavigation.pushNew(AddExpenseChildConfig.AdjustSplit)
+    stackNavigation.pushNew(AddExpenseChildConfig.MoreSplitOptions)
   }
 
   override fun onDoneClicked() {
@@ -505,7 +508,7 @@ class DefaultAddExpenseComponent(
       private val expenseRepository: ExpenseRepository,
       private val householdRepository: HouseholdRepository,
       private val profileRepository: ProfileRepository,
-      private val adjustSplitComponentFactory: AdjustSplitComponent.Factory,
+      private val moreSplitOptionsComponentFactory: MoreSplitOptionsComponent.Factory,
       private val whoPaidComponentFactory: WhoPaidComponent.Factory,
       private val quickSplitComponentFactory: QuickSplitComponent.Factory,
   ) : AddExpenseComponent.Factory {
@@ -520,7 +523,7 @@ class DefaultAddExpenseComponent(
             expenseRepository = expenseRepository,
             householdRepository = householdRepository,
             profileRepository = profileRepository,
-            adjustSplitComponentFactory = adjustSplitComponentFactory,
+            moreSplitOptionsComponentFactory = moreSplitOptionsComponentFactory,
             whoPaidComponentFactory = whoPaidComponentFactory,
             quickSplitComponentFactory = quickSplitComponentFactory,
             onFinished = onFinished,
@@ -537,7 +540,7 @@ class FakeAddExpenseComponent(
     childFactory: (AddExpenseComponent) -> AddExpenseComponent.Child = {
       AddExpenseComponent.Child.Main(it)
     },
-    adjustSplitComponent: AdjustSplitComponent = FakeAdjustSplitComponent(),
+    moreSplitOptionsComponent: MoreSplitOptionsComponent = FakeMoreSplitOptionsComponent(),
 ) : AddExpenseComponent {
   override val uiState: Value<AddExpenseUiState> = MutableValue(uiState)
   override val stack: Value<ChildStack<*, AddExpenseComponent.Child>> =

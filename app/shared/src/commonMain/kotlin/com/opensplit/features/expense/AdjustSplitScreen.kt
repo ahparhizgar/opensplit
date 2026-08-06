@@ -3,7 +3,6 @@ package com.opensplit.features.expense
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -30,7 +29,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdjustSplitScreen(component: AdjustSplitComponent) {
+fun MoreSplitOptionsScreen(component: MoreSplitOptionsComponent) {
   val pagerState =
       rememberPagerState(
           initialPage = SplitType.entries.indexOf(component.initialSplitType),
@@ -90,6 +89,6 @@ val transparentTextFieldColors
 
 @Preview
 @Composable
-private fun AdjustSplitPreview() {
-  OpenSplitTheme { AdjustSplitScreen(FakeAdjustSplitComponent()) }
+private fun MoreSplitOptionsPreview() {
+  OpenSplitTheme { MoreSplitOptionsScreen(FakeMoreSplitOptionsComponent()) }
 }

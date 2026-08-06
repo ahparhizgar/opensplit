@@ -76,7 +76,7 @@ fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifi
                     is AddExpenseComponent.Child.PaidAmounts -> "Enter paid amounts"
                     is AddExpenseComponent.Child.QuickSplitSelection ->
                         "How was this expense split?"
-                    is AddExpenseComponent.Child.AdjustSplit -> "Adjust split"
+                    is AddExpenseComponent.Child.MoreSplitOptions -> "Adjust split"
                   }
               )
             },
@@ -91,7 +91,7 @@ fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifi
                     val activeChild = component.stack.value.active.instance
                     if (activeChild is AddExpenseComponent.Child.Main) {
                       component.onSaveClicked()
-                    } else if (activeChild is AddExpenseComponent.Child.AdjustSplit) {
+                    } else if (activeChild is AddExpenseComponent.Child.MoreSplitOptions) {
                       activeChild.component.onDoneClicked()
                     } else if (activeChild is AddExpenseComponent.Child.PaidAmounts) {
                       activeChild.component.onDone()
@@ -112,7 +112,7 @@ fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifi
         is AddExpenseComponent.Child.WhoPaid -> WhoPaidScreen(instance.component)
         is AddExpenseComponent.Child.PaidAmounts -> PaidAmountsScreen(instance.component)
         is AddExpenseComponent.Child.QuickSplitSelection -> QuickSplitScreen(instance.component)
-        is AddExpenseComponent.Child.AdjustSplit -> AdjustSplitScreen(instance.component)
+        is AddExpenseComponent.Child.MoreSplitOptions -> MoreSplitOptionsScreen(instance.component)
       }
     }
   }
