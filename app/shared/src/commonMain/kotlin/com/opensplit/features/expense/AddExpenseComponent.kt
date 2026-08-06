@@ -24,6 +24,7 @@ import com.opensplit.repository.ExpenseRepository
 import com.opensplit.repository.HouseholdRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.root.TopLevelDestinationConfig
+import com.opensplit.util.formatAmount
 import com.opensplit.validation.expense.ExpenseValidation
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -132,6 +133,7 @@ sealed interface PayAmounts {
 }
 
 data class AddExpenseUiState(
+    val householdName: String = "",
     val allParticipants: List<String>,
     val participants: List<Member> = emptyList(),
     val payAmounts: PayAmountsUiState,
@@ -146,6 +148,35 @@ data class AddExpenseUiState(
         is PayAmounts.OnePerson -> payAmountsDomain.amount ?: 0.0
         is PayAmounts.MultiplePeople -> payAmountsDomain.amounts.sumOf { it.amount }
       }
+
+  val summaryText: String?
+    get() {
+      if (participants.size != 2 || amountSum <= 0.0) return null
+      val other = participants.find { !it.isCurrentUser } ?: return null
+      val youId = participants.find { it.isCurrentUser }?.userId ?: return null
+
+      val option =
+          QuickSplitComponent.getOption(
+              payAmounts = payAmounts,
+              splitMethod = splitMethod,
+              youId = youId,
+              otherId = other.userId,
+              amountSum = amountSum,
+              allParticipants = allParticipants,
+          )
+
+      return when (option) {
+        null -> null
+        QuickSplitComponent.QuickSplitOption.YOU_PAID_SPLIT_EQUALLY ->
+            "${other.name} owes you IRR ${(amountSum / 2).formatAmount()}"
+        QuickSplitComponent.QuickSplitOption.YOU_ARE_OWED_FULL_AMOUNT ->
+            "${other.name} owes you IRR ${amountSum.formatAmount()}"
+        QuickSplitComponent.QuickSplitOption.OTHER_PAID_SPLIT_EQUALLY ->
+            "You owe ${other.name} IRR ${(amountSum / 2).formatAmount()}"
+        QuickSplitComponent.QuickSplitOption.OTHER_IS_OWED_FULL_AMOUNT ->
+            "You owe ${other.name} IRR ${amountSum.formatAmount()}"
+      }
+    }
 
   fun getParticipantName(userId: String): String {
     val member = participants.find { it.userId == userId }
@@ -298,6 +329,7 @@ class DefaultAddExpenseComponent(
             }
         _uiState.update {
           it.copy(
+              householdName = household.name,
               allParticipants = household.members.map { it.userId },
               participants = household.members,
               payAmounts =

@@ -30,7 +30,7 @@ object FakeHouseholdMemberDtoFactory {
 
   fun create1() = create("user-1", "Amir Hossein Parhizgar", 10.15, true)
 
-  fun create2() = create("user-2", "Ali Bagherifam", -10.15)
+  fun create2() = create("user-2", "Abolqasem Ferdowsi", -10.15)
 
   fun createList() = listOf(create1(), create2())
 }
