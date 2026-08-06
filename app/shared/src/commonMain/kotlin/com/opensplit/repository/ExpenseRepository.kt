@@ -14,7 +14,6 @@ import com.opensplit.domain.Expense
 import com.opensplit.domain.ParticipantShare
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SyncStatus
-import com.opensplit.features.expense.ExpenseApi
 import com.opensplit.sync.SyncManager
 import com.opensplit.util.currentTimeMillis
 import com.opensplit.util.randomId
@@ -24,7 +23,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 
 class ExpenseRepository(
-    private val api: ExpenseApi,
     private val expenseDao: ExpenseDao,
     private val syncQueueDao: SyncQueueDao,
     private val database: AppDatabase,
@@ -38,25 +36,6 @@ class ExpenseRepository(
         val participants = expenseDao.getParticipants(entity.id).map { it.toDomain() }
         entity.toDomain(participants)
       }
-    }
-  }
-
-  // TODO Should we only get unsynced expenses?
-  suspend fun refreshExpenses(householdId: String) {
-    try {
-      val result = api.getExpenses(householdId)
-      database.useWriterConnection { connection ->
-        connection.immediateTransaction {
-          result.forEach { dto ->
-            val entity = dto.toEntity(SyncStatus.SYNCED)
-            val participants = dto.participants.map { p -> p.toEntity(dto.id) }
-            expenseDao.insertExpenseWithParticipants(entity, participants)
-            syncQueueDao.removeByEntityId(dto.id)
-          }
-        }
-      }
-    } catch (_: Exception) {
-      // Ignore errors for background refresh in offline-first
     }
   }
 

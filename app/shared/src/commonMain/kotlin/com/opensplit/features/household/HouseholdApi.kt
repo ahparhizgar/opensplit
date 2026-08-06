@@ -20,11 +20,7 @@ interface HouseholdApi {
 
   suspend fun addMemberByEmail(householdId: String, email: String): HouseholdDto
 
-  suspend fun loadOverview(): List<HouseholdDto>
-
   suspend fun leaveHousehold(householdId: String): List<HouseholdDto>
-
-  suspend fun getHousehold(id: String): HouseholdDto
 }
 
 class KtorHouseholdApi(
@@ -60,21 +56,9 @@ class KtorHouseholdApi(
     return response.body<HouseholdDto>()
   }
 
-  override suspend fun loadOverview(): List<HouseholdDto> {
-    val response = client.get("households")
-    if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
-    return response.body<List<HouseholdDto>>()
-  }
-
   override suspend fun leaveHousehold(householdId: String): List<HouseholdDto> {
     val response = client.delete("households/$householdId/memberships")
     if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
     return response.body<List<HouseholdDto>>()
-  }
-
-  override suspend fun getHousehold(id: String): HouseholdDto {
-    val response = client.get("households/$id")
-    if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
-    return response.body<HouseholdDto>()
   }
 }

@@ -21,8 +21,6 @@ interface ExpenseApi {
       splitMethod: SplitMethod,
   ): ExpenseDto
 
-  suspend fun getExpenses(householdId: String): List<ExpenseDto>
-
   suspend fun deleteExpense(householdId: String, expenseId: String)
 }
 
@@ -49,11 +47,6 @@ class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
           )
         }
     return response.body<ExpenseDto>()
-  }
-
-  override suspend fun getExpenses(householdId: String): List<ExpenseDto> {
-    val response = client.get("households/$householdId/expenses")
-    return response.body<List<ExpenseDto>>()
   }
 
   override suspend fun deleteExpense(householdId: String, expenseId: String) {
