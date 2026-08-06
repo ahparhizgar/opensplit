@@ -9,7 +9,6 @@ import com.opensplit.domain.Member
 data class AdjustmentSplitUiState(
     val adjustments: Map<String, String> = emptyMap(),
     val participants: List<Member> = emptyList(),
-    val totalAdjustment: Double = 0.0,
 )
 
 interface AdjustmentSplitComponent {
@@ -22,8 +21,15 @@ interface AdjustmentSplitComponent {
 class DefaultAdjustmentSplitComponent(
     context: CContext,
     override val participants: List<Member>,
+    initialAdjustments: Map<String, String> = emptyMap(),
 ) : AdjustmentSplitComponent, CContext by context {
-  private val _uiState = MutableValue(AdjustmentSplitUiState(participants = participants))
+  private val _uiState =
+      MutableValue(
+          AdjustmentSplitUiState(
+              participants = participants,
+              adjustments = initialAdjustments,
+          )
+      )
   override val uiState: Value<AdjustmentSplitUiState> = _uiState
 
   override fun onParticipantAdjustmentChanged(userId: String, adjustment: String) {

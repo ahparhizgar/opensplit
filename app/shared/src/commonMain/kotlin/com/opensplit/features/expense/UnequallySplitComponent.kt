@@ -23,8 +23,15 @@ class DefaultUnequallySplitComponent(
     context: CContext,
     override val participants: List<Member>,
     override val totalAmount: Double,
+    initialAmounts: Map<String, String> = emptyMap(),
 ) : UnequallySplitComponent, CContext by context {
-  private val _uiState = MutableValue(UnequallySplitUiState(remainingAmount = totalAmount))
+  private val _uiState =
+      MutableValue(
+          UnequallySplitUiState(
+              amounts = initialAmounts,
+              remainingAmount = totalAmount,
+          )
+      )
   override val uiState: Value<UnequallySplitUiState> = _uiState
 
   init {
