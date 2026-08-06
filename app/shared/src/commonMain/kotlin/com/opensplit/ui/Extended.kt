@@ -32,6 +32,14 @@ data class ExtendedColorScheme(
     val onInfo: Color,
     val infoContainer: Color,
     val onInfoContainer: Color,
+    val youOwe: Color,
+    val onYouOwe: Color,
+    val youOweContainer: Color,
+    val onYouOweContainer: Color,
+    val youAreOwed: Color,
+    val onYouAreOwed: Color,
+    val youAreOwedContainer: Color,
+    val onYouAreOwedContainer: Color,
 )
 
 fun lightExtendedColorScheme(): ExtendedColorScheme =
@@ -48,4 +56,12 @@ fun lightExtendedColorScheme(): ExtendedColorScheme =
         onInfo = Color(0xFFFFFFFF),
         infoContainer = Color(0xFFE3F2FD),
         onInfoContainer = Color(0xFF0D47A1),
+        youOwe = Color(0xFFE28B52),
+        onYouOwe = Color(0xFFFFFFFF),
+        youOweContainer = Color(0xFFFFDBCB),
+        onYouOweContainer = Color(0xFF341100),
+        youAreOwed = Color(0xFF4CAF50),
+        onYouAreOwed = Color(0xFFFFFFFF),
+        youAreOwedContainer = Color(0xFFC8E6C9),
+        onYouAreOwedContainer = Color(0xFF1B5E20),
     )
