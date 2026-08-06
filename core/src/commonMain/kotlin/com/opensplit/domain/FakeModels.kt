@@ -26,9 +26,15 @@ object FakeMemberFactory {
 
   fun create1() = create("user-1", "Amir Hossein Parhizgar", balance = 10.15, isCurrentUser = true)
 
-  fun create2() = create("user-2", "Ali Bagherifam", balance = -10.15)
+  fun create2() = create("user-2", "Abolqasem Ferdowsi", balance = -10.15)
+
+  fun create3() = create("user-3", "Albert Einstein", balance = 0.0)
 
   fun createList() = listOf(create1(), create2())
+
+  fun createListWith2Members() = listOf(create1(), create2())
+
+  fun createListWith3Members() = listOf(create1(), create2(), create3())
 }
 
 object FakeHouseholdFactory {
