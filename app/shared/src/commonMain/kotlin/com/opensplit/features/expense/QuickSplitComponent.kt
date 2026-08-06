@@ -100,12 +100,7 @@ class DefaultQuickSplitComponent(
   init {
     scope.launch {
       val household = repository.getHousehold(householdId)
-      val members =
-          if (household == null || household.members.isEmpty()) {
-            repository.refreshHousehold(householdId)?.members ?: emptyList()
-          } else {
-            household.members
-          }
+      val members = household?.members ?: emptyList()
 
       val currentUserId = profileRepository.profile.value?.id
       val otherMember = members.firstOrNull { it.userId != currentUserId }

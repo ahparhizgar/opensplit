@@ -30,10 +30,6 @@ class FakeExpenseApi : ExpenseApi, FakeService {
     )
   }
 
-  override suspend fun getExpenses(householdId: String): List<ExpenseDto> = fakeApiCall {
-    emptyList()
-  }
-
   override suspend fun deleteExpense(householdId: String, expenseId: String) = fakeApiCall {
     // No-op
   }

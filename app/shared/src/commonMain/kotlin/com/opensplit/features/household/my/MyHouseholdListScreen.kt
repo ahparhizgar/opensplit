@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,120 +61,112 @@ fun MyHouseholdsListScreen(
     component: MyHouseholdsListComponent,
     modifier: Modifier = Modifier,
 ) {
-  val isLoading by component.isLoading.subscribeAsState()
   val uiState by component.uiState.subscribeAsState()
 
   Surface(
       modifier = modifier.fillMaxSize(),
       color = MaterialTheme.colorScheme.background,
   ) {
-    if (isLoading) {
-      Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
-      }
-    } else {
-      val scope = rememberCoroutineScope()
-      var leaveConfirmHouseholdId by rememberSaveable { mutableStateOf<String?>(null) }
-      var selectedNavIndex by rememberSaveable { mutableStateOf(0) }
+    val scope = rememberCoroutineScope()
+    var leaveConfirmHouseholdId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedNavIndex by rememberSaveable { mutableStateOf(0) }
 
-      val (activeHouseholds, settledHouseholds) =
-          remember(uiState.households) { uiState.households.partition { !it.isSettled } }
+    val (activeHouseholds, settledHouseholds) =
+        remember(uiState.households) { uiState.households.partition { !it.isSettled } }
 
-      Scaffold(
-          bottomBar = {
-            BottomNav(
-                selectedIndex = selectedNavIndex,
-                onItemSelected = { selectedNavIndex = it },
-                modifier = Modifier.fillMaxWidth(),
-            )
-          },
-          floatingActionButton = { AddExpenseFab(onClick = { /* Navigate to add expense */ }) },
-          modifier = Modifier.testTag("household-active-shell"),
-      ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding),
+    Scaffold(
+        bottomBar = {
+          BottomNav(
+              selectedIndex = selectedNavIndex,
+              onItemSelected = { selectedNavIndex = it },
+              modifier = Modifier.fillMaxWidth(),
+          )
+        },
+        floatingActionButton = { AddExpenseFab(onClick = { /* Navigate to add expense */ }) },
+        modifier = Modifier.testTag("household-active-shell"),
+    ) { padding ->
+      Column(
+          modifier = Modifier.fillMaxSize().padding(padding),
+      ) {
+        // Top Action Icons
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-          // Top Action Icons
-          Row(
-              modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-              horizontalArrangement = Arrangement.End,
-              verticalAlignment = Alignment.CenterVertically,
-          ) {
-            IconButton(onClick = {}) {
-              Icon(
-                  imageVector = Icons.Default.Search,
-                  contentDescription = "Search",
-                  modifier = Modifier.testTag("header-search"),
-              )
-            }
-            IconButton(onClick = { component.onAddHouseholdClick() }) {
-              Icon(
-                  imageVector = Icons.Default.GroupAdd,
-                  contentDescription = "Add Household",
-                  modifier = Modifier.testTag("header-add-group"),
-              )
-            }
+          IconButton(onClick = {}) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search",
+                modifier = Modifier.testTag("header-search"),
+            )
+          }
+          IconButton(onClick = { component.onAddHouseholdClick() }) {
+            Icon(
+                imageVector = Icons.Default.GroupAdd,
+                contentDescription = "Add Household",
+                modifier = Modifier.testTag("header-add-group"),
+            )
+          }
+        }
+
+        // Balance Summary Row
+        BalanceSummaryRow(
+            balance = uiState.overallBalance,
+            currency = uiState.overallCurrency,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
+        )
+
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding =
+                androidx.compose.foundation.layout.PaddingValues(
+                    horizontal = 16.dp,
+                    vertical = 8.dp,
+                ),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+          // Household Cards
+          items(activeHouseholds) { household ->
+            HouseholdCard(
+                household = household,
+                onClick = { component.onHouseholdClick(household.id) },
+                modifier = Modifier.fillMaxWidth().testTag("household-card-${household.id}"),
+            )
           }
 
-          // Balance Summary Row
-          BalanceSummaryRow(
-              balance = uiState.overallBalance,
-              currency = uiState.overallCurrency,
-              modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
-          )
+          // Sample "Non-group expenses" for visual fidelity
+          item { NonGroupExpensesCard() }
 
-          LazyColumn(
-              modifier = Modifier.fillMaxWidth(),
-              contentPadding =
-                  androidx.compose.foundation.layout.PaddingValues(
-                      horizontal = 16.dp,
-                      vertical = 8.dp,
-                  ),
-              verticalArrangement = Arrangement.spacedBy(16.dp),
-          ) {
-            // Household Cards
-            items(activeHouseholds) { household ->
-              HouseholdCard(
-                  household = household,
-                  onClick = { component.onHouseholdClick(household.id) },
-                  modifier = Modifier.fillMaxWidth().testTag("household-card-${household.id}"),
+          // Settled Groups Section
+          if (settledHouseholds.isNotEmpty()) {
+            item {
+              SettledGroupsSection(
+                  households = settledHouseholds,
+                  isExpanded = component.isSettledExpanded.subscribeAsState().value,
+                  component = component,
               )
-            }
-
-            // Sample "Non-group expenses" for visual fidelity
-            item { NonGroupExpensesCard() }
-
-            // Settled Groups Section
-            if (settledHouseholds.isNotEmpty()) {
-              item {
-                SettledGroupsSection(
-                    households = settledHouseholds,
-                    isExpanded = component.isSettledExpanded.subscribeAsState().value,
-                    component = component,
-                )
-              }
             }
           }
         }
       }
+    }
 
-      // Leave confirmation dialog
-      if (leaveConfirmHouseholdId != null) {
-        val householdToLeave = uiState.households.find { it.id == leaveConfirmHouseholdId }
+    // Leave confirmation dialog
+    if (leaveConfirmHouseholdId != null) {
+      val householdToLeave = uiState.households.find { it.id == leaveConfirmHouseholdId }
 
-        HouseholdLeaveConfirmDialog(
-            householdName = householdToLeave?.name ?: leaveConfirmHouseholdId!!,
-            isOwner = householdToLeave?.isOwner == true,
-            onConfirm = {
-              scope.launch {
-                component.leaveHousehold(leaveConfirmHouseholdId!!)
-                component.loadOverview()
-                leaveConfirmHouseholdId = null
-              }
-            },
-            onDismiss = { leaveConfirmHouseholdId = null },
-        )
-      }
+      HouseholdLeaveConfirmDialog(
+          householdName = householdToLeave?.name ?: leaveConfirmHouseholdId!!,
+          isOwner = householdToLeave?.isOwner == true,
+          onConfirm = {
+            scope.launch {
+              component.leaveHousehold(leaveConfirmHouseholdId!!)
+              leaveConfirmHouseholdId = null
+            }
+          },
+          onDismiss = { leaveConfirmHouseholdId = null },
+      )
     }
   }
 }

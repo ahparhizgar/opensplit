@@ -8,9 +8,7 @@ import com.opensplit.db.HouseholdEntity
 import com.opensplit.db.OperationType
 import com.opensplit.db.SyncQueueEntity
 import com.opensplit.db.toDomain
-import com.opensplit.db.toEntity
 import com.opensplit.domain.Household
-import com.opensplit.features.household.HouseholdApi
 import com.opensplit.sync.SyncManager
 import com.opensplit.util.currentTimeMillis
 import com.opensplit.util.randomId
@@ -18,7 +16,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class HouseholdRepository(
-    private val api: HouseholdApi,
     private val dao: HouseholdDao,
     private val database: AppDatabase,
     private val syncManager: SyncManager,
@@ -31,36 +28,8 @@ class HouseholdRepository(
     return dao.observeHouseholdWithMembers(id).map { it?.toDomain() }
   }
 
-  suspend fun refreshHouseholds() {
-    try {
-      val result = api.loadOverview()
-      database.useWriterConnection { connection ->
-        connection.immediateTransaction {
-          result.forEach { dto ->
-            dao.insertHouseholdWithMembers(dto.toEntity(), dto.members.map { it.toEntity(dto.id) })
-          }
-        }
-      }
-    } catch (e: Exception) {
-      // Ignore errors for background refresh in offline-first
-    }
-  }
-
   suspend fun getHousehold(id: String): Household? {
     return dao.getHouseholdWithMembers(id)?.toDomain()
-  }
-
-  suspend fun refreshHousehold(id: String): Household? {
-    return try {
-      val result = api.getHousehold(id)
-      dao.insertHouseholdWithMembers(
-          result.toEntity(),
-          result.members.map { it.toEntity(result.id) },
-      )
-      result.toDomain()
-    } catch (e: Exception) {
-      null
-    }
   }
 
   suspend fun createHousehold(name: String) {

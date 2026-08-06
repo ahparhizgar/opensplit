@@ -2,7 +2,6 @@ package com.opensplit.features.household.details
 
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.pushNew
-import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.domain.Expense
@@ -38,9 +37,7 @@ interface HouseholdDetailsComponent {
 
   data class UiState(
       val household: Household? = null,
-      // should be out of UiState because loads
       val expenses: List<Expense> = emptyList(),
-      val isLoading: Boolean = false,
       val error: String? = null,
   )
 }
@@ -53,7 +50,7 @@ class DefaultHouseholdDetailsComponent(
 ) : HouseholdDetailsComponent, CContext by context {
 
   override val householdId: String = config.householdId
-  private val _uiState = MutableStateFlow(HouseholdDetailsComponent.UiState(isLoading = true))
+  private val _uiState = MutableStateFlow(HouseholdDetailsComponent.UiState())
   override val uiState: StateFlow<HouseholdDetailsComponent.UiState> = _uiState
 
   init {
@@ -67,7 +64,6 @@ class DefaultHouseholdDetailsComponent(
         _uiState.update { it.copy(expenses = expenses) }
       }
     }
-    doOnCreate { refresh() }
   }
 
   override fun onAddMemberClicked() {
@@ -85,14 +81,6 @@ class DefaultHouseholdDetailsComponent(
   override fun onBack() {
     navigation.pop()
   }
-
-  private fun refresh() =
-      componentScope().launch {
-        _uiState.update { it.copy(isLoading = true) }
-        householdRepository.refreshHousehold(householdId)
-        expenseRepository.refreshExpenses(householdId)
-        _uiState.update { it.copy(isLoading = false) }
-      }
 
   class Factory(
       private val householdRepository: HouseholdRepository,

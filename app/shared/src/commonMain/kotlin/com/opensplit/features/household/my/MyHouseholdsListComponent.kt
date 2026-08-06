@@ -4,7 +4,6 @@ import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
-import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.domain.FakeHouseholdFactory
@@ -19,10 +18,7 @@ import kotlinx.serialization.Serializable
 
 interface MyHouseholdsListComponent {
   val uiState: Value<MyHouseholdsUiState>
-  val isLoading: Value<Boolean>
   val isSettledExpanded: Value<Boolean>
-
-  fun loadOverview(): Job
 
   fun leaveHousehold(householdId: String): Job
 
@@ -54,25 +50,13 @@ class DefaultMyHouseholdsListComponent(
 
   init {
     scope.launch { repository.getHouseholds().collect { updateState(it) } }
-    doOnCreate { loadOverview() }
   }
 
   private val _uiState = MutableValue(MyHouseholdsUiState())
   override val uiState: Value<MyHouseholdsUiState> = _uiState
 
-  private val _isLoading = MutableValue(true)
-  override val isLoading: Value<Boolean> = _isLoading
-
   private val _isSettledExpanded = MutableValue(false)
   override val isSettledExpanded: Value<Boolean> = _isSettledExpanded
-
-  override fun loadOverview() = scope.launch {
-    try {
-      repository.refreshHouseholds()
-    } finally {
-      _isLoading.value = false
-    }
-  }
 
   private fun updateState(households: List<Household>) {
     _uiState.update {
@@ -111,12 +95,9 @@ class DefaultMyHouseholdsListComponent(
 class FakeMyHouseholdsListComponent(
     uiState: MyHouseholdsUiState =
         MyHouseholdsUiState(households = listOf(FakeHouseholdFactory.create())),
-    override val isLoading: MutableValue<Boolean> = MutableValue(false),
     override val isSettledExpanded: MutableValue<Boolean> = MutableValue(false),
 ) : MyHouseholdsListComponent {
   override val uiState: Value<MyHouseholdsUiState> = MutableValue(uiState)
-
-  override fun loadOverview() = Job()
 
   override fun leaveHousehold(householdId: String) = Job()
 
