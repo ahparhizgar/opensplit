@@ -88,4 +88,11 @@ object FakeExpenseFactory {
           splitMethod = splitMethod,
           syncStatus = syncStatus,
       )
+
+  fun createList() =
+      listOf(
+          create(),
+          create(id = "expense-2", title = "Burger", amount = 15.0),
+          create(id = "expense-3", title = "Soda", amount = 5.0),
+      )
 }

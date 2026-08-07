@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.opensplit.domain.FakeExpenseFactory
 import com.opensplit.domain.FakeHouseholdFactory
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.ui.OpenSplitTheme
@@ -138,6 +139,7 @@ fun HouseholdDetailsScreen(
                 // TODO create a UI component for expense card
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    onClick = { component.onExpenseClicked(expense) },
                 ) {
                   Row(
                       modifier = Modifier.padding(16.dp),
@@ -204,7 +206,10 @@ fun HouseholdDetailsScreenWithMemberPreview() {
         component =
             FakeHouseholdDetailsComponent(
                 uiState =
-                    HouseholdDetailsComponent.UiState(household = FakeHouseholdFactory.create())
+                    HouseholdDetailsComponent.UiState(
+                        household = FakeHouseholdFactory.create(),
+                        expenses = FakeExpenseFactory.createList(),
+                    )
             ),
     )
   }

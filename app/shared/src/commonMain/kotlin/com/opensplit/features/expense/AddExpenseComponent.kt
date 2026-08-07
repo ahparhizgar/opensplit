@@ -473,8 +473,8 @@ class DefaultAddExpenseComponent(
               ParticipantShare(
                   userId = it.userId,
                   paidShare = paidShare,
-                  owedShare = it.amount,
-                  netBalance = paidShare - it.amount,
+                  owedShare = paidShare - it.amount,
+                  netBalance = it.amount,
               )
             }
 
