@@ -4,6 +4,7 @@ import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
+import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.domain.FakeHouseholdFactory
@@ -50,6 +51,7 @@ class DefaultMyHouseholdsListComponent(
 
   init {
     scope.launch { repository.getHouseholds().collect { updateState(it) } }
+    doOnCreate { scope.launch { repository.refreshHouseholds() } }
   }
 
   private val _uiState = MutableValue(MyHouseholdsUiState())

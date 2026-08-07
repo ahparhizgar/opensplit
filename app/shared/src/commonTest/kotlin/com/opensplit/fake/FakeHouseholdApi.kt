@@ -22,20 +22,9 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
 
   override suspend fun createHousehold(name: String): HouseholdDto = fakeApiCall {
     val newHousehold =
-        HouseholdDto(
-            id = "household-1",
-            name = name,
-            inviteLink = "https://opensplit.com/join/invite-abc123",
-            members =
-                listOf(
-                    HouseholdMemberDto(
-                        userId = "user-1",
-                        name = "Amir",
-                        email = "amir@example.com",
-                        isOwner = true,
-                        isCurrentUser = true,
-                    )
-                ),
+        FakeHouseholdDtoFactory.create(
+            id = "household-3",
+            name = "Amir's House",
         )
     households = listOf(newHousehold)
     newHousehold
@@ -43,20 +32,9 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
 
   override suspend fun joinHousehold(inviteCode: String): HouseholdDto = fakeApiCall {
     val joinedHousehold =
-        HouseholdDto(
-            id = "household-2",
+        FakeHouseholdDtoFactory.create(
+            id = "household-4",
             name = "Joined House",
-            inviteLink = "https://opensplit.com/join/invite-def456",
-            members =
-                listOf(
-                    HouseholdMemberDto(
-                        userId = "user-1",
-                        name = "Amir",
-                        email = "amir@example.com",
-                        isOwner = false,
-                        isCurrentUser = true,
-                    )
-                ),
         )
     households = listOf(joinedHousehold)
     joinedHousehold
@@ -86,6 +64,15 @@ class FakeHouseholdApi : HouseholdApi, FakeService {
                 ),
         )
       }
+
+  override suspend fun getHousehold(id: String): HouseholdDto {
+    return households.firstOrNull { it.id == id }
+        ?: throw IllegalArgumentException("Household with id $id not found")
+  }
+
+  override suspend fun getHouseholds(): List<HouseholdDto> {
+    return households
+  }
 
   override suspend fun leaveHousehold(householdId: String): List<HouseholdDto> = fakeApiCall {
     households = households.filterNot { it.id == householdId }
