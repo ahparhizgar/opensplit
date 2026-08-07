@@ -90,7 +90,7 @@ fun CreateJoinHouseholdScreen(
           }
           Spacer(modifier = Modifier.height(20.dp))
           Button(
-              onClick = { scope.launch { component.createComponent.submit() } },
+              onClick = { component.createComponent.submit() },
               modifier = Modifier.fillMaxWidth().testTag("household-submit"),
               enabled = !state.isSubmitting,
           ) {

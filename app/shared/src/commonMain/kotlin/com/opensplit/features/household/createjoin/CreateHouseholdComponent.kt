@@ -2,15 +2,19 @@ package com.opensplit.features.household.createjoin
 
 import com.ahparhizgar.katch.ApiCallError
 import com.opensplit.component.CContext
+import com.opensplit.component.componentScope
 import com.opensplit.db.toDomain
 import com.opensplit.domain.Household
 import com.opensplit.features.household.HouseholdApi
 import com.opensplit.remote.fieldErrors
 import com.opensplit.remote.userMessage
+import com.opensplit.repository.HouseholdRepository
 import com.opensplit.validation.household.HouseholdValidation
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class CreateHouseholdViewState(
     val householdName: String = "",
@@ -24,7 +28,7 @@ interface CreateHouseholdComponent {
 
   fun updateHouseholdName(name: String)
 
-  suspend fun submit()
+  fun submit(): Job
 
   interface Factory {
     fun create(cContext: CContext, onDone: (Household) -> Unit): CreateHouseholdComponent
@@ -34,6 +38,7 @@ interface CreateHouseholdComponent {
 class DefaultCreateHouseholdComponent(
     context: CContext,
     private val gateway: HouseholdApi,
+    private val householdRepository: HouseholdRepository,
     private val onDone: (Household) -> Unit,
 ) : CreateHouseholdComponent, CContext by context {
 
@@ -50,7 +55,9 @@ class DefaultCreateHouseholdComponent(
     }
   }
 
-  override suspend fun submit() {
+  val scope = componentScope()
+
+  override fun submit() = scope.launch {
     val current = _uiState.value
     val validation = HouseholdValidation.validateCreateHousehold(current.householdName)
 
@@ -58,13 +65,14 @@ class DefaultCreateHouseholdComponent(
       _uiState.update {
         it.copy(fieldErrors = validation.errors, generalError = null, isSubmitting = false)
       }
-      return
+      return@launch
     }
 
     _uiState.update { it.copy(fieldErrors = emptyMap(), generalError = null, isSubmitting = true) }
 
     try {
       val result = gateway.createHousehold(current.householdName)
+      householdRepository.refresh()
       _uiState.update { it.copy(isSubmitting = false) }
       onDone(result.toDomain())
     } catch (e: ApiCallError) {
@@ -80,11 +88,13 @@ class DefaultCreateHouseholdComponent(
 
   class Factory(
       private val gateway: HouseholdApi,
+      private val householdRepository: HouseholdRepository,
   ) : CreateHouseholdComponent.Factory {
     override fun create(
         cContext: CContext,
         onDone: (Household) -> Unit,
-    ): CreateHouseholdComponent = DefaultCreateHouseholdComponent(cContext, gateway, onDone)
+    ): CreateHouseholdComponent =
+        DefaultCreateHouseholdComponent(cContext, gateway, householdRepository, onDone)
   }
 }
 
@@ -96,5 +106,5 @@ class FakeCreateHouseholdComponent(
 
   override fun updateHouseholdName(name: String) {}
 
-  override suspend fun submit() {}
+  override fun submit() = Job()
 }

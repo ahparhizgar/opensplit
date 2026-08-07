@@ -4,6 +4,7 @@ import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.opensplit.component.CContext
 import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.details.HouseholdDetailsComponent
+import com.opensplit.repository.HouseholdRepository
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,12 +35,14 @@ interface CreateJoinHouseholdComponent {
 class DefaultCreateJoinHouseholdComponent(
     context: CContext,
     gateway: HouseholdApi,
+    householdRepository: HouseholdRepository,
 ) : CreateJoinHouseholdComponent, CContext by context {
 
   override val createComponent: CreateHouseholdComponent =
       DefaultCreateHouseholdComponent(
           context = context,
           gateway = gateway,
+          householdRepository = householdRepository,
           onDone = { household ->
             navigation.replaceCurrent(HouseholdDetailsComponent.Config(household.id))
           },
@@ -60,9 +63,10 @@ class DefaultCreateJoinHouseholdComponent(
 
   class Factory(
       private val gateway: HouseholdApi,
+      private val householdRepository: HouseholdRepository,
   ) : CreateJoinHouseholdComponent.Factory {
     override fun create(cContext: CContext): CreateJoinHouseholdComponent =
-        DefaultCreateJoinHouseholdComponent(cContext, gateway)
+        DefaultCreateJoinHouseholdComponent(cContext, gateway, householdRepository)
   }
 }
 

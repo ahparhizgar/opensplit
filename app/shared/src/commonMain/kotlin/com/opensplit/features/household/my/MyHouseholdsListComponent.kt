@@ -51,7 +51,7 @@ class DefaultMyHouseholdsListComponent(
 
   init {
     scope.launch { repository.getHouseholds().collect { updateState(it) } }
-    doOnCreate { scope.launch { repository.refreshHouseholds() } }
+    doOnCreate { repository.refresh() }
   }
 
   private val _uiState = MutableValue(MyHouseholdsUiState())

@@ -14,14 +14,17 @@ import com.opensplit.features.household.HouseholdApi
 import com.opensplit.sync.SyncManager
 import com.opensplit.util.currentTimeMillis
 import com.opensplit.util.randomId
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class HouseholdRepository(
     private val api: HouseholdApi,
     private val dao: HouseholdDao,
     private val database: AppDatabase,
     private val syncManager: SyncManager,
+    private val scope: CoroutineScope,
 ) {
   fun getHouseholds(): Flow<List<Household>> {
     return dao.getHouseholdsWithMembers().map { entities -> entities.map { it.toDomain() } }
@@ -31,13 +34,16 @@ class HouseholdRepository(
     return dao.observeHouseholdWithMembers(id).map { it?.toDomain() }
   }
 
-  suspend fun refreshHouseholds() {
+  fun refresh() = scope.launch {
     try {
       val result = api.getHouseholds()
       database.useWriterConnection { connection ->
         connection.immediateTransaction {
           result.forEach { dto ->
-            dao.insertHouseholdWithMembers(dto.toEntity(), dto.members.map { it.toEntity(dto.id) })
+            dao.insertHouseholdWithMembers(
+                dto.toEntity(),
+                dto.members.map { it.toEntity(dto.id) },
+            )
           }
         }
       }
