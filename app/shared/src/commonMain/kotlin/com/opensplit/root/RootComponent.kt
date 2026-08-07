@@ -15,6 +15,7 @@ import com.opensplit.component.componentScope
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.expense.AddExpenseComponent
+import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
@@ -111,6 +112,15 @@ class DefaultRootComponent(
                   context = cContext,
                   config = config,
                   onFinished = { rootNavigation.pop() },
+              )
+
+      is ExpenseDetailsComponent.Config ->
+          componentProvider
+              .provide(ExpenseDetailsComponent.Factory::class)
+              .create(
+                  context = cContext,
+                  config = config,
+                  onBack = { rootNavigation.pop() },
               )
 
       else -> error("Destination not defined in createChild")

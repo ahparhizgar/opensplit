@@ -39,6 +39,15 @@ class ExpenseRepository(
     }
   }
 
+  fun getExpense(expenseId: String): Flow<Expense?> {
+    return expenseDao.observeExpense(expenseId).map { entity ->
+      entity?.let {
+        val participants = expenseDao.getParticipants(it.id).map { it.toDomain() }
+        it.toDomain(participants)
+      }
+    }
+  }
+
   suspend fun createExpense(
       householdId: String,
       title: String,

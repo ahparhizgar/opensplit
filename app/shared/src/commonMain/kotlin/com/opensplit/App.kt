@@ -22,6 +22,8 @@ import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthRootScreen
 import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.AddExpenseScreen
+import com.opensplit.features.expense.ExpenseDetailsComponent
+import com.opensplit.features.expense.ExpenseDetailsScreen
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdScreen
 import com.opensplit.features.household.details.HouseholdDetailsComponent
@@ -103,6 +105,13 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
         is AddExpenseComponent -> {
           AddExpenseScreen(
               component = child,
+          )
+        }
+
+        is ExpenseDetailsComponent -> {
+          ExpenseDetailsScreen(
+              component = child,
+              modifier = Modifier.fillMaxSize(),
           )
         }
 

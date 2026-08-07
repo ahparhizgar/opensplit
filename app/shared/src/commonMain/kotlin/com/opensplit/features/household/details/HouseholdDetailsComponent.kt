@@ -7,6 +7,7 @@ import com.opensplit.component.componentScope
 import com.opensplit.domain.Expense
 import com.opensplit.domain.Household
 import com.opensplit.features.expense.AddExpenseComponent
+import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.repository.ExpenseRepository
 import com.opensplit.repository.HouseholdRepository
@@ -24,6 +25,8 @@ interface HouseholdDetailsComponent {
   fun onAddMemberClicked() {}
 
   fun onAddExpenseClicked() {}
+
+  fun onExpenseClicked(expense: Expense) {}
 
   fun onBack() {}
 
@@ -72,6 +75,10 @@ class DefaultHouseholdDetailsComponent(
 
   override fun onAddExpenseClicked() {
     navigation.pushNew(AddExpenseComponent.Config(householdId = householdId))
+  }
+
+  override fun onExpenseClicked(expense: Expense) {
+    navigation.pushNew(ExpenseDetailsComponent.Config(householdId, expense.id))
   }
 
   override fun onSettingsClick() {

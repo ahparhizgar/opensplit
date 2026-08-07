@@ -63,6 +63,9 @@ interface ExpenseDao {
 
   @Query("SELECT * FROM expenses WHERE id = :id") suspend fun getExpense(id: String): ExpenseEntity?
 
+  @Query("SELECT * FROM expenses WHERE id = :id")
+  fun observeExpense(id: String): Flow<ExpenseEntity?>
+
   @Query("SELECT * FROM participants WHERE expenseId = :expenseId")
   suspend fun getParticipants(expenseId: String): List<ParticipantEntity>
 
