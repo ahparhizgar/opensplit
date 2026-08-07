@@ -143,20 +143,11 @@ class SyncManager(
   private suspend fun applyChanges(response: SyncResponse) {
     database.useWriterConnection { connection ->
       connection.immediateTransaction {
-        response.changedEntities.households.forEach { dto ->
-          householdDao.insertHouseholdWithMembers(
-              dto.toEntity(),
-              dto.members.map { it.toEntity(dto.id) },
-          )
-        }
-
         response.changedEntities.expenses.forEach { dto ->
           val entity = dto.toEntity(SyncStatus.SYNCED)
           val participants = dto.participants.map { it.toEntity(dto.id) }
           expenseDao.insertExpenseWithParticipants(entity, participants)
         }
-
-        response.deletedEntities.households.forEach { id -> householdDao.deleteHousehold(id) }
 
         response.deletedEntities.expenses.forEach { id ->
           expenseDao.deleteExpense(id)

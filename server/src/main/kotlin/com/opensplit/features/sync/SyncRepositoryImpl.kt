@@ -1,8 +1,6 @@
 package com.opensplit.features.sync
 
 import com.opensplit.database.*
-import com.opensplit.dto.expense.*
-import com.opensplit.dto.household.*
 import com.opensplit.dto.sync.*
 import com.opensplit.features.expense.ExpenseParticipantRecord
 import com.opensplit.features.expense.ExpenseRecord
@@ -47,14 +45,6 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
                 .map { it[Memberships.householdId] }
                 .toSet()
 
-        val changedHouseholds =
-            Households.selectAll()
-                .where {
-                  (Households.version greater sinceVersion) and
-                      (Households.id inList userHouseholdIds)
-                }
-                .map { it.toHouseholdDto(userId) }
-
         val changedExpenses =
             Expenses.selectAll()
                 .where {
@@ -70,15 +60,6 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
                   row.toExpenseRecord(participants).toDto()
                 }
 
-        val deletedHouseholds =
-            ChangeLog.selectAll()
-                .where {
-                  (ChangeLog.id greater sinceVersion) and
-                      (ChangeLog.entityType eq "HOUSEHOLD") and
-                      (ChangeLog.operation eq "DELETE")
-                }
-                .map { it[ChangeLog.entityId] }
-
         val deletedExpenses =
             ChangeLog.selectAll()
                 .where {
@@ -90,45 +71,10 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
 
         SyncResponse(
             latestVersion = latestVersion,
-            changedEntities =
-                ChangedEntitiesDto(households = changedHouseholds, expenses = changedExpenses),
-            deletedEntities =
-                DeletedEntitiesDto(households = deletedHouseholds, expenses = deletedExpenses),
+            changedEntities = ChangedEntitiesDto(expenses = changedExpenses),
+            deletedEntities = DeletedEntitiesDto(expenses = deletedExpenses),
         )
       }
-
-  private fun ResultRow.toHouseholdDto(currentUserId: String): HouseholdDto {
-    val householdId = get(Households.id)
-    val ownerId = get(Households.ownerId)
-    val memberIds =
-        Memberships.selectAll()
-            .where { Memberships.householdId eq householdId }
-            .map { it[Memberships.userId] }
-
-    val members =
-        Users.selectAll()
-            .where { Users.id inList memberIds }
-            .map { row ->
-              HouseholdMemberDto(
-                  userId = row[Users.id],
-                  name = row[Users.name],
-                  email = row[Users.email],
-                  isOwner = row[Users.id] == ownerId,
-                  isCurrentUser = row[Users.id] == currentUserId,
-                  balance = 0.0, // Should be calculated or loaded
-                  balanceCurrency = "IRR",
-              )
-            }
-
-    return HouseholdDto(
-        id = householdId,
-        name = get(Households.name),
-        members = members,
-        inviteLink = "https://opensplit.com/join/${get(Households.inviteCode).orEmpty()}",
-        isOwner = ownerId == currentUserId,
-        balance = 0.0, // Should be calculated
-    )
-  }
 
   private fun ResultRow.toExpenseRecord(
       participants: List<ExpenseParticipantRecord>

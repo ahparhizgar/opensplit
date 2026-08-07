@@ -1,5 +1,7 @@
 package com.opensplit
 
+import com.arkivanov.essenty.lifecycle.create
+import com.opensplit.component.TestCContext
 import com.opensplit.component.defaultCContext
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.createjoin.HouseholdTab
@@ -9,6 +11,7 @@ import com.opensplit.util.createComponentContext
 import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.core.test.testCoroutineScheduler
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.maps.beEmpty
@@ -80,14 +83,16 @@ class HouseholdComponentTest : BehaviorSpec() {
     }
 
     Given("a MyHouseholdsListComponent") {
+      var cContext by testValue { TestCContext() }
       var listComponent by testValue {
-        koin
-            .get<MyHouseholdsListComponent.Factory>()
-            .create(defaultCContext(createComponentContext()))
+        koin.get<MyHouseholdsListComponent.Factory>().create(cContext)
       }
 
       When("loading overview") {
-        beforeEach { listComponent.loadOverview().join() }
+        beforeEach {
+          cContext.lifecycleRegistry.create()
+          testCoroutineScheduler.advanceUntilIdle()
+        }
         Then("loads households from gateway") {
           listComponent.uiState.value.households.shouldNotBeEmpty()
         }
