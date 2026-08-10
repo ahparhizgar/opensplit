@@ -82,12 +82,24 @@ fun HouseholdDetailsScreen(
           )
         }
         if (household != null) {
-          Text(
-              modifier = Modifier.align(Alignment.BottomStart),
-              text = household.name,
-              style = MaterialTheme.typography.titleLarge,
-              color = MaterialTheme.colorScheme.onPrimary,
-          )
+          Column(modifier = Modifier.align(Alignment.BottomStart)) {
+            Text(
+                text = household.name,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onPrimary,
+            )
+            val balanceText =
+                when {
+                  household.balance > 0 -> "You are owed IRR${household.balance}"
+                  household.balance < 0 -> "You owe IRR${-household.balance}"
+                  else -> "Settled up"
+                }
+            Text(
+                text = balanceText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+            )
+          }
         }
       }
 

@@ -13,6 +13,7 @@ data class HouseholdMemberRecord(
     val userId: String,
     val name: String,
     val email: String,
+    val balance: Double = 0.0,
 )
 
 data class HouseholdDetailRecord(
