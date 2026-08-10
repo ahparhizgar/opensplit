@@ -5,6 +5,7 @@ import androidx.room3.useWriterConnection
 import com.opensplit.db.AppDatabase
 import com.opensplit.db.ExpenseDao
 import com.opensplit.db.ExpenseEntity
+import com.opensplit.db.HouseholdDao
 import com.opensplit.db.OperationType
 import com.opensplit.db.SyncQueueDao
 import com.opensplit.db.SyncQueueEntity
@@ -24,7 +25,9 @@ import kotlinx.serialization.json.Json
 
 class ExpenseRepository(
     private val expenseDao: ExpenseDao,
+    private val householdDao: HouseholdDao,
     private val syncQueueDao: SyncQueueDao,
+    private val profileRepository: ProfileRepository,
     private val database: AppDatabase,
     private val syncManager: SyncManager,
 ) {
@@ -84,6 +87,18 @@ class ExpenseRepository(
     database.useWriterConnection { connection ->
       connection.immediateTransaction {
         expenseDao.insertExpenseWithParticipants(expenseEntity, participantEntities)
+
+        // Optimistic UI: Update local household/member balances
+        val currentUserId = profileRepository.profile.value?.id
+        participants.forEach { participant ->
+          val delta = participant.paidShare - participant.owedShare
+          householdDao.updateMemberBalance(householdId, participant.userId, delta)
+
+          if (participant.userId == currentUserId) {
+            householdDao.updateBalance(householdId, delta)
+          }
+        }
+
         syncQueueDao.enqueue(syncEntry)
       }
     }
@@ -91,8 +106,21 @@ class ExpenseRepository(
   }
 
   suspend fun deleteExpense(householdId: String, expenseId: String) {
+    val participants = expenseDao.getParticipants(expenseId)
+
     database.useWriterConnection { connection ->
       connection.immediateTransaction {
+        // Reverse optimistic UI balance
+        val currentUserId = profileRepository.profile.value?.id
+        participants.forEach { participant ->
+          val delta = participant.paidShare - participant.owedShare
+          householdDao.updateMemberBalance(householdId, participant.userId, -delta)
+
+          if (participant.userId == currentUserId) {
+            householdDao.updateBalance(householdId, -delta)
+          }
+        }
+
         expenseDao.deleteExpense(expenseId)
         expenseDao.deleteParticipants(expenseId)
         syncQueueDao.enqueue(
