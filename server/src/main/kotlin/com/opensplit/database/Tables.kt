@@ -40,6 +40,7 @@ object Memberships : Table("memberships") {
   val id = varchar("id", 36)
   val householdId = varchar("household_id", 36).references(Households.id)
   val userId = varchar("user_id", 36).references(Users.id)
+  val balance = double("balance").default(0.0)
   val version = long("version").default(0)
 
   override val primaryKey = PrimaryKey(id)
