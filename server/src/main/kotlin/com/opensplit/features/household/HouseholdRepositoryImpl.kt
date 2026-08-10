@@ -1,21 +1,15 @@
 package com.opensplit.features.household
 
+import com.opensplit.database.ExpenseParticipants
+import com.opensplit.database.Expenses
 import com.opensplit.database.Households
 import com.opensplit.database.Memberships
 import com.opensplit.database.Users
 import com.opensplit.features.sync.SyncRepository
 import kotlin.uuid.Uuid
-import org.jetbrains.exposed.v1.core.ResultRow
-import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.inList
-import org.jetbrains.exposed.v1.core.neq
-import org.jetbrains.exposed.v1.jdbc.Database
-import org.jetbrains.exposed.v1.jdbc.deleteWhere
-import org.jetbrains.exposed.v1.jdbc.insert
-import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.jdbc.*
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.jetbrains.exposed.v1.jdbc.update
 
 class HouseholdRepositoryImpl(
     private val database: Database,
@@ -37,12 +31,16 @@ class HouseholdRepositoryImpl(
                   .firstOrNull()
                   ?.toHouseholdRecord() ?: return@mapNotNull null
 
+          val balances = calculateMemberBalances(householdId)
+
           val memberIds =
               Memberships.selectAll()
                   .where { Memberships.householdId eq householdId }
                   .map { it[Memberships.userId] }
           val members =
-              Users.selectAll().where { Users.id inList memberIds }.map { it.toHouseholdMember() }
+              Users.selectAll()
+                  .where { Users.id inList memberIds }
+                  .map { it.toHouseholdMember(balances[it[Users.id]] ?: 0.0) }
 
           HouseholdDetailRecord(household = household, members = members)
         }
@@ -147,12 +145,16 @@ class HouseholdRepositoryImpl(
                 .firstOrNull()
                 ?.toHouseholdRecord() ?: return@transaction null
 
+        val balances = calculateMemberBalances(householdId)
+
         val memberIds =
             Memberships.selectAll()
                 .where { Memberships.householdId eq householdId }
                 .map { it[Memberships.userId] }
         val members =
-            Users.selectAll().where { Users.id inList memberIds }.map { it.toHouseholdMember() }
+            Users.selectAll()
+                .where { Users.id inList memberIds }
+                .map { it.toHouseholdMember(balances[it[Users.id]] ?: 0.0) }
 
         HouseholdDetailRecord(household = household, members = members)
       }
@@ -191,6 +193,21 @@ class HouseholdRepositoryImpl(
     }
   }
 
+  private fun calculateMemberBalances(householdId: String): Map<String, Double> {
+    val paidSum = ExpenseParticipants.paidAmount.sum()
+    val owedSum = ExpenseParticipants.owedAmount.sum()
+    return ExpenseParticipants.innerJoin(Expenses, { expenseId }, { id })
+        .select(ExpenseParticipants.userId, paidSum, owedSum)
+        .where { Expenses.householdId eq householdId }
+        .groupBy(ExpenseParticipants.userId)
+        .associate { row ->
+          val userId = row[ExpenseParticipants.userId]
+          val paid = row[paidSum] ?: 0.0
+          val owed = row[owedSum] ?: 0.0
+          userId to (paid - owed)
+        }
+  }
+
   private fun ResultRow.toHouseholdRecord(): HouseholdRecord =
       HouseholdRecord(
           id = get(Households.id),
@@ -199,10 +216,11 @@ class HouseholdRepositoryImpl(
           inviteCode = get(Households.inviteCode),
       )
 
-  private fun ResultRow.toHouseholdMember(): HouseholdMemberRecord =
+  private fun ResultRow.toHouseholdMember(balance: Double = 0.0): HouseholdMemberRecord =
       HouseholdMemberRecord(
           userId = get(Users.id),
           name = get(Users.name),
           email = get(Users.email),
+          balance = balance,
       )
 }

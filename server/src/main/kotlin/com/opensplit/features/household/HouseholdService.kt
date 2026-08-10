@@ -84,25 +84,27 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
   fun getHousehold(user: UserPrincipal, householdId: String): HouseholdDto? =
       householdRepository.loadHouseholdDetail(householdId, user.userId)?.toDto(user.userId)
 
-  private fun HouseholdDetailRecord.toDto(currentUserId: String): HouseholdDto =
-      HouseholdDto(
-          id = household.id,
-          name = household.name,
-          members =
-              members.map { member ->
-                HouseholdMemberDto(
-                    userId = member.userId,
-                    name = member.name,
-                    email = member.email,
-                    isOwner = member.userId == household.ownerId,
-                    isCurrentUser = member.userId == currentUserId,
-                    balance = if (member.userId == currentUserId) 10.15 else -10.15,
-                    balanceCurrency = "IRR",
-                )
-              },
-          inviteLink = household.inviteLink(),
-          isOwner = household.ownerId == currentUserId,
+  private fun HouseholdDetailRecord.toDto(currentUserId: String): HouseholdDto {
+    val memberDtos = members.map { member ->
+      HouseholdMemberDto(
+          userId = member.userId,
+          name = member.name,
+          email = member.email,
+          isOwner = member.userId == household.ownerId,
+          isCurrentUser = member.userId == currentUserId,
+          balance = member.balance,
+          balanceCurrency = "IRR",
       )
+    }
+    return HouseholdDto(
+        id = household.id,
+        name = household.name,
+        members = memberDtos,
+        inviteLink = household.inviteLink(),
+        isOwner = household.ownerId == currentUserId,
+        balance = memberDtos.find { it.isCurrentUser }?.balance ?: 0.0,
+    )
+  }
 
   private fun HouseholdRecord.inviteLink(): String =
       "https://opensplit.com/join/${inviteCode.orEmpty()}"

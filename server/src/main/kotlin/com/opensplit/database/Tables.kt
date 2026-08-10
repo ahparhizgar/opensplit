@@ -18,14 +18,18 @@ object Users : Table("users") {
   val email = varchar("email", 255).uniqueIndex()
   val passwordHash = varchar("password_hash", 64)
   val version = long("version").default(0)
+
+  override val primaryKey = PrimaryKey(id)
 }
 
 object Households : Table("households") {
   val id = varchar("id", 36)
   val name = varchar("name", 255)
-  val ownerId = varchar("owner_id", 36)
+  val ownerId = varchar("owner_id", 36).references(Users.id)
   val inviteCode = varchar("invite_code", 64).nullable()
   val version = long("version").default(0)
+
+  override val primaryKey = PrimaryKey(id)
 
   init {
     uniqueIndex("uq_households_invite_code", inviteCode)
@@ -34,27 +38,33 @@ object Households : Table("households") {
 
 object Memberships : Table("memberships") {
   val id = varchar("id", 36)
-  val householdId = varchar("household_id", 36)
-  val userId = varchar("user_id", 36)
+  val householdId = varchar("household_id", 36).references(Households.id)
+  val userId = varchar("user_id", 36).references(Users.id)
   val version = long("version").default(0)
+
+  override val primaryKey = PrimaryKey(id)
 }
 
 object Expenses : Table("expenses") {
   val id = varchar("id", 36)
-  val householdId = varchar("household_id", 36)
+  val householdId = varchar("household_id", 36).references(Households.id)
   val title = varchar("title", 255)
   val amount = double("amount")
-  val payerId = varchar("payer_id", 36)
+  val payerId = varchar("payer_id", 36).references(Users.id)
   val createdAt = long("created_at")
   val splitMethod = text("split_method")
   val version = long("version").default(0)
+
+  override val primaryKey = PrimaryKey(id)
 }
 
 object ExpenseParticipants : Table("expense_participants") {
   val id = varchar("id", 36)
-  val expenseId = varchar("expense_id", 36)
-  val userId = varchar("user_id", 36)
+  val expenseId = varchar("expense_id", 36).references(Expenses.id)
+  val userId = varchar("user_id", 36).references(Users.id)
   val paidAmount = double("paid_amount")
   val owedAmount = double("owed_amount")
   val version = long("version").default(0)
+
+  override val primaryKey = PrimaryKey(id)
 }

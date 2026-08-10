@@ -20,7 +20,9 @@ import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
+import com.opensplit.repository.HouseholdRepository
 import com.opensplit.splash.SplashDestination
+import com.opensplit.sync.SyncManager
 import com.opensplit.usermessage.MessageHolder
 import kotlin.reflect.KClass
 import kotlinx.coroutines.launch
@@ -42,7 +44,8 @@ class DefaultRootComponent(
     cContext: CContext,
     private val componentProvider: ComponentProvider,
     private val tokenStorage: TokenStorage,
-    syncManager: com.opensplit.sync.SyncManager,
+    syncManager: SyncManager,
+    householdRepository: HouseholdRepository,
 ) : RootComponent, CContext by cContext {
   val scope = componentScope()
 
@@ -59,6 +62,7 @@ class DefaultRootComponent(
     cContext.navigation = rootNavigation as StackNavigation<Any>
     messageShower = messageHolder
     syncManager.startSync()
+    householdRepository.refresh()
 
     scope.launch {
       try {
@@ -130,10 +134,17 @@ class DefaultRootComponent(
   class Factory(
       private val componentProvider: ComponentProvider,
       private val tokenStorage: TokenStorage,
-      private val syncManager: com.opensplit.sync.SyncManager,
+      private val syncManager: SyncManager,
+      private val householdRepository: HouseholdRepository,
   ) : RootComponent.Factory {
     override fun create(context: CContext): RootComponent =
-        DefaultRootComponent(context, componentProvider, tokenStorage, syncManager)
+        DefaultRootComponent(
+            context,
+            componentProvider,
+            tokenStorage,
+            syncManager,
+            householdRepository,
+        )
   }
 }
 

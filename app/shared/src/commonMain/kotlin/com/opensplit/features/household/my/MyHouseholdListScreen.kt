@@ -53,6 +53,7 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.value.MutableValue
 import com.opensplit.domain.Household
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.colorSchemeExtended
 import com.opensplit.ui.components.BottomNav
 import kotlinx.coroutines.launch
 
@@ -183,17 +184,26 @@ private fun BalanceSummaryRow(
       verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
+      val (text, color) =
+          when {
+            balance > 0 -> "Overall, you are owed " to MaterialTheme.colorScheme.primary
+            balance < 0 -> "Overall, you owe " to MaterialTheme.colorScheme.error
+            else -> "Overall, you are settled up" to MaterialTheme.colorScheme.onSurfaceVariant
+          }
       Text(
-          text = "Overall, you are owed ",
+          text = text,
           style = MaterialTheme.typography.titleMedium,
           fontWeight = FontWeight.Normal,
       )
-      Text(
-          text = "$currency$balance",
-          style = MaterialTheme.typography.titleMedium,
-          fontWeight = FontWeight.Bold,
-          color = MaterialTheme.colorScheme.primary,
-      )
+      if (balance != 0.0) {
+        val displayBalance = if (balance < 0) -balance else balance
+        Text(
+            text = "$currency$displayBalance",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = color,
+        )
+      }
     }
     Icon(
         imageVector = Icons.Default.Tune,
@@ -343,16 +353,22 @@ private fun HouseholdCard(
           style = MaterialTheme.typography.titleMedium,
           fontWeight = FontWeight.Bold,
       )
+      val balanceText =
+          when {
+            household.balance > 0 -> "you are owed IRR${household.balance}"
+            household.balance < 0 -> "you owe IRR${-household.balance}"
+            else -> "settled up"
+          }
+      val balanceColor =
+          when {
+            household.balance > 0 -> MaterialTheme.colorSchemeExtended.youOwe
+            household.balance < 0 -> MaterialTheme.colorSchemeExtended.youAreOwed
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
+          }
       Text(
-          text = "you are owed IRR${household.balance}",
+          text = balanceText,
           style = MaterialTheme.typography.bodyMedium,
-          color = MaterialTheme.colorScheme.primary,
-      )
-
-      Text(
-          text = "someone owes someone",
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          color = balanceColor,
       )
     }
   }
