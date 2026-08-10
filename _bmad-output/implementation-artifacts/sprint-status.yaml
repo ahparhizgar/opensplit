@@ -55,10 +55,10 @@ development_status:
   epic-1-retrospective: done
   epic-2: in-progress
   2-1-add-a-simple-expense-with-minimal-ui: done
-  2-2-ui-of-add-expense-should-have-defaults: backlog
-  2-3-implement-inline-validations-for-required-fields: backlog
+  2-2-ui-of-add-expense-should-have-defaults: done
+  2-3-implement-inline-validations-for-required-fields: done
   2-4-calculate-balance-in-backend-and-show-real-balance-in-household-list-and-household-details-screen: backlog
-  2-5-split-an-expense-equally-or-unequally: review
+  2-5-split-an-expense-equally-or-unequally: done
   2-6-edit-or-delete-an-expense-and-keep-its-original-currency: backlog
   2-7-review-expense-history: backlog
   epic-2-retrospective: optional
@@ -68,7 +68,7 @@ development_status:
   3-3-review-settlement-history-and-member-status: backlog
   epic-3-retrospective: optional
   epic-4: backlog
-  4-1-save-expenses-and-settlements-while-offline: backlog
-  4-2-sync-offline-changes-after-reconnecting: backlog
+  4-1-save-expenses-and-settlements-while-offline: done
+  4-2-sync-offline-changes-after-reconnecting: done
   4-3-resolve-sync-conflicts-clearly: backlog
   epic-4-retrospective: optional
