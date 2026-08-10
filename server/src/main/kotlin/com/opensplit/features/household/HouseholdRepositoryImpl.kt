@@ -1,7 +1,5 @@
 package com.opensplit.features.household
 
-import com.opensplit.database.ExpenseParticipants
-import com.opensplit.database.Expenses
 import com.opensplit.database.Households
 import com.opensplit.database.Memberships
 import com.opensplit.database.Users
@@ -17,7 +15,6 @@ class HouseholdRepositoryImpl(
 ) : HouseholdRepository {
   override fun loadHouseholds(userId: String): List<HouseholdDetailRecord> =
       transaction(database) {
-        // TODO fix N+1 query
         val householdIds =
             Memberships.selectAll()
                 .where { Memberships.userId eq userId }
@@ -31,16 +28,11 @@ class HouseholdRepositoryImpl(
                   .firstOrNull()
                   ?.toHouseholdRecord() ?: return@mapNotNull null
 
-          val balances = calculateMemberBalances(householdId)
-
-          val memberIds =
-              Memberships.selectAll()
-                  .where { Memberships.householdId eq householdId }
-                  .map { it[Memberships.userId] }
           val members =
-              Users.selectAll()
-                  .where { Users.id inList memberIds }
-                  .map { it.toHouseholdMember(balances[it[Users.id]] ?: 0.0) }
+              (Users innerJoin Memberships)
+                  .select(Users.id, Users.name, Users.email, Memberships.balance)
+                  .where { Memberships.householdId eq householdId }
+                  .map { it.toHouseholdMember(it[Memberships.balance]) }
 
           HouseholdDetailRecord(household = household, members = members)
         }
@@ -62,6 +54,7 @@ class HouseholdRepositoryImpl(
           it[Memberships.id] = membershipId
           it[Memberships.householdId] = targetHouseholdId
           it[Memberships.userId] = ownerId
+          it[Memberships.balance] = 0.0
         }
 
         syncRepository.recordChange("HOUSEHOLD", targetHouseholdId, "INSERT")
@@ -112,6 +105,7 @@ class HouseholdRepositoryImpl(
           it[Memberships.id] = membershipId
           it[Memberships.householdId] = householdId
           it[Memberships.userId] = userId
+          it[Memberships.balance] = 0.0
         }
         syncRepository.recordChange("MEMBERSHIP", membershipId, "INSERT")
       }
@@ -145,16 +139,11 @@ class HouseholdRepositoryImpl(
                 .firstOrNull()
                 ?.toHouseholdRecord() ?: return@transaction null
 
-        val balances = calculateMemberBalances(householdId)
-
-        val memberIds =
-            Memberships.selectAll()
-                .where { Memberships.householdId eq householdId }
-                .map { it[Memberships.userId] }
         val members =
-            Users.selectAll()
-                .where { Users.id inList memberIds }
-                .map { it.toHouseholdMember(balances[it[Users.id]] ?: 0.0) }
+            (Users innerJoin Memberships)
+                .select(Users.id, Users.name, Users.email, Memberships.balance)
+                .where { Memberships.householdId eq householdId }
+                .map { it.toHouseholdMember(it[Memberships.balance]) }
 
         HouseholdDetailRecord(household = household, members = members)
       }
@@ -191,21 +180,6 @@ class HouseholdRepositoryImpl(
         (Memberships.householdId eq householdId) and (Memberships.userId eq userId)
       }
     }
-  }
-
-  private fun calculateMemberBalances(householdId: String): Map<String, Double> {
-    val paidSum = ExpenseParticipants.paidAmount.sum()
-    val owedSum = ExpenseParticipants.owedAmount.sum()
-    return ExpenseParticipants.innerJoin(Expenses, { expenseId }, { id })
-        .select(ExpenseParticipants.userId, paidSum, owedSum)
-        .where { Expenses.householdId eq householdId }
-        .groupBy(ExpenseParticipants.userId)
-        .associate { row ->
-          val userId = row[ExpenseParticipants.userId]
-          val paid = row[paidSum] ?: 0.0
-          val owed = row[owedSum] ?: 0.0
-          userId to (paid - owed)
-        }
   }
 
   private fun ResultRow.toHouseholdRecord(): HouseholdRecord =

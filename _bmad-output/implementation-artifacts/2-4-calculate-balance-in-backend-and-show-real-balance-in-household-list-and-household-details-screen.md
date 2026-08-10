@@ -17,18 +17,17 @@ so that I can immediately see the impact of my added expenses.
 
 ## Tasks / Subtasks
 
-- [x] Update `HouseholdMemberRecord` to include `balance` field (AC: 1)
-- [x] Implement balance calculation logic in `HouseholdRepositoryImpl` using Exposed aggregations (AC: 1)
-- [x] Update `HouseholdService` to use real calculated balances for `HouseholdDto` and `HouseholdMemberDto` (AC: 1)
+- [x] Update `Memberships` table to include a `balance` column (denormalization) (AC: 1)
+- [x] Update `HouseholdRepositoryImpl` to read balances directly from `Memberships` table (AC: 1)
+- [x] Update `ExpenseRepositoryImpl` to incrementally update `Memberships.balance` on create and delete (AC: 1)
 - [x] Update `MyHouseholdsListScreen` to show dynamic balance text ("you owe", "you are owed", "settled up") (AC: 1)
 - [x] Update `HouseholdDetailsScreen` to show household balance in the header (AC: 1)
 
 ## Dev Notes
 
 - **Architecture Patterns**: 
-  - Uses Exposed aggregations (`sum()`) for real-time balance calculation.
-  - Households are synced in whole via direct API calls (e.g., refresh), not through incremental sync.
-  - Decompose-based UI updates automatically when repository flows emit new data.
+  - **Denormalization**: Balances are stored in the `Memberships` table to ensure lightning-fast reads and constant performance as the number of expenses grows.
+  - **Incremental Updates**: Balances are updated within the same transaction as expense creation/deletion using atomic database operations (`balance = balance + delta`).
 - **Source tree components to touch**:
   - `server/src/main/kotlin/com/opensplit/features/household/`
   - `app/shared/src/commonMain/kotlin/com/opensplit/features/household/`
