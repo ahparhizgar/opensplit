@@ -1,6 +1,7 @@
 1. introduce SSE
 2. create currency and money model (use Int)
 3. color for left and over
+
 ### Done
 --- 
 1. write whole app component e2e test
