@@ -6,6 +6,16 @@ plugins {
   alias(libs.plugins.androidMultiplatformLibrary)
   alias(libs.plugins.kotlinSerialization)
   alias(libs.plugins.ktfmt)
+  alias(libs.plugins.kover)
+}
+
+kover {
+  currentProject {
+    instrumentation {
+      disabledForTestTasks.add("testAndroid")
+      disabledForTestTasks.add("testAndroidHostTest")
+    }
+  }
 }
 
 kotlin {

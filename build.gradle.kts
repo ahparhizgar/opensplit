@@ -14,6 +14,13 @@ plugins {
   alias(libs.plugins.ksp) apply false
   alias(libs.plugins.ktfmt)
   alias(libs.plugins.androidx.room) apply false
+  alias(libs.plugins.kover)
+}
+
+dependencies {
+  kover(project(":app:shared"))
+  kover(project(":server"))
+  kover(project(":core"))
 }
 
 tasks.register<KtfmtFormatTask>("ktfmtPrecommit") {

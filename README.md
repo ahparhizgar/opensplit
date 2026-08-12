@@ -9,6 +9,17 @@ To run two independent instances of the jvm app run:
 ./gradlew --offline runB
 ```
 
+## Test Coverage
+
+We use **Kover** to measure and report code coverage across the project.
+
+- **Combined Report**: Run `gradle koverHtmlReport` to get an aggregated coverage report for all modules.
+- **Module-specific Reports**:
+    - **Server**: `gradle :server:koverHtmlReport`
+    - **Client**: `gradle :app:shared:koverHtmlReport`
+
+Reports are generated in the `build/reports/kover/html/` directory of the respective project/module.
+
 ## Offline-First Architecture
 
 This project demonstrates a robust **Offline-First** synchronization.
