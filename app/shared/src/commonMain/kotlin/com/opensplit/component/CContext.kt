@@ -13,6 +13,7 @@ import com.arkivanov.essenty.instancekeeper.InstanceKeeperDispatcher
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.doOnDestroy
+import com.arkivanov.essenty.lifecycle.resume
 import com.arkivanov.essenty.statekeeper.StateKeeper
 import com.arkivanov.essenty.statekeeper.StateKeeperDispatcher
 import com.opensplit.remote.userMessage
@@ -139,4 +140,9 @@ class TestCContext : CContext {
       }
   override var navigation: StackNavigation<Any> = fakeStackNavigation
   override var messageShower: MessageShower = messageHolder
+
+  fun resumed(): TestCContext {
+    lifecycleRegistry.resume()
+    return this
+  }
 }
