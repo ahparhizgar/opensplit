@@ -6,7 +6,6 @@ import com.opensplit.db.*
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.dto.sync.SyncResponse
 import com.opensplit.features.expense.ExpenseApi
-import com.opensplit.features.household.HouseholdApi
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
@@ -16,14 +15,12 @@ import kotlinx.serialization.json.Json
 
 class SyncManager(
     private val expenseApi: ExpenseApi,
-    private val householdApi: HouseholdApi,
     private val syncApi: SyncApi,
     private val database: AppDatabase,
 ) {
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
   private val syncQueueDao = database.syncQueueDao()
   private val expenseDao = database.expenseDao()
-  private val householdDao = database.householdDao()
   private val syncMetadataDao = database.syncMetadataDao()
   private val syncMutex = Mutex()
 
@@ -60,7 +57,6 @@ class SyncManager(
       try {
         when (entry.entityType) {
           "EXPENSE" -> processExpenseOperation(entry)
-          "HOUSEHOLD" -> processHouseholdOperation(entry)
         }
       } catch (_: Exception) {
         // skip and retry later
@@ -106,34 +102,6 @@ class SyncManager(
         if (householdId != null) {
           expenseApi.deleteExpense(householdId, entry.entityId)
         }
-        syncQueueDao.dequeue(entry)
-      }
-      else -> {}
-    }
-  }
-
-  private suspend fun processHouseholdOperation(entry: SyncQueueEntity) {
-    val household = householdDao.getHousehold(entry.entityId)
-    when (entry.operation) {
-      OperationType.CREATE -> {
-        if (household != null) {
-          val result = householdApi.createHousehold(household.name)
-          database.useWriterConnection { connection ->
-            connection.immediateTransaction {
-              householdDao.deleteHousehold(entry.entityId)
-              householdDao.insertHouseholdWithMembers(
-                  result.toEntity(),
-                  result.members.map { it.toEntity(result.id) },
-              )
-              syncQueueDao.dequeue(entry)
-            }
-          }
-        } else {
-          syncQueueDao.dequeue(entry)
-        }
-      }
-      OperationType.DELETE -> {
-        householdApi.leaveHousehold(entry.entityId)
         syncQueueDao.dequeue(entry)
       }
       else -> {}

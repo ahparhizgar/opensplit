@@ -5,17 +5,12 @@ import androidx.room3.useWriterConnection
 import com.opensplit.db.AppDatabase
 import com.opensplit.db.ExpenseDao
 import com.opensplit.db.HouseholdDao
-import com.opensplit.db.HouseholdEntity
 import com.opensplit.db.OperationType
-import com.opensplit.db.SyncQueueEntity
 import com.opensplit.db.toDomain
 import com.opensplit.db.toEntity
 import com.opensplit.domain.Household
 import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.features.household.HouseholdApi
-import com.opensplit.sync.SyncManager
-import com.opensplit.util.currentTimeMillis
-import com.opensplit.util.randomId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -28,7 +23,6 @@ class HouseholdRepository(
     private val expenseDao: ExpenseDao,
     private val profileRepository: ProfileRepository,
     private val database: AppDatabase,
-    private val syncManager: SyncManager,
     private val scope: CoroutineScope,
 ) {
   fun getHouseholds(): Flow<List<Household>> {
@@ -54,17 +48,6 @@ class HouseholdRepository(
 
   suspend fun getHousehold(id: String): Household? {
     return dao.getHouseholdWithMembers(id)?.toDomain()
-  }
-
-  suspend fun refreshHousehold(id: String) {
-    try {
-      val result = api.getHousehold(id)
-      database.useWriterConnection { connection ->
-        connection.immediateTransaction { saveHouseholdWithPendingAdjustment(result) }
-      }
-    } catch (_: Exception) {
-      // Ignore errors for background refresh in offline-first
-    }
   }
 
   /**
@@ -104,49 +87,36 @@ class HouseholdRepository(
     dao.insertHouseholdWithMembers(householdEntity, memberEntities)
   }
 
-  suspend fun createHousehold(name: String) {
-    val id = "local_" + randomId()
-    val entity =
-        HouseholdEntity(
-            id = id,
-            name = name,
-            inviteLink = "",
-            balance = 0.0,
-            isOwner = true,
-        )
-
-    val syncEntry =
-        SyncQueueEntity(
-            operation = OperationType.CREATE,
-            entityType = "HOUSEHOLD",
-            entityId = id,
-            createdAt = currentTimeMillis(),
-        )
-
+  suspend fun leaveHousehold(householdId: String) {
+    api.leaveHousehold(householdId)
     database.useWriterConnection { connection ->
-      connection.immediateTransaction {
-        dao.insertHouseholdWithMembers(entity, emptyList())
-        database.syncQueueDao().enqueue(syncEntry)
-      }
+      connection.immediateTransaction { dao.deleteHousehold(householdId) }
     }
-    syncManager.triggerSync()
   }
 
-  suspend fun leaveHousehold(householdId: String) {
-    val syncEntry =
-        SyncQueueEntity(
-            operation = OperationType.DELETE,
-            entityType = "HOUSEHOLD",
-            entityId = householdId,
-            createdAt = currentTimeMillis(),
-        )
-
+  suspend fun createHousehold(name: String): Household {
+    val result = api.createHousehold(name)
     database.useWriterConnection { connection ->
       connection.immediateTransaction {
-        dao.deleteHousehold(householdId)
-        database.syncQueueDao().enqueue(syncEntry)
+        dao.insertHouseholdWithMembers(
+            result.toEntity(),
+            result.members.map { it.toEntity(result.id) },
+        )
       }
     }
-    syncManager.triggerSync()
+    return result.toDomain()
+  }
+
+  suspend fun joinHousehold(inviteCode: String): Household {
+    val result = api.joinHousehold(inviteCode)
+    database.useWriterConnection { connection ->
+      connection.immediateTransaction {
+        dao.insertHouseholdWithMembers(
+            result.toEntity(),
+            result.members.map { it.toEntity(result.id) },
+        )
+      }
+    }
+    return result.toDomain()
   }
 }

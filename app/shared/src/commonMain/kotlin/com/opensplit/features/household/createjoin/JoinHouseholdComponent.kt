@@ -3,10 +3,10 @@ package com.opensplit.features.household.createjoin
 import com.ahparhizgar.katch.ApiCallError
 import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.opensplit.component.CContext
-import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.remote.fieldErrors
 import com.opensplit.remote.userMessage
+import com.opensplit.repository.HouseholdRepository
 import com.opensplit.validation.household.HouseholdValidation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +29,7 @@ interface JoinHouseholdComponent {
 
 class DefaultJoinHouseholdComponent(
     context: CContext,
-    private val gateway: HouseholdApi,
+    private val householdRepository: HouseholdRepository,
 ) : JoinHouseholdComponent, CContext by context {
 
   private val _uiState = MutableStateFlow(JoinHouseholdComponent.UiState())
@@ -59,7 +59,7 @@ class DefaultJoinHouseholdComponent(
     _uiState.update { it.copy(fieldErrors = emptyMap(), generalError = null, isSubmitting = true) }
 
     try {
-      val a = gateway.joinHousehold(current.inviteCode)
+      val a = householdRepository.joinHousehold(current.inviteCode)
       _uiState.update { it.copy(isSubmitting = false) }
       navigation.replaceCurrent(HouseholdDetailsComponent.Config(a.id))
     } catch (e: ApiCallError) {
