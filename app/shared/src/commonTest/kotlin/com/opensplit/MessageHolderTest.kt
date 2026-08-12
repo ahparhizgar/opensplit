@@ -120,7 +120,7 @@ class MessageHolderTest : BehaviorSpec() {
 
 private fun BehaviorSpecGivenContainerScope.testKit():
     ReadWriteProperty<Any?, MessageHolderTestKit> {
-  val kitRef = testValue { MessageHolderTestKit(MessageHolder(), mutableListOf<String>()) }
+  val kitRef = testValue { MessageHolderTestKit(MessageHolder(), mutableListOf()) }
   beforeEach {
     val kit by kitRef
     val showLog = kit.showLog as MutableList<String>

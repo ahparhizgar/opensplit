@@ -93,9 +93,7 @@ class HouseholdComponentTest : BehaviorSpec() {
           cContext.lifecycleRegistry.create()
           testCoroutineScheduler.advanceUntilIdle()
         }
-        Then("loads households from gateway") {
-          listComponent.uiState.value.households.shouldNotBeEmpty()
-        }
+        Then("loads households") { listComponent.uiState.value.households.shouldNotBeEmpty() }
       }
 
       When("leaving a household") {
@@ -103,7 +101,7 @@ class HouseholdComponentTest : BehaviorSpec() {
           val id = "household-1"
           listComponent.leaveHousehold(id).join()
         }
-        Then("calls gateway to leave") {
+        Then("households is removed from ui state") {
           listComponent.uiState.value.households.map { it.id } shouldNotContain "household-1"
         }
       }

@@ -39,7 +39,7 @@ class DefaultCContext(
     override val instanceKeeper: InstanceKeeper =
         InstanceKeeperDispatcher().also { lifecycle.doOnDestroy(it::destroy) },
     override val backHandler: BackHandler = BackDispatcher(),
-    override var navigation: StackNavigation<Any> = FakeStackNavigation(),
+    override var navigation: StackNavigation<Any> = NoopStackNavigation(),
     override var messageShower: MessageShower = MessageHolder(),
 ) : CContext {
   override val componentContextFactory: ComponentContextFactory<CContext> =
@@ -54,6 +54,8 @@ class DefaultCContext(
         )
       }
 }
+
+object InitialTestDestination
 
 fun CContext.componentScope(): CoroutineScope {
   return CoroutineScope(
@@ -93,8 +95,8 @@ fun defaultCContext(componentContext: ComponentContext) =
         backHandler = componentContext.backHandler,
     )
 
-class FakeStackNavigation<C : Any> : StackNavigation<C> {
-  private val _stack = mutableListOf<C>()
+class FakeStackNavigation<C : Any>(initial: C) : StackNavigation<C> {
+  private val _stack = mutableListOf<C>(initial)
   val stack: List<C>
     get() = _stack
 
@@ -115,13 +117,31 @@ class FakeStackNavigation<C : Any> : StackNavigation<C> {
   }
 }
 
+class NoopStackNavigation<C : Any>() : StackNavigation<C> {
+  private val _stack = mutableListOf<C>()
+  val stack: List<C>
+    get() = _stack
+
+  override fun navigate(
+      transformer: (stack: List<C>) -> List<C>,
+      onComplete: (newStack: List<C>, oldStack: List<C>) -> Unit,
+  ) {
+    // Do nothing, no-op navigation
+  }
+
+  override fun subscribe(observer: (StackNavigation.Event<C>) -> Unit): Cancellation {
+    // For testing purposes, we can ignore subscriptions
+    return Cancellation {}
+  }
+}
+
 fun CContext.fakeStack() =
     (navigation as? FakeStackNavigation<Any>)?.stack
         ?: error("navigation by default has a FakeStackNavigation unless is set by specific test!")
 
 class TestCContext : CContext {
   val lifecycleRegistry = LifecycleRegistry()
-  val fakeStackNavigation = FakeStackNavigation<Any>()
+  val fakeStackNavigation = FakeStackNavigation<Any>(InitialTestDestination)
   val backDispatcher = BackDispatcher()
   val messageHolder = MessageHolder()
 
