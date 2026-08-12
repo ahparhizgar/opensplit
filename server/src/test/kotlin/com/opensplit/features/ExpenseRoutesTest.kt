@@ -1,5 +1,6 @@
 package com.opensplit.features
 
+import com.opensplit.createAuthenticatedClient
 import com.opensplit.dto.auth.ErrorResponse
 import com.opensplit.dto.expense.CreateExpenseRequest
 import com.opensplit.dto.expense.ExpenseDto
@@ -57,6 +58,24 @@ class ExpenseRoutesTest {
     val household =
         client.post("/households") { setBody(CreateHouseholdRequest("Home")) }.body<HouseholdDto>()
 
+    // Create another user
+    val signUpResult =
+        client
+            .post("/users") {
+              setBody(
+                  com.opensplit.dto.auth.SignUpRequest("other@example.com", "password123", "Other")
+              )
+            }
+            .body<com.opensplit.dto.auth.AuthResult>()
+
+    val otherUserId = signUpResult.userId
+    val otherUserClient = createAuthenticatedClient(signUpResult.accessToken)
+
+    // Join the household with the other user
+    otherUserClient.post("/households/join") {
+      setBody(com.opensplit.dto.household.JoinHouseholdRequest(household.inviteLink))
+    }
+
     val response =
         client.post("/households/${household.id}/expenses") {
           setBody(
@@ -73,7 +92,7 @@ class ExpenseRoutesTest {
                               netBalance = 40.0,
                           ),
                           ParticipantShareDto(
-                              userId = "other-user",
+                              userId = otherUserId,
                               paidShare = 0.0,
                               owedShare = 40.0,
                               netBalance = -40.0,
@@ -81,7 +100,7 @@ class ExpenseRoutesTest {
                       ),
                   splitMethod =
                       SplitMethod.Unequally(
-                          mapOf(household.members[0].userId to 60.0, "other-user" to 40.0)
+                          mapOf(household.members[0].userId to 60.0, otherUserId to 40.0)
                       ),
               )
           )

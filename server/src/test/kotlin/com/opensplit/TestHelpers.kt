@@ -1,8 +1,6 @@
 package com.opensplit
 
-import com.opensplit.database.Households
-import com.opensplit.database.Memberships
-import com.opensplit.database.Users
+import com.opensplit.database.*
 import com.opensplit.dto.auth.AuthResult
 import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.features.auth.AuthService
@@ -30,9 +28,12 @@ fun testOpenSplit(block: suspend ApplicationTestBuilder.() -> Unit) = testApplic
     openSplit(isTest = true)
 
     transaction {
+      ExpenseParticipants.deleteAll()
+      Expenses.deleteAll()
       Memberships.deleteAll()
       Households.deleteAll()
       Users.deleteAll()
+      ChangeLog.deleteAll()
     }
 
     val authService by inject<AuthService>()
