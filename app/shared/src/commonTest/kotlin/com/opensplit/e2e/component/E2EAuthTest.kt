@@ -16,7 +16,7 @@ import io.kotest.core.test.testCoroutineScheduler
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.coroutines.ContinuationInterceptor
 
-class ComponentE2eAuthTest : BehaviorSpec() {
+class E2EAuthTest : BehaviorSpec() {
   init {
     extensions(MainDispatcherExtension())
     DecomposeSettings.settings =

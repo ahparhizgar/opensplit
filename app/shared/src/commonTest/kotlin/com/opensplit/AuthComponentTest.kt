@@ -1,11 +1,10 @@
 package com.opensplit
 
-import com.opensplit.component.defaultCContext
+import com.opensplit.component.TestCContext
 import com.opensplit.component.fakeStack
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.util.MainDispatcherExtension
-import com.opensplit.util.createComponentContext
 import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
 import io.kotest.core.spec.style.BehaviorSpec
@@ -20,7 +19,7 @@ class AuthComponentTest : BehaviorSpec() {
     extensions(MainDispatcherExtension())
     Given("an Auth component") {
       val koin by integrationKoin()
-      val cContext by testValue { defaultCContext(createComponentContext()) }
+      val cContext by testValue { TestCContext().resumed() }
       var component by testValue { koin.get<AuthComponent.Factory>().create(cContext) }
 
       When("navigating to sign up and using invalid input") {
@@ -48,7 +47,7 @@ class AuthComponentTest : BehaviorSpec() {
               testCoroutineScheduler.advanceUntilIdle()
             }
           }
-          Then("calls gateway") {
+          Then("navigates to MyHouseholdsListComponent") {
             cContext.fakeStack() shouldContainExactly listOf(MyHouseholdsListComponent.Config)
           }
         }
