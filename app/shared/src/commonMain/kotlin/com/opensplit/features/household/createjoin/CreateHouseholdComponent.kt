@@ -3,9 +3,7 @@ package com.opensplit.features.household.createjoin
 import com.ahparhizgar.katch.ApiCallError
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
-import com.opensplit.db.toDomain
 import com.opensplit.domain.Household
-import com.opensplit.features.household.HouseholdApi
 import com.opensplit.remote.fieldErrors
 import com.opensplit.remote.userMessage
 import com.opensplit.repository.HouseholdRepository
@@ -37,7 +35,6 @@ interface CreateHouseholdComponent {
 
 class DefaultCreateHouseholdComponent(
     context: CContext,
-    private val gateway: HouseholdApi,
     private val householdRepository: HouseholdRepository,
     private val onDone: (Household) -> Unit,
 ) : CreateHouseholdComponent, CContext by context {
@@ -71,10 +68,9 @@ class DefaultCreateHouseholdComponent(
     _uiState.update { it.copy(fieldErrors = emptyMap(), generalError = null, isSubmitting = true) }
 
     try {
-      val result = gateway.createHousehold(current.householdName)
-      householdRepository.refresh()
+      val result = householdRepository.createHousehold(current.householdName)
       _uiState.update { it.copy(isSubmitting = false) }
-      onDone(result.toDomain())
+      onDone(result)
     } catch (e: ApiCallError) {
       _uiState.update {
         it.copy(
@@ -87,14 +83,13 @@ class DefaultCreateHouseholdComponent(
   }
 
   class Factory(
-      private val gateway: HouseholdApi,
       private val householdRepository: HouseholdRepository,
   ) : CreateHouseholdComponent.Factory {
     override fun create(
         cContext: CContext,
         onDone: (Household) -> Unit,
     ): CreateHouseholdComponent =
-        DefaultCreateHouseholdComponent(cContext, gateway, householdRepository, onDone)
+        DefaultCreateHouseholdComponent(cContext, householdRepository, onDone)
   }
 }
 

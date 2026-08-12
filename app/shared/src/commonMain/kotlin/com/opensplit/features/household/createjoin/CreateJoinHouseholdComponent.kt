@@ -2,7 +2,6 @@ package com.opensplit.features.household.createjoin
 
 import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.opensplit.component.CContext
-import com.opensplit.features.household.HouseholdApi
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.repository.HouseholdRepository
 import com.opensplit.root.TopLevelDestinationConfig
@@ -34,21 +33,19 @@ interface CreateJoinHouseholdComponent {
 
 class DefaultCreateJoinHouseholdComponent(
     context: CContext,
-    gateway: HouseholdApi,
     householdRepository: HouseholdRepository,
 ) : CreateJoinHouseholdComponent, CContext by context {
 
   override val createComponent: CreateHouseholdComponent =
       DefaultCreateHouseholdComponent(
           context = context,
-          gateway = gateway,
           householdRepository = householdRepository,
           onDone = { household ->
             navigation.replaceCurrent(HouseholdDetailsComponent.Config(household.id))
           },
       )
   override val joinComponent: JoinHouseholdComponent =
-      DefaultJoinHouseholdComponent(context, gateway)
+      DefaultJoinHouseholdComponent(context, householdRepository)
 
   private val _activeTab = MutableStateFlow(HouseholdTab.Create)
   override val activeTab: StateFlow<HouseholdTab> = _activeTab
@@ -62,11 +59,10 @@ class DefaultCreateJoinHouseholdComponent(
   }
 
   class Factory(
-      private val gateway: HouseholdApi,
       private val householdRepository: HouseholdRepository,
   ) : CreateJoinHouseholdComponent.Factory {
     override fun create(cContext: CContext): CreateJoinHouseholdComponent =
-        DefaultCreateJoinHouseholdComponent(cContext, gateway, householdRepository)
+        DefaultCreateJoinHouseholdComponent(cContext, householdRepository)
   }
 }
 
