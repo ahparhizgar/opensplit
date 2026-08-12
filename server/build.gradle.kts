@@ -6,6 +6,7 @@ plugins {
   alias(libs.plugins.kotlinSerialization)
   alias(libs.plugins.ktor)
   alias(libs.plugins.ktfmt)
+  alias(libs.plugins.kover)
 }
 
 group = "com.opensplit"

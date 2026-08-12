@@ -1,7 +1,6 @@
 package com.opensplit
 
-import com.arkivanov.essenty.lifecycle.Lifecycle
-import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.opensplit.component.TestCContext
 import com.opensplit.component.defaultCContext
 import com.opensplit.component.fakeStack
 import com.opensplit.features.expense.AddExpenseComponent
@@ -25,11 +24,7 @@ class AddExpenseComponentTest :
       val koin by integrationKoin()
 
       Given("a HouseholdDetailsComponent") {
-        val cContext by testValue {
-          defaultCContext(
-              createComponentContext(lifecycle = LifecycleRegistry(Lifecycle.State.RESUMED))
-          )
-        }
+        val cContext by testValue { TestCContext().resumed() }
         val detailsComponent by testValue {
           cContext.navigation.navigate(
               { listOf(HouseholdDetailsComponent.Config("h1")) },

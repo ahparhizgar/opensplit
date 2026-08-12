@@ -11,6 +11,18 @@ plugins {
   alias(libs.plugins.ksp)
   alias(libs.plugins.ktfmt)
   alias(libs.plugins.androidx.room)
+  alias(libs.plugins.kover)
+}
+
+kover {
+  currentProject {
+    instrumentation {
+      disabledForTestTasks.addAll(
+          "testAndroid",
+          "testAndroidHostTest",
+      )
+    }
+  }
 }
 
 room3 { schemaDirectory("$projectDir/schemas") }

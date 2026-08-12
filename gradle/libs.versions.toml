@@ -35,6 +35,7 @@ ktfmtPlugin = "0.26.0"
 postgresql = "42.7.13"
 room3 = "3.0.0"
 sqlite = "2.7.0"
+kover = "0.9.9"
 
 [libraries]
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
@@ -119,3 +120,4 @@ kotest = { id = "io.kotest", version.ref = "kotest" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmtPlugin" }
 androidx-room = { id = "androidx.room3", version.ref = "room3" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
