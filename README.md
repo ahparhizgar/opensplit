@@ -1,3 +1,8 @@
+![Kotlin](https://img.shields.io/badge/Kotlin-2.4.0-blue.svg?style=flat&logo=kotlin)(https://kotlinlang.org)
+![Build](https://github.com/ahparhizgar/opensplit/actions/workflows/build.yml/badge.svg)(https://github.com/ahparhizgar/opensplit/actions/workflows/build.yml)
+![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Fahparhizgar%2F91190edf571eb1024def80464e70b88a%2Fraw%2Fcoverage.json)
+
+
 # OpenSplit
 **share expenses with your roommate, travel companions, etc...**
 
