@@ -55,25 +55,28 @@ jobs:
           fi
 
       - name: Run unit tests and coverage
-        run: ./gradlew jvmTest koverXmlReport koverPrintCoverage
+        run: ./gradlew jvmTest :koverXmlReport :koverPrintCoverage
 
       - name: Append Coverage to GitHub Summary
         run: |
           # Helper function to get value
           get_cov() {
-            ./gradlew $1:koverPrintCoverage --offline | grep "application line coverage" | awk '{print $4}'
+            ./gradlew $1:koverPrintCoverage --offline --console=plain -q | grep "application line coverage" | awk '{print $4}' | tr -d '[:space:]'
           }
           
           SERVER_COV=$(get_cov ":server")
           SHARED_COV=$(get_cov ":app:shared")
           CORE_COV=$(get_cov ":core")
-          TOTAL_COV=$(./gradlew koverPrintCoverage --offline | grep "application line coverage" | awk '{print $4}')
+          TOTAL_COV=$(get_cov "")
+          
+          # Clean for badge (remove %)
+          CLEAN_TOTAL_COV=$(echo $TOTAL_COV | tr -d '%')
           
           # Export for badge action
-          echo "TOTAL_COVERAGE=${TOTAL_COV%\%}" >> $GITHUB_ENV
+          echo "TOTAL_COVERAGE=$CLEAN_TOTAL_COV" >> $GITHUB_ENV
           
           get_status() {
-            local val=$(echo $1 | sed 's/%//;s/\..*//')
+            local val=$(echo $1 | tr -d '%[:space:]' | cut -d. -f1)
             if [ -z "$val" ]; then echo "❌ Error"; return; fi
             if [ "$val" -ge 80 ]; then echo "✅ Passed"; else echo "⚠️ Low"; fi
           }
