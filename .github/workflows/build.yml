@@ -55,19 +55,24 @@ jobs:
           fi
 
       - name: Run unit tests and coverage
-        run: ./gradlew jvmTest :koverXmlReport :koverPrintCoverage
+        run: ./gradlew jvmTest test koverXmlReport
 
       - name: Append Coverage to GitHub Summary
         run: |
-          # Helper function to get value
+          # Helper function to extract value from Kover XML report
           get_cov() {
-            ./gradlew $1:koverPrintCoverage --offline --console=plain -q | grep "application line coverage" | awk '{print $4}' | tr -d '[:space:]'
+            local path="$1"
+            if [ -f "$path" ]; then
+              awk -F'"' '/<counter type="LINE"/ {m=$4; c=$6} END {if (m+c > 0) printf "%.2f%%", c*100/(m+c); else printf "0%%"}' "$path"
+            else
+              printf "0%%"
+            fi
           }
           
-          SERVER_COV=$(get_cov ":server")
-          SHARED_COV=$(get_cov ":app:shared")
-          CORE_COV=$(get_cov ":core")
-          TOTAL_COV=$(get_cov "")
+          SERVER_COV=$(get_cov "server/build/reports/kover/report.xml")
+          SHARED_COV=$(get_cov "app/shared/build/reports/kover/report.xml")
+          CORE_COV=$(get_cov "core/build/reports/kover/report.xml")
+          TOTAL_COV=$(get_cov "build/reports/kover/report.xml")
           
           # Clean for badge (remove %)
           CLEAN_TOTAL_COV=$(echo $TOTAL_COV | tr -d '%')
