@@ -102,6 +102,19 @@ jobs:
           echo "| Core | $CORE_COV | $(get_status $CORE_COV) |" >> $GITHUB_STEP_SUMMARY
           echo "| **Total Project** | **$TOTAL_COV** | $(get_status $TOTAL_COV) |" >> $GITHUB_STEP_SUMMARY
 
+      - name: Update Coverage Badge Gist
+        if: github.event_name != 'pull_request'
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 91190edf571eb1024def80464e70b88a
+          filename: coverage.json
+          label: Coverage
+          message: ${{ env.TOTAL_COVERAGE }}%
+          valColorRange: ${{ env.TOTAL_COVERAGE }}
+          maxColorRange: 100
+          minColorRange: 0
+
       - name: Upload test reports
         uses: actions/upload-artifact@v4
         with:
