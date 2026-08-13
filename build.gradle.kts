@@ -23,6 +23,17 @@ dependencies {
   kover(project(":core"))
 }
 
+kover {
+  reports {
+    total {
+      xml { onCheck = true }
+      html { onCheck = true }
+    }
+    filters { includes { classes("com.opensplit.*") } }
+    verify { rule { bound { minValue = 0 } } }
+  }
+}
+
 tasks.register<KtfmtFormatTask>("ktfmtPrecommit") {
   source = project.fileTree(rootDir)
   include("**/*.kt", "**/*.kts")

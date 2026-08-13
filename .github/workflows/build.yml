@@ -11,9 +11,32 @@ env:
   GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096M -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
 
 jobs:
+  lint:
+    name: Lint check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Replace Gradle wrapper URL
+        run: |
+          if [ -f gradle/wrapper/gradle-wrapper.properties ]; then
+            sed -i 's|maven.myket.ir/gradle|services.gradle.org|g' gradle/wrapper/gradle-wrapper.properties
+          fi
+
+      - name: Check formatting
+        run: ./gradlew ktfmtCheck
+
   test:
     name: Run tests
     runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      contents: write
+      code-quality: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,11 +54,62 @@ jobs:
             echo "No gradle-wrapper.properties found, skipping URL replacement"
           fi
 
-      - name: Run unit tests
-        run: ./gradlew jvmTest
+      - name: Run unit tests and coverage
+        run: ./gradlew jvmTest koverXmlReport koverPrintCoverage
+
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Convert JaCoCo XML to Cobertura
+        run: |
+          reportgenerator \
+            -reports:build/reports/kover/report.xml \
+            -targetdir:build/reports/kover/cobertura \
+            -reporttypes:Cobertura
+
+      - name: Upload Native Code Coverage
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/upload-code-coverage@v1
+        with:
+          file: 'build/reports/kover/cobertura/Cobertura.xml'
+          language: Kotlin
+          label: code-coverage/kover
+
+      - name: Append Coverage to GitHub Summary
+        run: |
+          # Helper function to get value
+          get_cov() {
+            ./gradlew $1:koverPrintCoverage --offline | grep "application line coverage" | awk '{print $4}'
+          }
+          
+          SERVER_COV=$(get_cov ":server")
+          SHARED_COV=$(get_cov ":app:shared")
+          CORE_COV=$(get_cov ":core")
+          TOTAL_COV=$(./gradlew koverPrintCoverage --offline | grep "application line coverage" | awk '{print $4}')
+          
+          get_status() {
+            local val=$(echo $1 | sed 's/%//;s/\..*//')
+            if [ -z "$val" ]; then echo "❌ Error"; return; fi
+            if [ "$val" -ge 80 ]; then echo "✅ Passed"; else echo "⚠️ Low"; fi
+          }
+
+          echo "### 📊 Code Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | Coverage % | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :---: | :---: |" >> $GITHUB_STEP_SUMMARY
+          echo "| Server | $SERVER_COV | $(get_status $SERVER_COV) |" >> $GITHUB_STEP_SUMMARY
+          echo "| App Shared | $SHARED_COV | $(get_status $SHARED_COV) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Core | $CORE_COV | $(get_status $CORE_COV) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Total Project** | **$TOTAL_COV** | $(get_status $TOTAL_COV) |" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload test reports
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: "**/build/reports/tests/"
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: "build/reports/kover/"
