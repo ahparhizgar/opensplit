@@ -57,24 +57,6 @@ jobs:
       - name: Run unit tests and coverage
         run: ./gradlew jvmTest koverXmlReport koverPrintCoverage
 
-      - name: Install ReportGenerator
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool
-
-      - name: Convert JaCoCo XML to Cobertura
-        run: |
-          reportgenerator \
-            -reports:build/reports/kover/report.xml \
-            -targetdir:build/reports/kover/cobertura \
-            -reporttypes:Cobertura
-
-      - name: Upload Native Code Coverage
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/upload-code-coverage@v1
-        with:
-          file: 'build/reports/kover/cobertura/Cobertura.xml'
-          language: Kotlin
-          label: code-coverage/kover
-
       - name: Append Coverage to GitHub Summary
         run: |
           # Helper function to get value
@@ -86,6 +68,9 @@ jobs:
           SHARED_COV=$(get_cov ":app:shared")
           CORE_COV=$(get_cov ":core")
           TOTAL_COV=$(./gradlew koverPrintCoverage --offline | grep "application line coverage" | awk '{print $4}')
+          
+          # Export for badge action
+          echo "TOTAL_COVERAGE=${TOTAL_COV%\%}" >> $GITHUB_ENV
           
           get_status() {
             local val=$(echo $1 | sed 's/%//;s/\..*//')
