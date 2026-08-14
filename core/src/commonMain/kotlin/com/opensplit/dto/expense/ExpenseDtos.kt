@@ -18,7 +18,7 @@ data class ExpenseDto(
     val amount: Double,
     val payerId: String,
     val createdAt: Instant,
-    val participants: List<ParticipantShareDto> = emptyList(),
+    val shares: List<ParticipantShareDto> = emptyList(),
     val splitMethod: SplitMethod,
     val syncStatus: SyncStatus = SyncStatus.SYNCED,
 )

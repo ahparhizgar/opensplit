@@ -2,13 +2,26 @@ package com.opensplit.sync
 
 import androidx.room3.immediateTransaction
 import androidx.room3.useWriterConnection
-import com.opensplit.db.*
+import com.opensplit.db.AppDatabase
+import com.opensplit.db.OperationType
+import com.opensplit.db.ParticipantEntity
+import com.opensplit.db.SyncMetadataEntity
+import com.opensplit.db.SyncQueueEntity
+import com.opensplit.db.toDto
+import com.opensplit.db.toEntity
+import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.dto.sync.SyncResponse
 import com.opensplit.features.expense.ExpenseApi
+import com.opensplit.repository.ProfileRepository
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -17,11 +30,14 @@ class SyncManager(
     private val expenseApi: ExpenseApi,
     private val syncApi: SyncApi,
     private val database: AppDatabase,
+    private val profileRepository: ProfileRepository,
+    defaultDispatcher: CoroutineDispatcher,
 ) {
-  private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+  private val scope = CoroutineScope(SupervisorJob() + defaultDispatcher)
   private val syncQueueDao = database.syncQueueDao()
   private val expenseDao = database.expenseDao()
   private val syncMetadataDao = database.syncMetadataDao()
+  private val householdDao = database.householdDao()
   private val syncMutex = Mutex()
 
   fun startSync() {
@@ -83,11 +99,15 @@ class SyncManager(
 
           database.useWriterConnection { connection ->
             connection.immediateTransaction {
+              // Reconcile balance in case server adjusted shares
+              val oldParticipants = expenseDao.getParticipants(entry.entityId)
+              updateBalances(expense.householdId, oldParticipants, result.shares)
+
               expenseDao.deleteExpense(entry.entityId)
               expenseDao.deleteParticipants(entry.entityId)
 
               val serverEntity = result.toEntity(SyncStatus.SYNCED)
-              val serverParticipants = result.participants.map { it.toEntity(result.id) }
+              val serverParticipants = result.shares.map { it.toEntity(result.id) }
               expenseDao.insertExpenseWithParticipants(serverEntity, serverParticipants)
 
               syncQueueDao.dequeue(entry)
@@ -112,12 +132,19 @@ class SyncManager(
     database.useWriterConnection { connection ->
       connection.immediateTransaction {
         response.changedEntities.expenses.forEach { dto ->
+          val oldParticipants = expenseDao.getParticipants(dto.id)
+          updateBalances(dto.householdId, oldParticipants, dto.shares)
+
           val entity = dto.toEntity(SyncStatus.SYNCED)
-          val participants = dto.participants.map { it.toEntity(dto.id) }
+          val participants = dto.shares.map { it.toEntity(dto.id) }
           expenseDao.insertExpenseWithParticipants(entity, participants)
         }
 
         response.deletedEntities.expenses.forEach { id ->
+          val expense = expenseDao.getExpense(id) ?: return@forEach
+          val oldParticipants = expenseDao.getParticipants(id)
+          updateBalances(expense.householdId, oldParticipants, emptyList())
+
           expenseDao.deleteExpense(id)
           expenseDao.deleteParticipants(id)
         }
@@ -125,6 +152,38 @@ class SyncManager(
         syncMetadataDao.insertMetadata(
             SyncMetadataEntity("last_sync_version", response.latestVersion.toString())
         )
+      }
+    }
+  }
+
+  private suspend fun updateBalances(
+      householdId: String,
+      oldParticipants: List<ParticipantEntity>,
+      newShares: List<ParticipantShareDto>,
+  ) {
+    val currentUserId = profileRepository.profile.value?.id
+    val memberDeltas = mutableMapOf<String, Double>()
+
+    // Subtract old impact
+    oldParticipants.forEach { p ->
+      val impact = p.paidShare - p.consumedShare
+      memberDeltas[p.userId] = (memberDeltas[p.userId] ?: 0.0) - impact
+    }
+
+    // Add new impact
+    newShares.forEach { p ->
+      val impact = p.paidShare - p.consumedShare
+      memberDeltas[p.userId] = (memberDeltas[p.userId] ?: 0.0) + impact
+    }
+
+    // Apply deltas to DB
+    memberDeltas.forEach { (userId, delta) ->
+      if (delta != 0.0) {
+        householdDao.updateMemberBalance(householdId, userId, delta)
+
+        if (userId == currentUserId) {
+          householdDao.updateBalance(householdId, delta)
+        }
       }
     }
   }

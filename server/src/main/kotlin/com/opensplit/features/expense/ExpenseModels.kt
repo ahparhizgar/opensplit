@@ -30,7 +30,7 @@ fun ExpenseRecord.toDto() =
         amount = amount,
         payerId = payerId,
         createdAt = createdAt,
-        participants = participants.map { it.toDto() },
+        shares = participants.map { it.toDto() },
         splitMethod = splitMethod,
     )
 

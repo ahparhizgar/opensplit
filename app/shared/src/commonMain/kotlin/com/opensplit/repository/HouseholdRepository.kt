@@ -3,9 +3,7 @@ package com.opensplit.repository
 import androidx.room3.immediateTransaction
 import androidx.room3.useWriterConnection
 import com.opensplit.db.AppDatabase
-import com.opensplit.db.ExpenseDao
 import com.opensplit.db.HouseholdDao
-import com.opensplit.db.OperationType
 import com.opensplit.db.toDomain
 import com.opensplit.db.toEntity
 import com.opensplit.domain.Household
@@ -13,15 +11,12 @@ import com.opensplit.dto.household.HouseholdDto
 import com.opensplit.features.household.HouseholdApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class HouseholdRepository(
     private val api: HouseholdApi,
     private val dao: HouseholdDao,
-    private val expenseDao: ExpenseDao,
-    private val profileRepository: ProfileRepository,
     private val database: AppDatabase,
     private val scope: CoroutineScope,
 ) {
@@ -51,32 +46,17 @@ class HouseholdRepository(
   }
 
   /**
-   * Saves household from server but re-applies any pending local expense math. This prevents
-   * "balance flickering" while sync is in progress.
+   * Saves household from server but preserves local balance calculation. Local transactions are the
+   * source of truth for balances.
    */
   private suspend fun saveHouseholdWithPendingAdjustment(dto: HouseholdDto) {
-    val pendingExpenses =
-        database.syncQueueDao().getQueue().first().filter {
-          it.entityType == "EXPENSE" && it.operation == OperationType.CREATE
-        }
+    val existingMembers =
+        dao.getHouseholdWithMembers(dto.id)?.members?.associateBy { it.userId } ?: emptyMap()
+    val existingHousehold = dao.getHousehold(dto.id)
 
-    var adjustedHouseholdBalance = dto.balance
-    val adjustedMemberBalances = dto.members.associate { it.userId to it.balance }.toMutableMap()
-    val currentUserId = profileRepository.profile.value?.id
-
-    pendingExpenses.forEach { entry ->
-      val expense = expenseDao.getExpense(entry.entityId)
-      if (expense != null && expense.householdId == dto.id) {
-        val participants = expenseDao.getParticipants(entry.entityId)
-        participants.forEach { p ->
-          val delta = p.paidShare - p.consumedShare
-          adjustedMemberBalances[p.userId] = (adjustedMemberBalances[p.userId] ?: 0.0) + delta
-          if (p.userId == currentUserId) {
-            adjustedHouseholdBalance += delta
-          }
-        }
-      }
-    }
+    val adjustedHouseholdBalance = existingHousehold?.balance ?: dto.balance
+    val adjustedMemberBalances =
+        dto.members.associate { m -> m.userId to (existingMembers[m.userId]?.balance ?: 0.0) }
 
     val householdEntity = dto.toEntity().copy(balance = adjustedHouseholdBalance)
     val memberEntities =

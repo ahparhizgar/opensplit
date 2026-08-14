@@ -25,7 +25,7 @@ class FakeExpenseApi : ExpenseApi, FakeService {
         amount = amount,
         payerId = payerId,
         createdAt = Instant.fromEpochMilliseconds(123456789L),
-        participants = participants,
+        shares = participants,
         splitMethod = splitMethod,
     )
   }

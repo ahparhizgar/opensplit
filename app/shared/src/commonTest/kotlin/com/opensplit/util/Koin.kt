@@ -17,9 +17,11 @@ import com.opensplit.repository.InMemoryProfileRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.sync.SyncApi
 import io.kotest.core.spec.Spec
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
@@ -51,7 +53,7 @@ fun integrationTestModule() = module {
   single {
     getRoomDatabase(
         get<AppDatabaseBuilderFactory>().createBuilder(dataDir = get()),
-        Dispatchers.Unconfined,
+        Dispatchers.Main,
     )
   }
   single { FakeAuthApi() }.bind<AuthApi>()
@@ -60,4 +62,10 @@ fun integrationTestModule() = module {
   single { FakeHouseholdApi() }.bind<HouseholdApi>()
   single { FakeExpenseApi() }.bind<ExpenseApi>()
   single { FakeSyncApi() }.bind<SyncApi>()
+
+  // Everything is overridden to Main. Main should be set to StandardTestDispatcher.
+  factory<CoroutineDispatcher>(named("default")) { Dispatchers.Main }
+  factory<CoroutineDispatcher>(named("io")) { Dispatchers.Main }
+  factory<CoroutineDispatcher>(named("main")) { Dispatchers.Main }
+  factory<CoroutineDispatcher>(named("unconfined")) { Dispatchers.Main }
 }

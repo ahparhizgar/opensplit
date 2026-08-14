@@ -48,8 +48,8 @@ class ExpenseRoutesTest {
     assertEquals("Pizza", expense.title)
     assertEquals(25.0, expense.amount)
     assertEquals(household.id, expense.householdId)
-    assertEquals(1, expense.participants.size)
-    assertEquals(25.0, expense.participants[0].paidShare)
+    assertEquals(1, expense.shares.size)
+    assertEquals(25.0, expense.shares[0].paidShare)
   }
 
   @Test
@@ -105,8 +105,8 @@ class ExpenseRoutesTest {
 
     assertEquals(HttpStatusCode.Created, response.status)
     val expense = response.body<ExpenseDto>()
-    assertEquals(2, expense.participants.size)
-    val p1 = expense.participants.find { it.userId == household.members[0].userId }!!
+    assertEquals(2, expense.shares.size)
+    val p1 = expense.shares.find { it.userId == household.members[0].userId }!!
     assertEquals(100.0, p1.paidShare)
     assertEquals(60.0, p1.consumedShare)
   }

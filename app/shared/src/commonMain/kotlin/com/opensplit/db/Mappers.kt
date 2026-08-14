@@ -117,7 +117,7 @@ fun ExpenseEntity.toDto(participants: List<ParticipantShareDto>) =
         amount = amount,
         payerId = payerId,
         createdAt = kotlin.time.Instant.fromEpochMilliseconds(createdAtEpochMillis),
-        participants = participants,
+        shares = participants,
         splitMethod = Json.decodeFromString(splitMethodJson),
         syncStatus = syncStatus,
     )
@@ -143,7 +143,7 @@ fun ExpenseDto.toDomain() =
         amount = amount,
         payerId = payerId,
         createdAt = createdAt,
-        participants = participants.map { it.toDomain() },
+        participants = shares.map { it.toDomain() },
         splitMethod = splitMethod,
         syncStatus = syncStatus,
     )
