@@ -267,7 +267,7 @@ private fun MemberItem(member: Member, modifier: Modifier = Modifier) {
           color = MaterialTheme.colorScheme.onSurfaceVariant,
       )
       Text(
-          text = "${member.balanceCurrency}${kotlin.math.abs(member.balance)}",
+          text = "IRR${kotlin.math.abs(member.balance)}",
           style = MaterialTheme.typography.bodyMedium,
           color = balanceColor,
           fontWeight = FontWeight.Bold,

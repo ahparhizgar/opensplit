@@ -13,7 +13,6 @@ data class Member(
     val isOwner: Boolean = false,
     val isCurrentUser: Boolean = false,
     val balance: Double = 0.0,
-    val balanceCurrency: String = "IRR",
 )
 
 @Serializable

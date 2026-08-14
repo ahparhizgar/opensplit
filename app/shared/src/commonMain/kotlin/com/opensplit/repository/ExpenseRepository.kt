@@ -27,7 +27,6 @@ class ExpenseRepository(
     private val expenseDao: ExpenseDao,
     private val householdDao: HouseholdDao,
     private val syncQueueDao: SyncQueueDao,
-    private val profileRepository: ProfileRepository,
     private val database: AppDatabase,
     private val syncManager: SyncManager,
 ) {
@@ -89,14 +88,9 @@ class ExpenseRepository(
         expenseDao.insertExpenseWithParticipants(expenseEntity, participantEntities)
 
         // Optimistic UI: Update local household/member balances
-        val currentUserId = profileRepository.profile.value?.id
         shares.forEach { participant ->
           val delta = participant.paidShare - participant.consumedShare
           householdDao.updateMemberBalance(householdId, participant.userId, delta)
-
-          if (participant.userId == currentUserId) {
-            householdDao.updateBalance(householdId, delta)
-          }
         }
 
         syncQueueDao.enqueue(syncEntry)
@@ -111,14 +105,9 @@ class ExpenseRepository(
     database.useWriterConnection { connection ->
       connection.immediateTransaction {
         // Reverse optimistic UI balance
-        val currentUserId = profileRepository.profile.value?.id
         participants.forEach { participant ->
           val delta = participant.paidShare - participant.consumedShare
           householdDao.updateMemberBalance(householdId, participant.userId, -delta)
-
-          if (participant.userId == currentUserId) {
-            householdDao.updateBalance(householdId, -delta)
-          }
         }
 
         expenseDao.deleteExpense(expenseId)

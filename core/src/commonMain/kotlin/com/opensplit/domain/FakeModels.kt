@@ -21,7 +21,6 @@ object FakeMemberFactory {
           isOwner = isOwner,
           isCurrentUser = isCurrentUser,
           balance = balance,
-          balanceCurrency = balanceCurrency,
       )
 
   fun create1() = create("user-1", "Amir Hossein Parhizgar", balance = 10.15, isCurrentUser = true)

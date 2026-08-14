@@ -52,13 +52,11 @@ class HouseholdRepository(
   private suspend fun saveHouseholdWithPendingAdjustment(dto: HouseholdDto) {
     val existingMembers =
         dao.getHouseholdWithMembers(dto.id)?.members?.associateBy { it.userId } ?: emptyMap()
-    val existingHousehold = dao.getHousehold(dto.id)
 
-    val adjustedHouseholdBalance = existingHousehold?.balance ?: dto.balance
     val adjustedMemberBalances =
         dto.members.associate { m -> m.userId to (existingMembers[m.userId]?.balance ?: 0.0) }
 
-    val householdEntity = dto.toEntity().copy(balance = adjustedHouseholdBalance)
+    val householdEntity = dto.toEntity()
     val memberEntities =
         dto.members.map { m ->
           m.toEntity(dto.id).copy(balance = adjustedMemberBalances[m.userId] ?: m.balance)

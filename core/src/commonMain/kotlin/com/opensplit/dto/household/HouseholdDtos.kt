@@ -24,12 +24,7 @@ data class HouseholdDto(
     val members: List<HouseholdMemberDto>,
     val isOwner: Boolean = false,
     val inviteLink: String,
-    // TODO remove this
-    val balance: Double = 0.0,
-) {
-  val isSettled: Boolean
-    get() = balance == 0.0
-}
+)
 
 object FakeHouseholdDtoFactory {
   fun create(

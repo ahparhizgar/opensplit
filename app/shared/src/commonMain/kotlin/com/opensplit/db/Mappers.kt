@@ -16,7 +16,6 @@ fun HouseholdDto.toEntity() =
         id = id,
         name = name,
         inviteLink = inviteLink,
-        balance = balance,
         isOwner = isOwner,
     )
 
@@ -26,7 +25,6 @@ fun HouseholdEntity.toDto(members: List<HouseholdMemberDto>) =
         name = name,
         members = members,
         inviteLink = inviteLink,
-        balance = balance,
         isOwner = isOwner,
     )
 
@@ -39,7 +37,6 @@ fun HouseholdWithMembers.toDomain() =
         members = members.map { it.toDomain() },
         isOwner = household.isOwner,
         inviteLink = household.inviteLink,
-        balance = household.balance,
     )
 
 fun HouseholdDto.toDomain() =
@@ -49,7 +46,6 @@ fun HouseholdDto.toDomain() =
         members = members.map { it.toDomain() },
         isOwner = isOwner,
         inviteLink = inviteLink,
-        balance = balance,
     )
 
 fun HouseholdMemberDto.toEntity(householdId: String) =
@@ -61,7 +57,6 @@ fun HouseholdMemberDto.toEntity(householdId: String) =
         isOwner = isOwner,
         isCurrentUser = isCurrentUser,
         balance = balance,
-        balanceCurrency = balanceCurrency,
     )
 
 fun MemberEntity.toDto() =
@@ -71,8 +66,6 @@ fun MemberEntity.toDto() =
         email = email,
         isOwner = isOwner,
         isCurrentUser = isCurrentUser,
-        balance = balance,
-        balanceCurrency = balanceCurrency,
     )
 
 fun MemberEntity.toDomain() =
@@ -83,7 +76,6 @@ fun MemberEntity.toDomain() =
         isOwner = isOwner,
         isCurrentUser = isCurrentUser,
         balance = balance,
-        balanceCurrency = balanceCurrency,
     )
 
 fun HouseholdMemberDto.toDomain() =
@@ -94,7 +86,6 @@ fun HouseholdMemberDto.toDomain() =
         isOwner = isOwner,
         isCurrentUser = isCurrentUser,
         balance = balance,
-        balanceCurrency = balanceCurrency,
     )
 
 fun ExpenseDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED) =

@@ -22,7 +22,6 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
                     isOwner = true,
                     isCurrentUser = true,
                     balance = 0.0,
-                    balanceCurrency = "IRR",
                 )
             ),
         inviteLink = household.inviteLink(),
@@ -93,7 +92,6 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
           isOwner = member.userId == household.ownerId,
           isCurrentUser = member.userId == currentUserId,
           balance = member.balance,
-          balanceCurrency = "IRR",
       )
     }
     return HouseholdDto(
@@ -102,7 +100,6 @@ class HouseholdService(private val householdRepository: HouseholdRepository) {
         members = memberDtos,
         inviteLink = household.inviteLink(),
         isOwner = household.ownerId == currentUserId,
-        balance = memberDtos.find { it.isCurrentUser }?.balance ?: 0.0,
     )
   }
 

@@ -8,10 +8,8 @@ data class HouseholdMemberDto(
     val name: String,
     val email: String,
     val isOwner: Boolean = false,
-    // TODO delete this
     val isCurrentUser: Boolean = false,
     val balance: Double = 0.0,
-    val balanceCurrency: String = "IRR",
 )
 
 object FakeHouseholdMemberDtoFactory {
@@ -26,7 +24,6 @@ object FakeHouseholdMemberDtoFactory {
           name = name,
           email = "$id@example.com",
           balance = balance,
-          isCurrentUser = isCurrentUser,
       )
 
   fun create1() = create("user-1", "Amir Hossein Parhizgar", 0.0)

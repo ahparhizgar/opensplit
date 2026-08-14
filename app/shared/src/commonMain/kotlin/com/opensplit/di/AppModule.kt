@@ -64,7 +64,6 @@ fun othersModule() = module {
         expenseApi = get(),
         syncApi = get(),
         database = get(),
-        profileRepository = get(),
         defaultDispatcher = get(named("default")),
     )
   }

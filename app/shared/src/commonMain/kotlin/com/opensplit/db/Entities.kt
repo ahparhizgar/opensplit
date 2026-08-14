@@ -11,7 +11,6 @@ data class HouseholdEntity(
     @PrimaryKey val id: String,
     val name: String,
     val inviteLink: String,
-    val balance: Double,
     val isOwner: Boolean,
 )
 
@@ -24,7 +23,6 @@ data class MemberEntity(
     val isOwner: Boolean,
     val isCurrentUser: Boolean,
     val balance: Double,
-    val balanceCurrency: String,
 )
 
 data class HouseholdWithMembers(

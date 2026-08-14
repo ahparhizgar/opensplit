@@ -43,9 +43,6 @@ interface HouseholdDao {
     insertMembers(members)
   }
 
-  @Query("UPDATE households SET balance = balance + :delta WHERE id = :id")
-  suspend fun updateBalance(id: String, delta: Double)
-
   @Query(
       "UPDATE household_members SET balance = balance + :delta WHERE householdId = :householdId AND userId = :userId"
   )

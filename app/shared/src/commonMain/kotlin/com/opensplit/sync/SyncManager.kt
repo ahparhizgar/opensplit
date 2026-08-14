@@ -13,7 +13,6 @@ import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.dto.sync.SyncResponse
 import com.opensplit.features.expense.ExpenseApi
-import com.opensplit.repository.ProfileRepository
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +29,6 @@ class SyncManager(
     private val expenseApi: ExpenseApi,
     private val syncApi: SyncApi,
     private val database: AppDatabase,
-    private val profileRepository: ProfileRepository,
     defaultDispatcher: CoroutineDispatcher,
 ) {
   private val scope = CoroutineScope(SupervisorJob() + defaultDispatcher)
@@ -150,7 +148,6 @@ class SyncManager(
       oldParticipants: List<ParticipantEntity>,
       newShares: List<ParticipantShareDto>,
   ) {
-    val currentUserId = profileRepository.profile.value?.id
     val memberDeltas = mutableMapOf<String, Double>()
 
     // Subtract old impact
@@ -169,10 +166,6 @@ class SyncManager(
     memberDeltas.forEach { (userId, delta) ->
       if (delta != 0.0) {
         householdDao.updateMemberBalance(householdId, userId, delta)
-
-        if (userId == currentUserId) {
-          householdDao.updateBalance(householdId, delta)
-        }
       }
     }
   }
