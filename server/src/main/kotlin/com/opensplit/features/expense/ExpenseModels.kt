@@ -38,8 +38,7 @@ fun ExpenseParticipantRecord.toDto() =
     ParticipantShareDto(
         userId = userId,
         paidShare = paidAmount,
-        owedShare = owedAmount,
-        netBalance = paidAmount - owedAmount,
+        consumedShare = owedAmount,
     )
 
 class NotAMemberException : RuntimeException()

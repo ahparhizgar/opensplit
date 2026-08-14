@@ -60,9 +60,8 @@ object FakeParticipantShareFactory {
   fun create(
       userId: String = "user-1",
       paidShare: Double = 0.0,
-      owedShare: Double = 0.0,
-      netBalance: Double = paidShare - owedShare,
-  ) = ParticipantShare(userId, paidShare, owedShare, netBalance)
+      consumedShare: Double = 0.0,
+  ) = ParticipantShare(userId, paidShare, consumedShare)
 }
 
 object FakeExpenseFactory {

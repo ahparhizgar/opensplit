@@ -35,8 +35,7 @@ class ExpenseRoutesTest {
                           ParticipantShareDto(
                               userId = household.members[0].userId,
                               paidShare = 25.0,
-                              owedShare = 25.0,
-                              netBalance = 0.0,
+                              consumedShare = 25.0,
                           )
                       ),
                   splitMethod = SplitMethod.Equally(listOf(household.members[0].userId)),
@@ -88,14 +87,12 @@ class ExpenseRoutesTest {
                           ParticipantShareDto(
                               userId = household.members[0].userId,
                               paidShare = 100.0,
-                              owedShare = 60.0,
-                              netBalance = 40.0,
+                              consumedShare = 60.0,
                           ),
                           ParticipantShareDto(
                               userId = otherUserId,
                               paidShare = 0.0,
-                              owedShare = 40.0,
-                              netBalance = -40.0,
+                              consumedShare = 40.0,
                           ),
                       ),
                   splitMethod =
@@ -111,7 +108,7 @@ class ExpenseRoutesTest {
     assertEquals(2, expense.participants.size)
     val p1 = expense.participants.find { it.userId == household.members[0].userId }!!
     assertEquals(100.0, p1.paidShare)
-    assertEquals(60.0, p1.owedShare)
+    assertEquals(60.0, p1.consumedShare)
   }
 
   @Test

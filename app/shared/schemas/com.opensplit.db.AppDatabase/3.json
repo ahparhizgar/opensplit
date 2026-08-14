@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "9babe76c5d3f623897ac29f4c5399027",
+    "identityHash": "5f4c94ca1fcca9543263a88dae253bdd",
     "entities": [
       {
         "tableName": "households",
@@ -169,7 +169,7 @@
       },
       {
         "tableName": "participants",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`expenseId` TEXT NOT NULL, `userId` TEXT NOT NULL, `paidShare` REAL NOT NULL, `owedShare` REAL NOT NULL, `netBalance` REAL NOT NULL, PRIMARY KEY(`expenseId`, `userId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`expenseId` TEXT NOT NULL, `userId` TEXT NOT NULL, `paidShare` REAL NOT NULL, `consumedShare` REAL NOT NULL, PRIMARY KEY(`expenseId`, `userId`))",
         "fields": [
           {
             "fieldPath": "expenseId",
@@ -190,14 +190,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "owedShare",
-            "columnName": "owedShare",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "netBalance",
-            "columnName": "netBalance",
+            "fieldPath": "consumedShare",
+            "columnName": "consumedShare",
             "affinity": "REAL",
             "notNull": true
           }
@@ -284,7 +278,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9babe76c5d3f623897ac29f4c5399027')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5f4c94ca1fcca9543263a88dae253bdd')"
     ]
   }
 }

@@ -33,9 +33,11 @@ data class Household(
 data class ParticipantShare(
     val userId: String,
     val paidShare: Double,
-    val owedShare: Double,
-    val netBalance: Double,
-)
+    val consumedShare: Double,
+) {
+  val netBalance: Double
+    get() = paidShare - consumedShare
+}
 
 @Serializable
 data class Expense(

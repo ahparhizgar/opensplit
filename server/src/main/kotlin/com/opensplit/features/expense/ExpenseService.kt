@@ -24,7 +24,7 @@ class ExpenseService(
           ExpenseParticipantRecord(
               userId = it.userId,
               paidAmount = it.paidShare,
-              owedAmount = it.owedShare,
+              owedAmount = it.consumedShare,
           )
         }
 

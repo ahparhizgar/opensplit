@@ -37,7 +37,7 @@ class ExpenseDetailsComponentTest : BehaviorSpec() {
                 title = "Pizza",
                 amount = 20.0,
                 payerId = "user-1",
-                participants = emptyList(),
+                shares = emptyList(),
                 splitMethod = Equally(emptyList()),
             )
         testCoroutineScheduler.advanceUntilIdle()

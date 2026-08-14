@@ -472,8 +472,7 @@ class DefaultAddExpenseComponent(
               ParticipantShare(
                   userId = it.userId,
                   paidShare = paidShare,
-                  owedShare = paidShare - it.amount,
-                  netBalance = it.amount,
+                  consumedShare = it.amount,
               )
             }
 
@@ -484,7 +483,7 @@ class DefaultAddExpenseComponent(
           title = title,
           amount = amount,
           payerId = participantsDomain.firstOrNull { it.paidShare > 0 }?.userId ?: "",
-          participants = participantsDomain,
+          shares = participantsDomain,
           splitMethod = state.splitMethod,
       )
       onFinished()

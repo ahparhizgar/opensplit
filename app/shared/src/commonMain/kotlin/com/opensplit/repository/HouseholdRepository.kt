@@ -69,7 +69,7 @@ class HouseholdRepository(
       if (expense != null && expense.householdId == dto.id) {
         val participants = expenseDao.getParticipants(entry.entityId)
         participants.forEach { p ->
-          val delta = p.paidShare - p.owedShare
+          val delta = p.paidShare - p.consumedShare
           adjustedMemberBalances[p.userId] = (adjustedMemberBalances[p.userId] ?: 0.0) + delta
           if (p.userId == currentUserId) {
             adjustedHouseholdBalance += delta

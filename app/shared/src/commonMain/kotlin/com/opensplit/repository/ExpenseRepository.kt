@@ -56,7 +56,7 @@ class ExpenseRepository(
       title: String,
       amount: Double,
       payerId: String,
-      participants: List<ParticipantShare>,
+      shares: List<ParticipantShare>,
       splitMethod: SplitMethod,
   ) {
     val expenseId = "local_" + randomId()
@@ -74,7 +74,7 @@ class ExpenseRepository(
             syncStatus = SyncStatus.PENDING,
         )
 
-    val participantEntities = participants.map { it.toEntity(expenseId) }
+    val participantEntities = shares.map { it.toEntity(expenseId) }
 
     val syncEntry =
         SyncQueueEntity(
@@ -90,8 +90,8 @@ class ExpenseRepository(
 
         // Optimistic UI: Update local household/member balances
         val currentUserId = profileRepository.profile.value?.id
-        participants.forEach { participant ->
-          val delta = participant.paidShare - participant.owedShare
+        shares.forEach { participant ->
+          val delta = participant.paidShare - participant.consumedShare
           householdDao.updateMemberBalance(householdId, participant.userId, delta)
 
           if (participant.userId == currentUserId) {
@@ -113,7 +113,7 @@ class ExpenseRepository(
         // Reverse optimistic UI balance
         val currentUserId = profileRepository.profile.value?.id
         participants.forEach { participant ->
-          val delta = participant.paidShare - participant.owedShare
+          val delta = participant.paidShare - participant.consumedShare
           householdDao.updateMemberBalance(householdId, participant.userId, -delta)
 
           if (participant.userId == currentUserId) {

@@ -153,8 +153,7 @@ fun ParticipantShare.toEntity(expenseId: String) =
         expenseId = expenseId,
         userId = userId,
         paidShare = paidShare,
-        owedShare = owedShare,
-        netBalance = netBalance,
+        consumedShare = consumedShare,
     )
 
 fun ParticipantShareDto.toEntity(expenseId: String) =
@@ -162,30 +161,26 @@ fun ParticipantShareDto.toEntity(expenseId: String) =
         expenseId = expenseId,
         userId = userId,
         paidShare = paidShare,
-        owedShare = owedShare,
-        netBalance = netBalance,
+        consumedShare = consumedShare,
     )
 
 fun ParticipantEntity.toDto() =
     ParticipantShareDto(
         userId = userId,
         paidShare = paidShare,
-        owedShare = owedShare,
-        netBalance = netBalance,
+        consumedShare = consumedShare,
     )
 
 fun ParticipantEntity.toDomain() =
     ParticipantShare(
         userId = userId,
         paidShare = paidShare,
-        owedShare = owedShare,
-        netBalance = netBalance,
+        consumedShare = consumedShare,
     )
 
 fun ParticipantShareDto.toDomain() =
     ParticipantShare(
         userId = userId,
         paidShare = paidShare,
-        owedShare = owedShare,
-        netBalance = netBalance,
+        consumedShare = consumedShare,
     )

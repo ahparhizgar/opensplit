@@ -139,9 +139,9 @@ fun ExpenseDetailsScreen(
                 val isMe = member?.isCurrentUser == true
                 val name = if (isMe) "You" else member?.name ?: participant.userId
                 val verb = if (isMe) "owe" else "owes"
-                if (participant.owedShare > 0) {
+                if (participant.consumedShare > 0) {
                   Text(
-                      text = "$name $verb IRR ${participant.owedShare.formatAmount()}",
+                      text = "$name $verb IRR ${participant.consumedShare.formatAmount()}",
                       style = MaterialTheme.typography.bodyMedium,
                       color = MaterialTheme.colorScheme.onSurfaceVariant,
                   )
@@ -192,8 +192,8 @@ fun ExpenseDetailsScreenPreview() {
           amount = 0.67,
           participants =
               listOf(
-                  ParticipantShare("user-1", 0.67, 0.34, 0.33),
-                  ParticipantShare("user-2", 0.0, 0.33, -0.33),
+                  ParticipantShare("user-1", 0.67, 0.34),
+                  ParticipantShare("user-2", 0.0, 0.33),
               ),
       )
   val fakeMembers =

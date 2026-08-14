@@ -7,8 +7,7 @@ import kotlinx.serialization.Serializable
 data class ParticipantShareDto(
     val userId: String,
     val paidShare: Double,
-    val owedShare: Double,
-    val netBalance: Double,
+    val consumedShare: Double,
 )
 
 @Serializable

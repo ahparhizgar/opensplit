@@ -50,8 +50,7 @@ data class ParticipantEntity(
     val expenseId: String,
     val userId: String,
     val paidShare: Double,
-    val owedShare: Double,
-    val netBalance: Double,
+    val consumedShare: Double,
 )
 
 @Entity(tableName = "sync_queue")
