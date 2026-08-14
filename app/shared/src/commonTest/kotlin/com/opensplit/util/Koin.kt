@@ -15,12 +15,15 @@ import com.opensplit.features.expense.ExpenseApi
 import com.opensplit.features.household.HouseholdApi
 import com.opensplit.repository.InMemoryProfileRepository
 import com.opensplit.repository.ProfileRepository
+import com.opensplit.sync.NoopSyncDaemon
 import com.opensplit.sync.SyncApi
+import com.opensplit.sync.SyncDaemon
 import io.kotest.core.spec.Spec
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.koinApplication
@@ -68,4 +71,5 @@ fun integrationTestModule() = module {
   factory<CoroutineDispatcher>(named("io")) { Dispatchers.Main }
   factory<CoroutineDispatcher>(named("main")) { Dispatchers.Main }
   factory<CoroutineDispatcher>(named("unconfined")) { Dispatchers.Main }
+  singleOf<SyncDaemon>(::NoopSyncDaemon)
 }

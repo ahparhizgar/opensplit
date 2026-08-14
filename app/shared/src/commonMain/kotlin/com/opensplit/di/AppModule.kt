@@ -17,8 +17,10 @@ import com.opensplit.repository.DataStoreProfileRepository
 import com.opensplit.repository.ExpenseRepository
 import com.opensplit.repository.HouseholdRepository
 import com.opensplit.repository.ProfileRepository
+import com.opensplit.sync.DefaultSyncDaemon
 import com.opensplit.sync.KtorSyncApi
 import com.opensplit.sync.SyncApi
+import com.opensplit.sync.SyncDaemon
 import com.opensplit.sync.SyncManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,6 +65,12 @@ fun othersModule() = module {
         syncApi = get(),
         database = get(),
         profileRepository = get(),
+        defaultDispatcher = get(named("default")),
+    )
+  }
+  single<SyncDaemon> {
+    DefaultSyncDaemon(
+        syncManager = get(),
         defaultDispatcher = get(named("default")),
     )
   }

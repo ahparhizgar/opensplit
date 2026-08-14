@@ -40,18 +40,7 @@ class SyncManager(
   private val householdDao = database.householdDao()
   private val syncMutex = Mutex()
 
-  fun startSync() {
-    scope.launch {
-      while (isActive) {
-        sync()
-        delay(30.seconds) // Longer delay for background sync
-      }
-    }
-  }
-
-  fun triggerSync() {
-    scope.launch { sync() }
-  }
+  fun triggerSync() = scope.launch { sync() }
 
   suspend fun sync() {
     if (syncMutex.isLocked) return
@@ -187,4 +176,28 @@ class SyncManager(
       }
     }
   }
+}
+
+interface SyncDaemon {
+  fun start()
+}
+
+class DefaultSyncDaemon(
+    private val syncManager: SyncManager,
+    defaultDispatcher: CoroutineDispatcher,
+) : SyncDaemon {
+  private val scope = CoroutineScope(defaultDispatcher)
+
+  override fun start() {
+    scope.launch {
+      while (isActive) {
+        syncManager.sync()
+        delay(30.seconds) // Longer delay for background sync
+      }
+    }
+  }
+}
+
+class NoopSyncDaemon() : SyncDaemon {
+  override fun start() {}
 }

@@ -22,6 +22,7 @@ import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.repository.HouseholdRepository
 import com.opensplit.splash.SplashDestination
+import com.opensplit.sync.SyncDaemon
 import com.opensplit.sync.SyncManager
 import com.opensplit.usermessage.MessageHolder
 import kotlin.reflect.KClass
@@ -45,6 +46,7 @@ class DefaultRootComponent(
     private val componentProvider: ComponentProvider,
     private val tokenStorage: TokenStorage,
     syncManager: SyncManager,
+    syncDaemon: SyncDaemon,
     householdRepository: HouseholdRepository,
 ) : RootComponent, CContext by cContext {
   val scope = componentScope()
@@ -61,7 +63,7 @@ class DefaultRootComponent(
     @Suppress("UNCHECKED_CAST")
     cContext.navigation = rootNavigation as StackNavigation<Any>
     messageShower = messageHolder
-    syncManager.startSync()
+    syncDaemon.start()
     householdRepository.refresh()
 
     scope.launch {
@@ -136,14 +138,16 @@ class DefaultRootComponent(
       private val tokenStorage: TokenStorage,
       private val syncManager: SyncManager,
       private val householdRepository: HouseholdRepository,
+      private val syncDaemon: SyncDaemon,
   ) : RootComponent.Factory {
     override fun create(context: CContext): RootComponent =
         DefaultRootComponent(
-            context,
-            componentProvider,
-            tokenStorage,
-            syncManager,
-            householdRepository,
+            cContext = context,
+            componentProvider = componentProvider,
+            tokenStorage = tokenStorage,
+            syncManager = syncManager,
+            householdRepository = householdRepository,
+            syncDaemon = syncDaemon,
         )
   }
 }
