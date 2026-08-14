@@ -97,14 +97,6 @@ sealed class AddExpenseChildConfig {
   @Serializable data object MoreSplitOptions : AddExpenseChildConfig()
 }
 
-data class ParticipantState(
-    val userId: String,
-    val name: String,
-    val paidAmount: Double = 0.0,
-    val owedAmount: Double = 0.0,
-    val isCurrentUser: Boolean = false,
-)
-
 sealed interface PayAmountsUiState {
   fun toDomain(): PayAmounts
 
@@ -331,20 +323,21 @@ class DefaultAddExpenseComponent(
             household.members.map { member ->
               ParticipantAmount(userId = member.userId, amount = 0.0)
             }
-        _uiState.update {
-          it.copy(
+        _uiState.update { state ->
+          state.copy(
               householdName = household.name,
               allParticipants = household.members.map { it.userId },
               participants = household.members,
               payAmounts =
                   if (
-                      it.payAmounts is PayAmountsUiState.OnePerson && it.payAmounts.userId.isEmpty()
+                      state.payAmounts is PayAmountsUiState.OnePerson &&
+                          state.payAmounts.userId.isEmpty()
                   )
                       PayAmountsUiState.OnePerson(
                           userId = currentUserId ?: household.members.first().userId,
-                          amount = it.payAmounts.amount,
+                          amount = state.payAmounts.amount,
                       )
-                  else it.payAmounts,
+                  else state.payAmounts,
               splitMethod = SplitMethod.Equally(participants.map { p -> p.userId }),
           )
         }
@@ -364,7 +357,13 @@ class DefaultAddExpenseComponent(
         when (it) {
           is PayAmountsUiState.MultiplePeople ->
               error("cannot change multiple people amount directly")
-          is PayAmountsUiState.OnePerson -> state.copy(payAmounts = it.copy(amount = amount))
+          is PayAmountsUiState.OnePerson -> {
+
+            state.copy(
+                payAmounts = it.copy(amount = amount),
+                fieldErrors = state.fieldErrors - "amount",
+            )
+          }
         }
       }
     }
@@ -540,7 +539,6 @@ class FakeAddExpenseComponent(
     childFactory: (AddExpenseComponent) -> AddExpenseComponent.Child = {
       AddExpenseComponent.Child.Main(it)
     },
-    moreSplitOptionsComponent: MoreSplitOptionsComponent = FakeMoreSplitOptionsComponent(),
 ) : AddExpenseComponent {
   override val uiState: Value<AddExpenseUiState> = MutableValue(uiState)
   override val stack: Value<ChildStack<*, AddExpenseComponent.Child>> =

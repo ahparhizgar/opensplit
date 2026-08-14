@@ -48,6 +48,28 @@ class AddExpenseComponentTest : BehaviorSpec() {
           addExpenseComponent.uiState.value.fieldErrors["title"].shouldNotBeNull()
           addExpenseComponent.uiState.value.fieldErrors["amount"].shouldNotBeNull()
         }
+        And("typing a character in fields") {
+          beforeEach {
+            testCoroutineScheduler.advanceUntilIdle()
+            addExpenseComponent.onAmountChanged("1")
+            addExpenseComponent.onTitleChanged("T")
+          }
+          Then("field errors are cleared") {
+            addExpenseComponent.uiState.value.fieldErrors["title"] shouldBe null
+            addExpenseComponent.uiState.value.fieldErrors["amount"] shouldBe null
+          }
+          And("clearing them doesn't show the error again") {
+            beforeEach {
+              testCoroutineScheduler.advanceUntilIdle()
+              addExpenseComponent.onTitleChanged("")
+              addExpenseComponent.onAmountChanged("")
+            }
+            Then("title error is still cleared") {
+              addExpenseComponent.uiState.value.fieldErrors["title"] shouldBe null
+              addExpenseComponent.uiState.value.fieldErrors["amount"] shouldBe null
+            }
+          }
+        }
       }
 
       When("submitting with valid form and equal split") {
