@@ -14,7 +14,7 @@ import org.koin.dsl.module
 class JvmAppDatabaseBuilderFactory : AppDatabaseBuilderFactory {
   override fun createBuilder(dataDir: DataDir): RoomDatabase.Builder<AppDatabase> {
     val builder =
-        if (dataDir.dir == ":memory:") {
+        if (dataDir == DataDir.MEMORY) {
           Room.inMemoryDatabaseBuilder<AppDatabase>()
         } else {
           Room.databaseBuilder<AppDatabase>(name = File(dataDir.dir, "opensplit.db").absolutePath)

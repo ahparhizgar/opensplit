@@ -47,10 +47,10 @@ fun uiKoin() =
 
 fun integrationTestModule() = module {
   single { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
-  single { DataDir(":memory:") }
+  single { DataDir.MEMORY }
   single {
     getRoomDatabase(
-        get<AppDatabaseBuilderFactory>().createBuilder(get()),
+        get<AppDatabaseBuilderFactory>().createBuilder(dataDir = get()),
         Dispatchers.Unconfined,
     )
   }
