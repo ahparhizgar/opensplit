@@ -1,6 +1,7 @@
 package com.opensplit
 
 import com.opensplit.component.TestCContext
+import com.opensplit.db.ExpenseDao
 import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.PayAmountsUiState
 import com.opensplit.util.MainDispatcherExtension
@@ -8,10 +9,12 @@ import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.core.test.testCoroutineScheduler
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.maps.beEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.flow.first
 
 class AddExpenseComponentTest : BehaviorSpec() {
   init {
@@ -79,7 +82,13 @@ class AddExpenseComponentTest : BehaviorSpec() {
           addExpenseComponent.onAmountChanged("20.0")
           addExpenseComponent.onSaveClicked().join()
         }
-        Then("calls onFinished") { onFinishedCalled shouldBe true }
+        Then("it's added to DB") {
+          onFinishedCalled shouldBe true
+          koin.get<ExpenseDao>().getExpenses(householdId = "h1").first().let {
+            it shouldHaveSize 1
+            it.first().title shouldBe "Pizza"
+          }
+        }
       }
     }
   }

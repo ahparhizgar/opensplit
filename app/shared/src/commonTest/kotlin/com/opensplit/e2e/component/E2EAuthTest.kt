@@ -1,6 +1,5 @@
 package com.opensplit.e2e.component
 
-import com.arkivanov.decompose.DecomposeSettings
 import com.opensplit.assertLogin
 import com.opensplit.assertWelcome
 import com.opensplit.component.TestCContext
@@ -14,24 +13,15 @@ import com.opensplit.util.testValue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.core.test.testCoroutineScheduler
 import io.kotest.matchers.types.shouldBeInstanceOf
-import kotlin.coroutines.ContinuationInterceptor
 
 class E2EAuthTest : BehaviorSpec() {
   init {
     extensions(MainDispatcherExtension())
-    DecomposeSettings.settings =
-        DecomposeSettings(
-            mainThreadCheckEnabled = false,
-            duplicateConfigurationsEnabled = true,
-        )
     Given("app opens for first time") {
       val koin by integrationKoin()
       val context by testValue { TestCContext() }
       var root by testValue { koin.get<RootComponent.Factory>().create(context) }
-      Then("shows welcome screen") {
-        println(coroutineContext[ContinuationInterceptor.Key])
-        root.assertSplash()
-      }
+      Then("shows welcome screen") { root.assertSplash() }
       When("waiting") {
         beforeEach { testCoroutineScheduler.advanceUntilIdle() }
         Then("shows auth screen") { root.assertAuth().assertWelcome() }
