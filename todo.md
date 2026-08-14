@@ -1,7 +1,6 @@
 1. introduce SSE
 2. create currency and money model (use Int)
-3. color for left and over
-4. use enums in DAOs where possible
+3. use enums in DAOs where possible
 
 ### Done
 --- 

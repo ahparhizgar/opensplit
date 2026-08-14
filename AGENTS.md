@@ -22,6 +22,7 @@ Project "big picture" (what talks to what)
 - Integration highlights:
   - `app/shared` uses Ktor client (`ktor.clientOkHttp`) on JVM and `ktor-client-darwin` on Apple platforms. Look at `app/shared/build.gradle.kts` for client bindings.
   - Backend database is configured in `docker-compose.yml`. The server expects `JDBC_DATABASE_URL` env; CI/local docker-compose config supplies it.
+  - `youOwe` and `youAreOwed` colors are in the `MaterialTheme.colorSchemeExtended` object defined in `Extended.kt`
 
 Where to look for the most important code
 - Backend entry and wiring: `server/src/main/kotlin/...` (search for `Application.kt` or `com.opensplit.ApplicationKt`). The main class is set in `server/build.gradle.kts`.
