@@ -2,6 +2,7 @@ package com.opensplit
 
 import com.opensplit.component.TestCContext
 import com.opensplit.db.ExpenseDao
+import com.opensplit.db.SyncQueueDao
 import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.PayAmountsUiState
 import com.opensplit.util.MainDispatcherExtension
@@ -87,6 +88,10 @@ class AddExpenseComponentTest : BehaviorSpec() {
           koin.get<ExpenseDao>().getExpenses(householdId = "h1").first().let {
             it shouldHaveSize 1
             it.first().title shouldBe "Pizza"
+          }
+          koin.get<SyncQueueDao>().getQueue().first().let {
+            it shouldHaveSize 1
+            it.first().entityType shouldBe "EXPENSE"
           }
         }
       }
