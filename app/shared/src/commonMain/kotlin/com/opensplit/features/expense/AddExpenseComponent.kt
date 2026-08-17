@@ -240,7 +240,11 @@ class DefaultAddExpenseComponent(
                               household = loadedHousehold!!,
                               onDone = { amounts ->
                                 setPaidAmounts(amounts)
-                                stackNavigation.pop()
+                                stackNavigation.navigate { configs ->
+                                  configs
+                                      .filter { it !is AddExpenseChildConfig.PayerSelection }
+                                      .dropLast(1)
+                                }
                               },
                           )
                   )
