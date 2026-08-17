@@ -53,7 +53,7 @@ class DefaultPaidAmountsComponent(
                               ParticipantValue(
                                   initial.userId,
                                   member.name,
-                                  initial.amount.toString(),
+                                  initial.amount?.toString().orEmpty(),
                               )
                           else ParticipantValue(member.userId, member.name, "")
                         }
@@ -131,7 +131,7 @@ class FakePaidAmountsComponent(
                               ParticipantValue(
                                   initial.userId,
                                   member.name,
-                                  initial.amount.toString(),
+                                  initial.amount?.toString().orEmpty(),
                               )
                           else ParticipantValue(member.userId, member.name, "")
                         }
