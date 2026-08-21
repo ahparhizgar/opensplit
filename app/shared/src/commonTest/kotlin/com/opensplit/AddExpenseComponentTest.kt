@@ -5,7 +5,6 @@ import com.opensplit.db.ExpenseDao
 import com.opensplit.db.SyncQueueDao
 import com.opensplit.domain.ParticipantShare
 import com.opensplit.dto.auth.UserProfile
-import com.opensplit.dto.expense.ParticipantAmount
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.PayAmountsUiState
@@ -252,12 +251,12 @@ class AddExpenseComponentTest : BehaviorSpec() {
           component.onAmountChanged("200.0")
 
           val calculated =
-              component.uiState.value.splitMethod.calculateOwedAmounts(
-                  payAmounts = listOf(ParticipantAmount(u1, 200.0)),
-                  allParticipants = setOf(u1, u2),
+              component.uiState.value.splitMethod.calculateConsumedAmounts(
+                  totalAmount = 200.0,
+                  allMembers = setOf(u1, u2),
               )
-          calculated.find { it.userId == u1 }?.amount shouldBe 100.0 // 200 paid - 100 share = 100
-          calculated.find { it.userId == u2 }?.amount shouldBe -100.0 // 0 paid - 100 share = -100
+          calculated.find { it.userId == u1 }?.amount shouldBe 100.0
+          calculated.find { it.userId == u2 }?.amount shouldBe 100.0
         }
       }
 

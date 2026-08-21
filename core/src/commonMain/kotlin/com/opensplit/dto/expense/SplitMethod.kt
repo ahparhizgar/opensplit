@@ -8,100 +8,80 @@ import kotlinx.serialization.Serializable
 sealed interface SplitMethod {
 
   /**
-   * @param payAmounts A list of ParticipantAmount representing the amounts paid by each
-   *   participant.
-   * @param allParticipants A set of all participant user IDs.
-   * @return A list of ParticipantAmount representing the amounts owed by each participant.
-   *   (positive: they should get back, negative: they owe)
+   * @param totalAmount The total amount of the expense.
+   * @param allMembers A set of all participant user IDs.
+   * @return A list of ParticipantAmount representing the amounts consumed by each participant.
    */
-  fun calculateOwedAmounts(
-      payAmounts: List<ParticipantAmount>,
-      allParticipants: Set<String>,
+  fun calculateConsumedAmounts(
+      totalAmount: Double,
+      allMembers: Set<String>,
   ): List<ParticipantAmount>
 
   @Serializable
   data class Equally(val userIds: List<String>) : SplitMethod {
-    override fun calculateOwedAmounts(
-        payAmounts: List<ParticipantAmount>,
-        allParticipants: Set<String>,
+    override fun calculateConsumedAmounts(
+        totalAmount: Double,
+        allMembers: Set<String>,
     ): List<ParticipantAmount> {
-      val totalAmount = payAmounts.sumOf { it.amount }
       val share = if (userIds.isEmpty()) 0.0 else totalAmount / userIds.size
-      val shares = allParticipants.associateWith { if (it in userIds) share else 0.0 }
-      return calculateBalances(payAmounts, allParticipants, shares)
+      return allMembers.map { userId ->
+        ParticipantAmount(userId, if (userId in userIds) share else 0.0)
+      }
     }
   }
 
   @Serializable
   data class Unequally(val amounts: Map<String, Double>) : SplitMethod {
-    override fun calculateOwedAmounts(
-        payAmounts: List<ParticipantAmount>,
-        allParticipants: Set<String>,
+    override fun calculateConsumedAmounts(
+        totalAmount: Double,
+        allMembers: Set<String>,
     ): List<ParticipantAmount> {
-      val shares = allParticipants.associateWith { amounts[it] ?: 0.0 }
-      return calculateBalances(payAmounts, allParticipants, shares)
+      return allMembers.map { userId -> ParticipantAmount(userId, amounts[userId] ?: 0.0) }
     }
   }
 
   @Serializable
   data class Percentage(val percentages: Map<String, Double>) : SplitMethod {
-    override fun calculateOwedAmounts(
-        payAmounts: List<ParticipantAmount>,
-        allParticipants: Set<String>,
+    override fun calculateConsumedAmounts(
+        totalAmount: Double,
+        allMembers: Set<String>,
     ): List<ParticipantAmount> {
-      val totalAmount = payAmounts.sumOf { it.amount }
-      val shares = allParticipants.associateWith {
-        (totalAmount * (percentages[it] ?: 0.0)) / 100.0
+      return allMembers.map { userId ->
+        val amount = (totalAmount * (percentages[userId] ?: 0.0)) / 100.0
+        ParticipantAmount(userId, amount)
       }
-      return calculateBalances(payAmounts, allParticipants, shares)
     }
   }
 
   @Serializable
   data class Shares(val shares: Map<String, Int>) : SplitMethod {
-    override fun calculateOwedAmounts(
-        payAmounts: List<ParticipantAmount>,
-        allParticipants: Set<String>,
+    override fun calculateConsumedAmounts(
+        totalAmount: Double,
+        allMembers: Set<String>,
     ): List<ParticipantAmount> {
-      val totalAmount = payAmounts.sumOf { it.amount }
       val totalShares = shares.values.sum()
-      val sharesMap = allParticipants.associateWith {
-        if (totalShares == 0) 0.0 else (totalAmount * (shares[it] ?: 0)) / totalShares
+      return allMembers.map { userId ->
+        val amount =
+            if (totalShares == 0) 0.0 else (totalAmount * (shares[userId] ?: 0)) / totalShares
+        ParticipantAmount(userId, amount)
       }
-      return calculateBalances(payAmounts, allParticipants, sharesMap)
     }
   }
 
   @Serializable
   data class Adjustment(val adjustments: Map<String, Double>) : SplitMethod {
-    override fun calculateOwedAmounts(
-        payAmounts: List<ParticipantAmount>,
-        allParticipants: Set<String>,
+    override fun calculateConsumedAmounts(
+        totalAmount: Double,
+        allMembers: Set<String>,
     ): List<ParticipantAmount> {
-      val totalAmount = payAmounts.sumOf { it.amount }
       val totalAdjustments = adjustments.values.sum()
       val remainingAmount = totalAmount - totalAdjustments
-      val equalShare =
-          if (allParticipants.isEmpty()) 0.0 else remainingAmount / allParticipants.size
+      val equalShare = if (allMembers.isEmpty()) 0.0 else remainingAmount / allMembers.size
 
-      val shares = allParticipants.associateWith { userId ->
+      return allMembers.map { userId ->
         val adjustment = adjustments[userId] ?: 0.0
-        equalShare + adjustment
+        ParticipantAmount(userId, equalShare + adjustment)
       }
-      return calculateBalances(payAmounts, allParticipants, shares)
     }
-  }
-}
-
-private fun calculateBalances(
-    payAmounts: List<ParticipantAmount>,
-    allParticipants: Set<String>,
-    shares: Map<String, Double>,
-): List<ParticipantAmount> {
-  val paidMap = payAmounts.associate { it.userId to it.amount }
-  return allParticipants.map { userId ->
-    val paid = paidMap[userId] ?: 0.0
-    val share = shares[userId] ?: 0.0
-    ParticipantAmount(userId, paid - share)
   }
 }

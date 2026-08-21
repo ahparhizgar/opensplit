@@ -497,19 +497,9 @@ class DefaultAddExpenseComponent(
 
     val participantsDomain =
         state.splitMethod
-            .calculateOwedAmounts(
-                payAmounts =
-                    when (state.payAmountsDomain) {
-                      is PayAmounts.OnePerson ->
-                          listOf(
-                              ParticipantAmount(
-                                  userId = state.payAmountsDomain.userId,
-                                  amount = state.payAmountsDomain.amount ?: 0.0,
-                              )
-                          )
-                      is PayAmounts.MultiplePeople -> state.payAmountsDomain.amounts
-                    },
-                allParticipants = state.allParticipants.toSet(),
+            .calculateConsumedAmounts(
+                totalAmount = amount,
+                allMembers = state.allParticipants.toSet(),
             )
             .map {
               val paidShare =
