@@ -69,7 +69,7 @@ class ExpenseDetailsComponentTest : BehaviorSpec() {
       }
 
       When("onEditClicked is called") {
-        expenseDetailsComponent.onEditClicked()
+        beforeEach { expenseDetailsComponent.onEditClicked() }
 
         Then("navigates to AddExpense screen in edit mode") {
           val lastConfig = cContext.fakeStack().last()
