@@ -23,7 +23,6 @@ import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.repository.HouseholdRepository
 import com.opensplit.splash.SplashDestination
 import com.opensplit.sync.SyncDaemon
-import com.opensplit.sync.SyncManager
 import com.opensplit.usermessage.MessageHolder
 import kotlin.reflect.KClass
 import kotlinx.coroutines.launch
@@ -45,7 +44,6 @@ class DefaultRootComponent(
     cContext: CContext,
     private val componentProvider: ComponentProvider,
     private val tokenStorage: TokenStorage,
-    syncManager: SyncManager,
     syncDaemon: SyncDaemon,
     householdRepository: HouseholdRepository,
 ) : RootComponent, CContext by cContext {
@@ -136,7 +134,6 @@ class DefaultRootComponent(
   class Factory(
       private val componentProvider: ComponentProvider,
       private val tokenStorage: TokenStorage,
-      private val syncManager: SyncManager,
       private val householdRepository: HouseholdRepository,
       private val syncDaemon: SyncDaemon,
   ) : RootComponent.Factory {
@@ -145,7 +142,6 @@ class DefaultRootComponent(
             cContext = context,
             componentProvider = componentProvider,
             tokenStorage = tokenStorage,
-            syncManager = syncManager,
             householdRepository = householdRepository,
             syncDaemon = syncDaemon,
         )

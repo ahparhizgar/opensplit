@@ -44,7 +44,7 @@ data class Expense(
     val householdId: String,
     val title: String,
     val amount: Double,
-    val payerId: String,
+    @Deprecated("use participants instead") val payerId: String,
     val createdAt: Instant,
     val participants: List<ParticipantShare>,
     val splitMethod: SplitMethod,

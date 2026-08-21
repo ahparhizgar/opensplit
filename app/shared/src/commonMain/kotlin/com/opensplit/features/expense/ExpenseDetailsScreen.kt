@@ -125,14 +125,19 @@ fun ExpenseDetailsScreen(
             Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(Color(0xFF00A388)))
             Spacer(Modifier.width(16.dp))
             Column {
-              val payerMember = uiState.householdMembers.find { it.userId == expense.payerId }
-              val payerName =
-                  if (payerMember?.isCurrentUser == true) "You"
-                  else payerMember?.name ?: expense.payerId
-              Text(
-                  text = "$payerName paid IRR ${expense.amount.formatAmount()}",
-                  style = MaterialTheme.typography.bodyLarge,
-              )
+              expense.participants.forEach { participant ->
+                val member = uiState.householdMembers.find { it.userId == participant.userId }
+                val isMe = member?.isCurrentUser == true
+                val name = if (isMe) "You" else member?.name ?: participant.userId
+                val verb = if (isMe) "Paid" else "Paid"
+                if (participant.paidShare > 0) {
+                  Text(
+                      text = "$name $verb IRR ${participant.paidShare.formatAmount()}",
+                      style = MaterialTheme.typography.bodyLarge,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  )
+                }
+              }
               Spacer(Modifier.height(4.dp))
               expense.participants.forEach { participant ->
                 val member = uiState.householdMembers.find { it.userId == participant.userId }

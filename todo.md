@@ -3,6 +3,7 @@
 3. use enums in DAOs where possible
 4. request validation plugin (?) for Ktor
 5. remove currentTimeMillis function and use Clock.System.now() instead and note in AGENTS.md
+6. remove `val payerId: String` from expense and instead add `creator` field to Expense model
 
 ### Done
 --- 
