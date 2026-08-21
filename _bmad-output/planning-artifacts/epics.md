@@ -455,11 +455,11 @@ So that the debt matches the real arrangement.
 **When** the user tries to save
 **Then** the save is blocked with a clear error message
 
-### Story 2.6: Edit or delete an expense and keep its original currency
+### Story 2.6: Edit an expense and restore split methods
 
 As a household member,
-I want to edit or delete an existing expense without losing its original currency,
-So that the record stays accurate and trustworthy.
+I want to edit an existing expense and have its split method restored,
+So that I can easily adjust details while maintaining the original intent.
 
 **Acceptance Criteria:**
 
@@ -467,13 +467,9 @@ So that the record stays accurate and trustworthy.
 **When** the user edits its details and saves
 **Then** the changes are persisted and balances are recalculated
 
-**Given** an expense exists
-**When** the user deletes it and confirms
-**Then** the expense is removed from the household history and balances update
-
-**Given** an expense is stored in a currency
-**When** the user views or edits it later
-**Then** the original currency remains visible and unchanged
+**Given** an expense was created with a specific split method
+**When** the user opens the edit screen
+**Then** the original split method and its inputs are restored and editable
 
 ### Story 2.7: Review expense history
 
