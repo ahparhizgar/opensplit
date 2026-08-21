@@ -3,6 +3,7 @@ package com.opensplit
 import com.opensplit.component.TestCContext
 import com.opensplit.component.fakeStack
 import com.opensplit.dto.expense.SplitMethod.Equally
+import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.repository.ExpenseRepository
@@ -12,6 +13,7 @@ import com.opensplit.util.testValue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.core.test.testCoroutineScheduler
 import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 class ExpenseDetailsComponentTest : BehaviorSpec() {
@@ -50,6 +52,31 @@ class ExpenseDetailsComponentTest : BehaviorSpec() {
         }
         Then("navigates to ExpenseDetails screen") {
           cContext.fakeStack().last().shouldBeInstanceOf<ExpenseDetailsComponent.Config>()
+        }
+      }
+    }
+
+    Given("an ExpenseDetailsComponent") {
+      val cContext by testValue { TestCContext().resumed() }
+      val expenseDetailsComponent by testValue {
+        koin
+            .get<ExpenseDetailsComponent.Factory>()
+            .create(
+                cContext,
+                ExpenseDetailsComponent.Config("household-1", "expense-1"),
+                onBack = {},
+            )
+      }
+
+      When("onEditClicked is called") {
+        expenseDetailsComponent.onEditClicked()
+
+        Then("navigates to AddExpense screen in edit mode") {
+          val lastConfig = cContext.fakeStack().last()
+          lastConfig.shouldBeInstanceOf<AddExpenseComponent.Config>()
+          val editConfig = lastConfig as AddExpenseComponent.Config
+          editConfig.expenseId shouldBe "expense-1"
+          editConfig.householdId shouldBe "household-1"
         }
       }
     }

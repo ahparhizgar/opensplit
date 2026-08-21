@@ -26,6 +26,7 @@ import com.opensplit.repository.ProfileRepository
 import com.opensplit.root.TopLevelDestinationConfig
 import com.opensplit.util.formatAmount
 import com.opensplit.validation.expense.ExpenseValidation
+import kotlin.math.abs
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -61,6 +62,7 @@ interface AddExpenseComponent {
   @Serializable
   data class Config(
       val householdId: String,
+      val expenseId: String? = null,
   ) : TopLevelDestinationConfig
 
   sealed class Child {
@@ -133,6 +135,7 @@ data class AddExpenseUiState(
     val fieldErrors: Map<String, String> = emptyMap(),
     val splitMethod: SplitMethod = SplitMethod.Equally(emptyList()),
     val isLoading: Boolean = false,
+    val isEditMode: Boolean = false,
 ) {
   val payAmountsDomain: PayAmounts = payAmounts.toDomain()
   val amountSum: Double =
@@ -192,6 +195,7 @@ class DefaultAddExpenseComponent(
     private val onFinished: () -> Unit,
 ) : AddExpenseComponent, CContext by context {
   private val householdId = config.householdId
+  private val expenseId = config.expenseId
   private var loadedHousehold: Household? = null
   private val _uiState =
       MutableValue(
@@ -199,6 +203,7 @@ class DefaultAddExpenseComponent(
               allParticipants = emptyList(),
               participants = emptyList(),
               payAmounts = PayAmountsUiState.OnePerson(userId = "", amount = ""),
+              isEditMode = expenseId != null,
           )
       )
   override val uiState: Value<AddExpenseUiState> = _uiState
@@ -314,6 +319,41 @@ class DefaultAddExpenseComponent(
 
   init {
     loadMembers()
+    if (expenseId != null) {
+      loadExpenseForEdit(expenseId)
+    }
+  }
+
+  private fun loadExpenseForEdit(expenseId: String) = scope.launch {
+    expenseRepository.getExpense(expenseId).collect { expense ->
+      if (expense != null) {
+        _uiState.update { state ->
+          val payers = expense.participants.filter { it.paidShare > 0 }
+          state.copy(
+              title = expense.title,
+              payAmounts =
+                  if (payers.size == 1) {
+                    PayAmountsUiState.OnePerson(
+                        userId = payers.first().userId,
+                        amount = expense.amount.toString(),
+                    )
+                  } else {
+                    PayAmountsUiState.MultiplePeople(
+                        amounts =
+                            payers.map {
+                              ParticipantValue(
+                                  userId = it.userId,
+                                  name = state.getParticipantName(it.userId),
+                                  value = it.paidShare.toString(),
+                              )
+                            }
+                    )
+                  },
+              splitMethod = expense.splitMethod,
+          )
+        }
+      }
+    }
   }
 
   private fun loadMembers() = scope.launch {
@@ -441,6 +481,14 @@ class DefaultAddExpenseComponent(
       errors["amount"] = "Invalid amount"
     }
 
+    if (state.splitMethod is SplitMethod.Unequally) {
+      val splitSum = state.splitMethod.amounts.values.sum()
+      if (abs(splitSum - amount) > 0.001) {
+        errors["amount"] =
+            "Total: IRR ${amount.formatAmount()}, Split: IRR ${splitSum.formatAmount()}"
+      }
+    }
+
     val validation = ExpenseValidation.validateExpense(title, amount)
     if (!validation.isValid || errors.isNotEmpty()) {
       _uiState.update { it.copy(fieldErrors = it.fieldErrors + validation.errors + errors) }
@@ -482,14 +530,28 @@ class DefaultAddExpenseComponent(
 
     _uiState.update { it.copy(isLoading = true) }
     try {
-      expenseRepository.createExpense(
-          householdId = householdId,
-          title = title,
-          amount = amount,
-          payerId = participantsDomain.firstOrNull { it.paidShare > 0 }?.userId ?: "",
-          shares = participantsDomain,
-          splitMethod = state.splitMethod,
-      )
+      if (expenseId != null) {
+        // Update existing expense
+        expenseRepository.updateExpense(
+            householdId = householdId,
+            expenseId = expenseId,
+            title = title,
+            amount = amount,
+            payerId = participantsDomain.firstOrNull { it.paidShare > 0 }?.userId ?: "",
+            shares = participantsDomain,
+            splitMethod = state.splitMethod,
+        )
+      } else {
+        // Create new expense
+        expenseRepository.createExpense(
+            householdId = householdId,
+            title = title,
+            amount = amount,
+            payerId = participantsDomain.firstOrNull { it.paidShare > 0 }?.userId ?: "",
+            shares = participantsDomain,
+            splitMethod = state.splitMethod,
+        )
+      }
       onFinished()
     } catch (e: ApiCallError) {
       _uiState.update { it.copy(fieldErrors = e.fieldErrors) }

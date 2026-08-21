@@ -1,5 +1,6 @@
 package com.opensplit.features.expense
 
+import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
@@ -85,7 +86,12 @@ class DefaultExpenseDetailsComponent(
   }
 
   override fun onEditClicked() {
-    // TODO: implement edit
+    navigation.pushNew(
+        AddExpenseComponent.Config(
+            householdId = config.householdId,
+            expenseId = config.expenseId,
+        )
+    )
   }
 
   override fun onAddReceiptClicked() {

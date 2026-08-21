@@ -125,4 +125,64 @@ class ExpenseRepository(
     }
     syncManager.triggerSync()
   }
+
+  suspend fun updateExpense(
+      householdId: String,
+      expenseId: String,
+      title: String,
+      amount: Double,
+      payerId: String,
+      shares: List<ParticipantShare>,
+      splitMethod: SplitMethod,
+  ) {
+    val now = Instant.fromEpochMilliseconds(currentTimeMillis())
+
+    // Get old participants to reverse balances
+    val oldParticipants = expenseDao.getParticipants(expenseId)
+
+    val expenseEntity =
+        ExpenseEntity(
+            id = expenseId,
+            householdId = householdId,
+            title = title,
+            amount = amount,
+            payerId = payerId,
+            createdAtEpochMillis =
+                expenseDao.getExpense(expenseId)?.createdAtEpochMillis ?: now.toEpochMilliseconds(),
+            splitMethodJson = Json.encodeToString(splitMethod),
+            syncStatus = SyncStatus.PENDING,
+        )
+
+    val participantEntities = shares.map { it.toEntity(expenseId) }
+
+    database.useWriterConnection { connection ->
+      connection.immediateTransaction {
+        // Reverse old balances
+        oldParticipants.forEach { participant ->
+          val delta = participant.paidShare - participant.consumedShare
+          householdDao.updateMemberBalance(householdId, participant.userId, -delta)
+        }
+
+        // Update expense and participants
+        expenseDao.insertExpenseWithParticipants(expenseEntity, participantEntities)
+
+        // Apply new balances
+        shares.forEach { participant ->
+          val delta = participant.paidShare - participant.consumedShare
+          householdDao.updateMemberBalance(householdId, participant.userId, delta)
+        }
+
+        val syncEntry =
+            SyncQueueEntity(
+                operation = OperationType.UPDATE,
+                entityType = "EXPENSE",
+                entityId = expenseId,
+                createdAt = now.toEpochMilliseconds(),
+            )
+
+        syncQueueDao.enqueue(syncEntry)
+      }
+    }
+    syncManager.triggerSync()
+  }
 }

@@ -1,6 +1,8 @@
 1. introduce SSE
 2. create currency and money model (use Int)
 3. use enums in DAOs where possible
+4. request validation plugin (?) for Ktor
+5. remove currentTimeMillis function and use Clock.System.now() instead and note in AGENTS.md
 
 ### Done
 --- 

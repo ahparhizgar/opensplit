@@ -53,4 +53,46 @@ class ExpenseService(
     }
     expenseRepository.deleteExpense(expenseId)
   }
+
+  fun updateExpense(
+      user: UserPrincipal,
+      householdId: String,
+      expenseId: String,
+      request: CreateExpenseRequest,
+  ): ExpenseDto {
+    if (!householdRepository.hasMembership(householdId, user.userId)) {
+      throw NotAMemberException()
+    }
+
+    val existingExpense =
+        expenseRepository.findExpenseById(expenseId) ?: throw ExpenseNotFoundException()
+
+    // Verify the expense belongs to the specified household
+    if (existingExpense.householdId != householdId) {
+      throw ExpenseNotFoundException()
+    }
+
+    val participants =
+        request.participants.map {
+          ExpenseParticipantRecord(
+              userId = it.userId,
+              paidAmount = it.paidShare,
+              owedAmount = it.consumedShare,
+          )
+        }
+
+    val updatedExpense =
+        existingExpense.copy(
+            title = request.title,
+            amount = request.amount,
+            payerId = request.payerId,
+            participants = participants,
+            splitMethod = request.splitMethod,
+        )
+
+    expenseRepository.updateExpense(updatedExpense)
+    return updatedExpense.toDto()
+  }
 }
+
+class ExpenseNotFoundException : Exception()

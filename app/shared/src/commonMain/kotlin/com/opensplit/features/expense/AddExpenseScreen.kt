@@ -71,7 +71,8 @@ fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifi
             title = {
               Text(
                   when (component.stack.value.active.instance) {
-                    is AddExpenseComponent.Child.Main -> "Add Expense"
+                    is AddExpenseComponent.Child.Main ->
+                        if (component.uiState.value.isEditMode) "Edit Expense" else "Add Expense"
                     is AddExpenseComponent.Child.WhoPaid -> "Who paid?"
                     is AddExpenseComponent.Child.PaidAmounts -> "Enter paid amounts"
                     is AddExpenseComponent.Child.QuickSplitSelection ->

@@ -12,6 +12,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import org.koin.ktor.ext.inject
@@ -80,6 +81,52 @@ fun Application.configureExpenseRoutes() {
             call.respond(
                 HttpStatusCode.Forbidden,
                 ErrorResponse(generalError = "You are not a member of this household"),
+            )
+          }
+        }
+
+        put("/{expenseId}") {
+          val householdId = call.parameters["householdId"]
+          if (householdId.isNullOrBlank()) {
+            call.respond(
+                HttpStatusCode.BadRequest,
+                ErrorResponse(generalError = "Household id is required"),
+            )
+            return@put
+          }
+
+          val expenseId = call.parameters["expenseId"]
+          if (expenseId.isNullOrBlank()) {
+            call.respond(
+                HttpStatusCode.BadRequest,
+                ErrorResponse(generalError = "Expense id is required"),
+            )
+            return@put
+          }
+
+          val request = call.receive<CreateExpenseRequest>()
+          val validation = ExpenseValidation.validateExpense(request.title, request.amount)
+          if (!validation.isValid) {
+            call.respond(
+                HttpStatusCode.BadRequest,
+                ErrorResponse(generalError = "Invalid expense data", errors = validation.errors),
+            )
+            return@put
+          }
+
+          val user = call.user()
+          try {
+            val expense = expenseService.updateExpense(user, householdId, expenseId, request)
+            call.respond(HttpStatusCode.OK, expense)
+          } catch (_: NotAMemberException) {
+            call.respond(
+                HttpStatusCode.Forbidden,
+                ErrorResponse(generalError = "You are not a member of this household"),
+            )
+          } catch (_: ExpenseNotFoundException) {
+            call.respond(
+                HttpStatusCode.NotFound,
+                ErrorResponse(generalError = "Expense not found"),
             )
           }
         }
