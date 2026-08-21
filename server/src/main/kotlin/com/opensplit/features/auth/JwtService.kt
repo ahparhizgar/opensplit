@@ -11,15 +11,19 @@ class JwtService(private val jwtConfig: JwtConfig) {
 
   fun issue(userId: String, email: String, name: String? = null): String {
     val now = Date()
-    val expiry = Date(now.time + jwtConfig.expiryMs)
     val algorithm = Algorithm.HMAC256(jwtConfig.secret)
-    return JWT.create()
-        .withSubject(userId)
-        .withClaim("email", email)
-        .apply { name?.let { withClaim("name", it) } }
-        .withIssuedAt(now)
-        .withExpiresAt(expiry)
-        .sign(algorithm)
+    val builder =
+        JWT.create()
+            .withSubject(userId)
+            .withClaim("email", email)
+            .apply { name?.let { withClaim("name", it) } }
+            .withIssuedAt(now)
+
+    if (jwtConfig.expiryMs != 0L) {
+      builder.withExpiresAt(Date(now.time + jwtConfig.expiryMs))
+    }
+
+    return builder.sign(algorithm)
   }
 
   fun verify(token: String): String? {
