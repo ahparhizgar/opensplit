@@ -5,6 +5,7 @@ import com.opensplit.dto.sync.*
 import com.opensplit.features.expense.ExpenseParticipantRecord
 import com.opensplit.features.expense.ExpenseRecord
 import com.opensplit.features.expense.toDto
+import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.core.*
@@ -19,7 +20,7 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
                   it[ChangeLog.entityType] = entityType
                   it[ChangeLog.entityId] = entityId
                   it[ChangeLog.operation] = operation
-                  it[ChangeLog.timestamp] = System.currentTimeMillis()
+                  it[ChangeLog.timestamp] = Clock.System.now().toEpochMilliseconds()
                 }[ChangeLog.id]
 
         when (entityType) {

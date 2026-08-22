@@ -5,7 +5,7 @@ import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.features.auth.UserPrincipal
 import com.opensplit.features.household.HouseholdRepository
 import java.util.*
-import kotlin.time.Instant
+import kotlin.time.Clock
 
 class ExpenseService(
     private val expenseRepository: ExpenseRepository,
@@ -16,7 +16,7 @@ class ExpenseService(
       request: CreateExpenseRequest,
       creator: String,
   ): ExpenseDto {
-    if (!householdRepository.hasMembership(householdId, request.creator)) {
+    if (!householdRepository.hasMembership(householdId, creator)) {
       throw NotAMemberException()
     }
 
@@ -36,7 +36,7 @@ class ExpenseService(
             title = request.title,
             amount = request.amount,
             creator = creator,
-            createdAt = Instant.fromEpochMilliseconds(System.currentTimeMillis()),
+            createdAt = Clock.System.now(),
             participants = participants,
             splitMethod = request.splitMethod,
         )
@@ -86,7 +86,6 @@ class ExpenseService(
         existingExpense.copy(
             title = request.title,
             amount = request.amount,
-            creator = request.creator,
             participants = participants,
             splitMethod = request.splitMethod,
         )
