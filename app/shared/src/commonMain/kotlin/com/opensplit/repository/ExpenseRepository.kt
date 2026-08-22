@@ -16,9 +16,8 @@ import com.opensplit.domain.ParticipantShare
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.sync.SyncManager
-import com.opensplit.util.currentTimeMillis
 import com.opensplit.util.randomId
-import kotlin.time.Instant
+import kotlin.time.Clock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
@@ -59,7 +58,7 @@ class ExpenseRepository(
       splitMethod: SplitMethod,
   ) {
     val expenseId = "local_" + randomId()
-    val now = Instant.fromEpochMilliseconds(currentTimeMillis())
+    val now = Clock.System.now()
 
     val expenseEntity =
         ExpenseEntity(
@@ -118,7 +117,7 @@ class ExpenseRepository(
                 entityType = "EXPENSE",
                 entityId = expenseId,
                 metadata = householdId,
-                createdAt = currentTimeMillis(),
+                createdAt = Clock.System.now().toEpochMilliseconds(),
             )
         )
       }
@@ -135,7 +134,7 @@ class ExpenseRepository(
       shares: List<ParticipantShare>,
       splitMethod: SplitMethod,
   ) {
-    val now = Instant.fromEpochMilliseconds(currentTimeMillis())
+    val now = Clock.System.now()
 
     // Get old participants to reverse balances
     val oldParticipants = expenseDao.getParticipants(expenseId)
