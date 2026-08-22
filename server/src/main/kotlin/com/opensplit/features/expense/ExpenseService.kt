@@ -14,8 +14,9 @@ class ExpenseService(
   fun createExpense(
       householdId: String,
       request: CreateExpenseRequest,
+      creator: String,
   ): ExpenseDto {
-    if (!householdRepository.hasMembership(householdId, request.payerId)) {
+    if (!householdRepository.hasMembership(householdId, request.creator)) {
       throw NotAMemberException()
     }
 
@@ -34,7 +35,7 @@ class ExpenseService(
             householdId = householdId,
             title = request.title,
             amount = request.amount,
-            payerId = request.payerId,
+            creator = creator,
             createdAt = Instant.fromEpochMilliseconds(System.currentTimeMillis()),
             participants = participants,
             splitMethod = request.splitMethod,
@@ -85,7 +86,7 @@ class ExpenseService(
         existingExpense.copy(
             title = request.title,
             amount = request.amount,
-            payerId = request.payerId,
+            creator = request.creator,
             participants = participants,
             splitMethod = request.splitMethod,
         )

@@ -48,7 +48,7 @@ class BalanceUpdateIntegrationTest : BehaviorSpec() {
               householdId = "household-1",
               title = "Dinner",
               amount = 50.0,
-              payerId = household1.members.first().userId,
+              creator = household1.members.first().userId,
               shares =
                   listOf(
                       ParticipantShare("user-1", 50.0, 25.0),
@@ -73,7 +73,7 @@ class BalanceUpdateIntegrationTest : BehaviorSpec() {
                         householdId = "household-1",
                         title = "Dinner",
                         amount = 50.0,
-                        payerId = household1.members.first().userId,
+                        creator = household1.members.first().userId,
                         shares =
                             listOf(
                                 ParticipantShareDto("user-1", 50.0, 10.0),
@@ -104,7 +104,7 @@ class BalanceUpdateIntegrationTest : BehaviorSpec() {
               householdId = "household-1",
               title = "Groceries",
               amount = 20.0,
-              payerId = household1.members.first().userId,
+              creator = household1.members.first().userId,
               shares =
                   listOf(
                       ParticipantShare("user-1", 20.0, 10.0),

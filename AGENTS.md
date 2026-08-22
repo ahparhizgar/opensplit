@@ -43,3 +43,5 @@ Common AI mistakes:
 - Don't make functions of decompose components suspend. instead launch in them and return the job.
 - Pass the whole component to extracted private composables. don't split states and callbacks in them.
 - But for public components which there is no equivalent component, pass states and callbacks.
+- Always use Clock.System.now() for time, don't use System.currentTimeMillis() or Instant.now().
+- If you need millis use Clock.System.now().toEpochMilliseconds()

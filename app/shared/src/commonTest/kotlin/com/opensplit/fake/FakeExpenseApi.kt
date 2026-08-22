@@ -14,7 +14,7 @@ class FakeExpenseApi : ExpenseApi, FakeService {
       householdId: String,
       title: String,
       amount: Double,
-      payerId: String,
+      creator: String,
       participants: List<ParticipantShareDto>,
       splitMethod: SplitMethod,
   ): ExpenseDto = fakeApiCall {
@@ -23,7 +23,7 @@ class FakeExpenseApi : ExpenseApi, FakeService {
         householdId = householdId,
         title = title,
         amount = amount,
-        payerId = payerId,
+        creator = creator,
         createdAt = Instant.fromEpochMilliseconds(123456789L),
         shares = participants,
         splitMethod = splitMethod,

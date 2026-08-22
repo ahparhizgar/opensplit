@@ -37,7 +37,7 @@ data class ExpenseEntity(
     val householdId: String,
     val title: String,
     val amount: Double,
-    val payerId: String,
+    val creator: String,
     val createdAtEpochMillis: Long,
     val splitMethodJson: String,
     val syncStatus: SyncStatus,

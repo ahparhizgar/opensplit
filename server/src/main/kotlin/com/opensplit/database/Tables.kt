@@ -51,7 +51,7 @@ object Expenses : Table("expenses") {
   val householdId = varchar("household_id", 36).references(Households.id)
   val title = varchar("title", 255)
   val amount = double("amount")
-  val payerId = varchar("payer_id", 36).references(Users.id)
+  val creator = varchar("creator", 36).references(Users.id)
   val createdAt = long("created_at")
   val splitMethod = text("split_method")
   val version = long("version").default(0)

@@ -54,7 +54,7 @@ class ExpenseRepository(
       householdId: String,
       title: String,
       amount: Double,
-      payerId: String,
+      creator: String,
       shares: List<ParticipantShare>,
       splitMethod: SplitMethod,
   ) {
@@ -67,7 +67,7 @@ class ExpenseRepository(
             householdId = householdId,
             title = title,
             amount = amount,
-            payerId = payerId,
+            creator = creator,
             createdAtEpochMillis = now.toEpochMilliseconds(),
             splitMethodJson = Json.encodeToString(splitMethod),
             syncStatus = SyncStatus.PENDING,
@@ -131,7 +131,7 @@ class ExpenseRepository(
       expenseId: String,
       title: String,
       amount: Double,
-      payerId: String,
+      creator: String,
       shares: List<ParticipantShare>,
       splitMethod: SplitMethod,
   ) {
@@ -146,7 +146,7 @@ class ExpenseRepository(
             householdId = householdId,
             title = title,
             amount = amount,
-            payerId = payerId,
+            creator = creator,
             createdAtEpochMillis =
                 expenseDao.getExpense(expenseId)?.createdAtEpochMillis ?: now.toEpochMilliseconds(),
             splitMethodJson = Json.encodeToString(splitMethod),
