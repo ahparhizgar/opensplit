@@ -1,9 +1,7 @@
-1. introduce SSE
-2. create currency and money model (use Int)
-3. use enums in DAOs where possible
-4. request validation plugin (?) for Ktor
-5. remove currentTimeMillis function and use Clock.System.now() instead and note in AGENTS.md
-6. remove `val payerId: String` from expense and instead add `creator` field to Expense model
+1. use enums in DAOs where possible
+2. request validation plugin (?) for Ktor
+3. remove currentTimeMillis function and use Clock.System.now() instead and note in AGENTS.md
+4. remove `val payerId: String` from expense and instead add `creator` field to Expense model
 
 ### Done
 --- 
@@ -20,3 +18,9 @@
 11. start offline first approach
 12. improve messages of default api call error messages
 13. refactor backend structure using a Ktor course
+
+---
+### After functional working
+1. support large screens
+2. introduce SSE
+3. create currency and money model (use Int)

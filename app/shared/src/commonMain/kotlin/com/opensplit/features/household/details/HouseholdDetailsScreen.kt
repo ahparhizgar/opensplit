@@ -38,7 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.opensplit.domain.FakeExpenseFactory
 import com.opensplit.domain.FakeHouseholdFactory
-import com.opensplit.dto.expense.SyncStatus
+import com.opensplit.features.expense.ExpenseItem
 import com.opensplit.ui.OpenSplitTheme
 
 @Composable
@@ -48,6 +48,8 @@ fun HouseholdDetailsScreen(
 ) {
   val uiState by component.uiState.collectAsState()
   val household = uiState.household
+  val currentUserId = household?.members?.find { it.isCurrentUser }?.userId ?: ""
+
   Scaffold(
       floatingActionButton = {
         FloatingActionButton(onClick = { component.onAddExpenseClicked() }) {
@@ -148,33 +150,12 @@ fun HouseholdDetailsScreen(
           } else {
             LazyColumn(modifier.fillMaxWidth()) {
               items(uiState.expenses) { expense ->
-                // TODO create a UI component for expense card
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                ExpenseItem(
+                    expense = expense,
+                    members = household.members,
+                    currentUserId = currentUserId,
                     onClick = { component.onExpenseClicked(expense) },
-                ) {
-                  Row(
-                      modifier = Modifier.padding(16.dp),
-                      horizontalArrangement = Arrangement.SpaceBetween,
-                      verticalAlignment = Alignment.CenterVertically,
-                  ) {
-                    Column {
-                      Text(text = expense.title, style = MaterialTheme.typography.bodyLarge)
-                      if (expense.syncStatus == SyncStatus.PENDING) {
-                        Text(
-                            text = "Syncing...",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
-                      }
-                    }
-                    Text(
-                        text = "${expense.amount} IRR",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                  }
-                }
+                )
               }
             }
           }
