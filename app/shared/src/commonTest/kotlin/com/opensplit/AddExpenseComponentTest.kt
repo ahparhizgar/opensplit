@@ -125,7 +125,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
               householdId = householdId,
               title = "Dinner",
               amount = 100.0,
-              payerId = u1,
+              creator = u1,
               shares =
                   listOf(
                       ParticipantShare(u1, 100.0, 70.0),
@@ -161,7 +161,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
               householdId = householdId,
               title = "Lunch",
               amount = 90.0,
-              payerId = u1,
+              creator = u1,
               shares =
                   listOf(
                       ParticipantShare(u1, 90.0, 60.0),
@@ -193,7 +193,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
               householdId = householdId,
               title = "Taxi",
               amount = 50.0,
-              payerId = u1,
+              creator = u1,
               shares =
                   listOf(
                       ParticipantShare(u1, 50.0, 30.0),
@@ -225,7 +225,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
               householdId = householdId,
               title = "Split",
               amount = 100.0,
-              payerId = u1,
+              creator = u1,
               shares =
                   listOf(
                       ParticipantShare(u1, 100.0, 50.0),
@@ -267,7 +267,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
               householdId = householdId,
               title = "Fixed Split",
               amount = 100.0,
-              payerId = u1,
+              creator = u1,
               shares =
                   listOf(
                       ParticipantShare(u1, 100.0, 40.0),

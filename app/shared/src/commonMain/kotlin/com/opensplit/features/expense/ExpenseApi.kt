@@ -16,7 +16,7 @@ interface ExpenseApi {
       householdId: String,
       title: String,
       amount: Double,
-      payerId: String,
+      creator: String,
       participants: List<ParticipantShareDto>,
       splitMethod: SplitMethod,
   ): ExpenseDto
@@ -30,7 +30,7 @@ class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
       householdId: String,
       title: String,
       amount: Double,
-      payerId: String,
+      creator: String,
       participants: List<ParticipantShareDto>,
       splitMethod: SplitMethod,
   ): ExpenseDto {
@@ -40,7 +40,6 @@ class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
               CreateExpenseRequest(
                   title = title,
                   amount = amount,
-                  payerId = payerId,
                   participants = participants,
                   splitMethod = splitMethod,
               )

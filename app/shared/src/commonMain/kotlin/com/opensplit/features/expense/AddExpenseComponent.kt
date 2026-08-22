@@ -527,7 +527,7 @@ class DefaultAddExpenseComponent(
             expenseId = expenseId,
             title = title,
             amount = amount,
-            payerId = participantsDomain.firstOrNull { it.paidShare > 0 }?.userId ?: "",
+            creator = participantsDomain.firstOrNull { it.paidShare > 0 }?.userId ?: "",
             shares = participantsDomain,
             splitMethod = state.splitMethod,
         )
@@ -537,7 +537,7 @@ class DefaultAddExpenseComponent(
             householdId = householdId,
             title = title,
             amount = amount,
-            payerId = participantsDomain.firstOrNull { it.paidShare > 0 }?.userId ?: "",
+            creator = participantsDomain.firstOrNull { it.paidShare > 0 }?.userId ?: "",
             shares = participantsDomain,
             splitMethod = state.splitMethod,
         )

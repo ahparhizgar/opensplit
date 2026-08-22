@@ -46,7 +46,11 @@ fun Application.configureExpenseRoutes() {
           val user = call.user()
           val expense =
               try {
-                expenseService.createExpense(householdId, request)
+                expenseService.createExpense(
+                    householdId = householdId,
+                    request = request,
+                    creator = user.userId,
+                )
               } catch (_: NotAMemberException) {
                 call.respond(
                     HttpStatusCode.Forbidden,

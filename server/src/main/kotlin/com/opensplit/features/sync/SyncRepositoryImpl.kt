@@ -84,7 +84,7 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
           householdId = get(Expenses.householdId),
           title = get(Expenses.title),
           amount = get(Expenses.amount),
-          payerId = get(Expenses.payerId),
+          creator = get(Expenses.creator),
           createdAt = Instant.fromEpochMilliseconds(get(Expenses.createdAt)),
           participants = participants,
           splitMethod = Json.decodeFromString(get(Expenses.splitMethod)),

@@ -79,7 +79,7 @@ class SyncManager(
                   householdId = expense.householdId,
                   title = expense.title,
                   amount = expense.amount,
-                  payerId = expense.payerId,
+                  creator = expense.creator,
                   participants = participants.map { it.toDto() },
                   splitMethod = Json.decodeFromString(expense.splitMethodJson),
               )

@@ -186,7 +186,7 @@ fun ExpenseItemPreview() {
           householdId = "h1",
           title = "Pizza",
           amount = 30.0,
-          payerId = "user-1",
+          creator = "user-1",
           createdAt = Instant.fromEpochMilliseconds(1716672000000L), // May 26, 2024
           participants =
               listOf(ParticipantShare("user-1", 30.0, 15.0), ParticipantShare("user-2", 0.0, 15.0)),

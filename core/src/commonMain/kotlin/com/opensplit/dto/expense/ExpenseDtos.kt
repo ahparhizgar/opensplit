@@ -16,7 +16,7 @@ data class ExpenseDto(
     val householdId: String,
     val title: String,
     val amount: Double,
-    val payerId: String,
+    val creator: String,
     val createdAt: Instant,
     val shares: List<ParticipantShareDto> = emptyList(),
     val splitMethod: SplitMethod,
@@ -33,7 +33,6 @@ enum class SyncStatus {
 data class CreateExpenseRequest(
     val title: String,
     val amount: Double,
-    val payerId: String,
     val participants: List<ParticipantShareDto>,
     val splitMethod: SplitMethod,
 )

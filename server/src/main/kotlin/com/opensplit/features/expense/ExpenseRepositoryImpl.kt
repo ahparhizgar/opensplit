@@ -22,7 +22,7 @@ class ExpenseRepositoryImpl(
         it[householdId] = expense.householdId
         it[title] = expense.title
         it[amount] = expense.amount
-        it[payerId] = expense.payerId
+        it[creator] = expense.creator
         it[createdAt] = expense.createdAt.toEpochMilliseconds()
         it[splitMethod] = Json.encodeToString(expense.splitMethod)
       }
@@ -118,7 +118,7 @@ class ExpenseRepositoryImpl(
       Expenses.update({ Expenses.id eq expense.id }) {
         it[title] = expense.title
         it[amount] = expense.amount
-        it[payerId] = expense.payerId
+        it[creator] = expense.creator
         it[splitMethod] = Json.encodeToString(expense.splitMethod)
       }
 
@@ -165,7 +165,7 @@ class ExpenseRepositoryImpl(
           householdId = get(Expenses.householdId),
           title = get(Expenses.title),
           amount = get(Expenses.amount),
-          payerId = get(Expenses.payerId),
+          creator = get(Expenses.creator),
           createdAt = Instant.fromEpochMilliseconds(get(Expenses.createdAt)),
           participants = participants,
           splitMethod = Json.decodeFromString(get(Expenses.splitMethod)),

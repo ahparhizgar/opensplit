@@ -38,7 +38,7 @@ class ExpenseDetailsComponentTest : BehaviorSpec() {
                 householdId = "household-1",
                 title = "Pizza",
                 amount = 20.0,
-                payerId = "user-1",
+                creator = "user-1",
                 shares = emptyList(),
                 splitMethod = Equally(emptyList()),
             )

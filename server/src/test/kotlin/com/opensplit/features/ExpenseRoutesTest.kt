@@ -30,7 +30,6 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Pizza",
                   amount = 25.0,
-                  payerId = household.members[0].userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
@@ -82,7 +81,6 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Groceries",
                   amount = 100.0,
-                  payerId = household.members[0].userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
@@ -123,7 +121,6 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "",
                   amount = -5.0,
-                  payerId = "",
                   participants = emptyList(),
                   splitMethod = SplitMethod.Equally(emptyList()),
               )
@@ -166,7 +163,6 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Old Title",
                   amount = 100.0,
-                  payerId = household.members[0].userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
@@ -194,7 +190,6 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "New Title",
                   amount = 150.0,
-                  payerId = household.members[0].userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
@@ -252,7 +247,6 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Pizza",
                   amount = 100.0,
-                  payerId = household.members[0].userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
@@ -280,17 +274,16 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Pizza",
                   amount = 100.0,
-                  payerId = otherUserId,
                   participants =
                       listOf(
                           ParticipantShareDto(
                               userId = household.members[0].userId,
-                              paidShare = 0.0,
+                              paidShare = 100.0,
                               consumedShare = 50.0,
                           ),
                           ParticipantShareDto(
                               userId = otherUserId,
-                              paidShare = 100.0,
+                              paidShare = 0.0,
                               consumedShare = 50.0,
                           ),
                       ),
@@ -302,9 +295,9 @@ class ExpenseRoutesTest {
 
     assertEquals(HttpStatusCode.OK, updateResponse.status)
     val updatedExpense = updateResponse.body<ExpenseDto>()
-    assertEquals(otherUserId, updatedExpense.payerId)
+    assertEquals(household.members[0].userId, updatedExpense.creator)
     val otherUserShare = updatedExpense.shares.find { it.userId == otherUserId }!!
-    assertEquals(100.0, otherUserShare.paidShare)
+    assertEquals(0.0, otherUserShare.paidShare)
   }
 
   @Test
@@ -337,7 +330,6 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Groceries",
                   amount = 100.0,
-                  payerId = household.members[0].userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
@@ -365,7 +357,6 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Groceries",
                   amount = 100.0,
-                  payerId = household.members[0].userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
@@ -405,7 +396,6 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Test",
                   amount = 100.0,
-                  payerId = household.members[0].userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
@@ -434,7 +424,6 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Pizza",
                   amount = 100.0,
-                  payerId = household.members[0].userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
@@ -472,7 +461,6 @@ class ExpenseRoutesTest {
               CreateExpenseRequest(
                   title = "Hacked",
                   amount = 999.0,
-                  payerId = signUpResult.userId,
                   participants =
                       listOf(
                           ParticipantShareDto(
