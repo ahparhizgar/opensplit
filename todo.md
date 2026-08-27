@@ -1,6 +1,8 @@
-1. use enums in DAOs where possible
-2. request validation plugin (?) for Ktor
-3. can I add a transport layer for Cloudflare workers?
+1. expense sync has stopped working
+2. use enums in DAOs where possible
+3. separate dto and domain files and mention in AGENTS.md
+4. make expense list screen top bar collapsable
+
 
 ### Done
 --- 
@@ -25,3 +27,5 @@
 1. support large screens
 2. introduce SSE
 3. create currency and money model (use Int)
+4. can I add a transport layer for Cloudflare workers?
+5. request validation plugin (?) for Ktor

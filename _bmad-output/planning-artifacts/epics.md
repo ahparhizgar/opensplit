@@ -168,6 +168,14 @@ Users can quickly see balances, understand who owes whom, record full or partial
 
 **UX-DRs addressed:** UX-DR3, UX-DR5, UX-DR11, UX-DR12
 
+### Epic 3: Understand Balances and Settle Up
+
+Users can quickly see balances, understand who owes whom, record full or partial settlements, review settlement history, and confirm each member's settlement status.
+
+**FRs covered:** FR17, FR18, FR19, FR20, FR21, FR22, FR23, FR37
+
+**UX-DRs addressed:** UX-DR3, UX-DR5, UX-DR11, UX-DR12
+
 ### Epic 4: Trust Offline Changes and Sync Recovery
 
 Users can create expenses and settlements while offline, preserve their work locally, sync after reconnecting, and understand any conflict resolution without losing trust.
@@ -177,6 +185,16 @@ Users can create expenses and settlements while offline, preserve their work loc
 **UX-DRs addressed:** UX-DR6, UX-DR11
 
 **Dependencies:** Epic 1 establishes access and household context; Epic 2 and Epic 3 can function with online storage, while Epic 4 hardens the offline-first promise across both.
+
+### Epic 5: Polish & Refinement Epic
+
+Refine household setup workflows, implement logout functionality, and improve UI consistency across household creation and join flows. Addresses technical debt and UX improvements discovered during Epic 1 and Epic 2 implementation.
+
+**FRs enhanced:** FR1, FR2, FR3, FR4, FR5, FR6, FR7 (improved UX and security)
+
+**UX-DRs addressed:** UX-DR1, UX-DR2, UX-DR8, UX-DR9, UX-DR12
+
+**Dependencies:** Improves Epic 1 workflows; must complete before Epic 3 begins
 
 ## Epic 1: Join Your Household Securely
 
@@ -630,3 +648,165 @@ So that I can trust the final result and understand what changed.
 **Given** the app has pending, reconnecting, or conflict sync states
 **When** the sync status is shown
 **Then** the user sees a clear non-blocking status indicator
+
+## Epic 5: Polish & Refinement Epic
+
+Refine household setup workflows, implement logout functionality, and improve UI consistency across household creation and join flows. Addresses technical debt and UX improvements discovered during Epic 1 and Epic 2 implementation.
+
+**FRs enhanced:** FR1 (secure logout), FR2 (improved create household UX), FR3 (improved join household UX), FR4-7 (better membership UX)
+
+**Relevant NFRs:** NFR4, NFR5, NFR6, NFR10, NFR11, NFR12
+
+**UX-DRs addressed:** UX-DR1, UX-DR2, UX-DR8, UX-DR9, UX-DR12
+
+**Status:** In Progress (Apr-Sep 2026)
+
+**Dependencies:** Improves Epic 1 workflows; blockwise dependency for Epic 3 (must complete before Epic 3 begins)
+
+### Story 5.1: Implement Logout Feature
+
+As a signed-in user,
+I want to sign out securely from my account,
+So that I can leave the app in a logged-out state on shared devices.
+
+**Acceptance Criteria:**
+
+**Given** a user is signed in and viewing a screen
+**When** they access the logout option (menu, settings, or profile screen)
+**Then** they see a "Sign Out" button prominently displayed
+
+**Given** the user taps "Sign Out"
+**When** they confirm the action
+**Then** the user is signed out and session is cleared
+
+**Given** the user has signed out
+**When** they return to the app
+**Then** they are returned to the sign-in/sign-up screen
+
+**Given** a user chooses to sign out
+**When** the logout action is processed
+**Then** all local data is cleared:
+  - Room database is cleared (expenses, households, members)
+  - DataStore preferences are cleared (JWT token, user preferences)
+  - App state is reset to unauthenticated
+
+**Given** the user has local offline changes pending when they sign out
+**When** they confirm logout
+**Then** a warning is shown about unsync'd changes
+**And** they must confirm before local data is deleted
+
+### Story 5.2: Remove Create or Join Component & Refactor Household Setup
+
+As a signed-in user with no active household,
+I want a clear, linear household setup flow,
+So that I understand whether I'm creating a new household or joining an existing one.
+
+**Acceptance Criteria:**
+
+**Given** a user is viewing the households list screen
+**When** they look at the action buttons
+**Then** they see:
+  - "Start a New Group" button (existing)
+  - "Join an Existing Group" button (NEW - placed below "Start a New Group")
+
+**Given** the user taps "Join an Existing Group"
+**When** the join flow opens
+**Then** the old combined create/join component is NOT shown
+**And** a clear "join household" form appears with:
+  - Text input for invite code
+  - Submit button
+  - Back button in app bar to return to household list
+
+**Given** the user enters a valid invite code
+**When** they submit
+**Then** they are added to that household
+**And** they are returned to the household list with the new household now visible
+
+**Given** the user enters an invalid invite code
+**When** they submit
+**Then** an error message is shown
+**And** they can try again or cancel
+
+**Given** the user is back on the household list after joining
+**When** they view their households
+**Then** the newly-joined household appears in their list
+
+### Story 5.3: Implement Join Household Button and Form UI
+
+As a user viewing the join household form,
+I want the form to match the app's visual style and provide clear feedback,
+So that the experience feels consistent with the rest of OpenSplit.
+
+**Acceptance Criteria:**
+
+**Given** the user taps "Join an Existing Group"
+**When** the join form screen opens
+**Then** the screen displays:
+  - App bar with back button (existing navigation pattern)
+  - Title: "Join a Household"
+  - Text input field with placeholder: "Enter invite code"
+  - Submit button: "Join" (styled to match app buttons)
+
+**Given** the user is viewing the input field
+**When** they focus it
+**Then** styling matches other input fields in the app (Material Design, ThemeExtended colors)
+
+**Given** the user submits a valid code
+**When** the server confirms they've joined
+**Then** they see success feedback (toast, snackbar, or dialog) matching the app's existing feedback pattern
+**And** the screen navigates back to household list
+
+**Given** the user submits an invalid code
+**When** the server responds with an error
+**Then** the error is displayed in the app's standard error style
+**And** the user can retry without losing their input
+
+**Given** the form is loading
+**When** waiting for server response
+**Then** the submit button shows the app's standard loading state
+**And** the user cannot submit multiple times
+
+**Given** the user is offline and tries to join
+**When** they attempt to submit
+**Then** they see the app's standard offline message
+**And** submission is prevented until online
+
+### Story 5.4: Polish Create Household UI and Workflow
+
+As a user creating a new household,
+I want the form to match the app's visual style and provide clear feedback,
+So that creating a household feels polished and consistent.
+
+**Acceptance Criteria:**
+
+**Given** the user taps "Start a New Group"
+**When** the create household screen opens
+**Then** the screen displays:
+  - App bar with back button
+  - Title: "Create a Household"
+  - Text input for household name with placeholder text
+  - Submit button: "Create" (styled to match app buttons)
+
+**Given** the user is viewing the input field
+**When** they focus it
+**Then** styling matches other input fields in the app (Material Design, ThemeExtended colors)
+
+**Given** the user enters a household name
+**When** they submit the form
+**Then** the name is validated (not empty, reasonable length)
+**And** appropriate error feedback is shown if invalid
+
+**Given** the user successfully creates a household
+**When** the form submits
+**Then** they see success feedback matching the app's feedback pattern
+**And** are taken to the household details screen
+**And** the invite code is displayed prominently for sharing
+
+**Given** the form is loading
+**When** waiting for server response
+**Then** the submit button shows the app's standard loading state
+
+**Given** the user is offline
+**When** they try to create a household
+**Then** they see the app's standard offline message
+**And** submission is prevented until online
