@@ -10,12 +10,14 @@ import com.opensplit.util.FakeService
 class FakeSyncApi : SyncApi, FakeService {
   override var errorToThrow: Exception? = null
   var expenses = emptyList<ExpenseDto>()
+  var deletedExpenseIds = emptyList<String>()
+  var latestVersion = 1L
 
   override suspend fun getChanges(sinceVersion: Long): SyncResponse = fakeApiCall {
     SyncResponse(
-        latestVersion = sinceVersion,
+        latestVersion = latestVersion,
         changedEntities = ChangedEntitiesDto(expenses = expenses),
-        deletedEntities = DeletedEntitiesDto(),
+        deletedEntities = DeletedEntitiesDto(expenses = deletedExpenseIds),
     )
   }
 }
