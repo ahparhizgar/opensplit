@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -41,11 +42,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -148,12 +151,13 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
             value = uiState.payAmounts.amount,
             onValueChange = component::onAmountChanged,
             placeholder = { Text("0.00", fontSize = 24.sp) },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            modifier = Modifier.fillMaxWidth().testTag("expense-amount"),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
             isError = uiState.fieldErrors.containsKey("amount"),
             supportingText = uiState.fieldErrors["amount"]?.let { { Text(it) } },
             textStyle = MaterialTheme.typography.headlineSmall,
             colors = textFieldColors,
+            singleLine = true,
         )
       } else {
         // When multiple people paid, we show the sum, but it's edited in PaidAmountsScreen
@@ -178,11 +182,14 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
           value = uiState.title,
           onValueChange = component::onTitleChanged,
           placeholder = { Text("Enter a description", fontSize = 18.sp) },
-          modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier.fillMaxWidth().testTag("expense-description"),
           isError = uiState.fieldErrors.containsKey("title"),
+          singleLine = true,
           supportingText = uiState.fieldErrors["title"]?.let { { Text(it) } },
           textStyle = MaterialTheme.typography.headlineSmall,
           colors = textFieldColors,
+          keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+          keyboardActions = KeyboardActions(onDone = { component.onDoneClicked() }),
       )
     }
 
