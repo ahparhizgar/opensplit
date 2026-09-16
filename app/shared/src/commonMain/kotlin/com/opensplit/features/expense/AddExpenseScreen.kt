@@ -42,9 +42,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -152,7 +152,8 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
             onValueChange = component::onAmountChanged,
             placeholder = { Text("0.00", fontSize = 24.sp) },
             modifier = Modifier.fillMaxWidth().testTag("expense-amount"),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
+            keyboardOptions =
+                KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
             isError = uiState.fieldErrors.containsKey("amount"),
             supportingText = uiState.fieldErrors["amount"]?.let { { Text(it) } },
             textStyle = MaterialTheme.typography.headlineSmall,

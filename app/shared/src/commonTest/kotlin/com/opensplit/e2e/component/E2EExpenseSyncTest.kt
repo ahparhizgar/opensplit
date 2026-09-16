@@ -105,8 +105,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
             beforeEach {
               editFinished = false
-              val targetExpenseId =
-                  householdDetailsComponent.uiState.value.expenses.first().id
+              val targetExpenseId = householdDetailsComponent.uiState.value.expenses.first().id
               val editExpenseComponent =
                   koin
                       .get<AddExpenseComponent.Factory>()
@@ -147,8 +146,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
                 beforeEach {
                   backCalled = false
-                  deleteTargetId =
-                      householdDetailsComponent.uiState.value.expenses.first().id
+                  deleteTargetId = householdDetailsComponent.uiState.value.expenses.first().id
                   val expenseDetailsComponent =
                       koin
                           .get<ExpenseDetailsComponent.Factory>()
@@ -173,8 +171,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
                   Then("delete API call is executed and UI remains empty") {
                     fakeExpenseApi.deletedCalls shouldHaveSize 1
-                    fakeExpenseApi.deletedCalls.first() shouldBe
-                        Pair("household-1", deleteTargetId)
+                    fakeExpenseApi.deletedCalls.first() shouldBe Pair("household-1", deleteTargetId)
                     householdDetailsComponent.uiState.value.expenses.shouldBeEmpty()
                   }
                 }

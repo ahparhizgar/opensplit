@@ -35,9 +35,7 @@ class SyncRoutesTest {
     // 2. User B signs up and joins household
     val userBAuth =
         client
-            .post("/users") {
-              setBody(SignUpRequest("userB@example.com", "password123", "User B"))
-            }
+            .post("/users") { setBody(SignUpRequest("userB@example.com", "password123", "User B")) }
             .body<AuthResult>()
 
     val userBClient = createAuthenticatedClient(userBAuth.accessToken)
@@ -117,8 +115,7 @@ class SyncRoutesTest {
     assertEquals(70.0, syncedExpense2.amount)
 
     // 7. User A deletes the expense
-    val deleteResponse =
-        client.delete("/households/${household.id}/expenses/${createdExpense.id}")
+    val deleteResponse = client.delete("/households/${household.id}/expenses/${createdExpense.id}")
     assertEquals(HttpStatusCode.NoContent, deleteResponse.status)
 
     // 8. User B syncs changes since v2
@@ -148,9 +145,7 @@ class SyncRoutesTest {
               title = "Secret Expense",
               amount = 100.0,
               participants =
-                  listOf(
-                      ParticipantShareDto(userAId, paidShare = 100.0, consumedShare = 100.0)
-                  ),
+                  listOf(ParticipantShareDto(userAId, paidShare = 100.0, consumedShare = 100.0)),
               splitMethod = SplitMethod.Equally(listOf(userAId)),
           )
       )
