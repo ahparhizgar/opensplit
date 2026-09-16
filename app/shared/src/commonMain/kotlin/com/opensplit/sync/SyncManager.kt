@@ -111,7 +111,10 @@ class SyncManager(
         }
         syncQueueDao.dequeue(entry)
       }
-      else -> {}
+      OperationType.UPDATE -> {
+        // TODO handle update sync
+        syncQueueDao.dequeue(entry)
+      }
     }
   }
 

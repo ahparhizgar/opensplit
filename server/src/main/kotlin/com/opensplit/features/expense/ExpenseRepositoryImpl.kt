@@ -87,8 +87,8 @@ class ExpenseRepositoryImpl(
       }
 
       syncRepository.recordChange("EXPENSE", expenseId, "DELETE")
-      Expenses.deleteWhere { Expenses.id eq expenseId }
       ExpenseParticipants.deleteWhere { ExpenseParticipants.expenseId eq expenseId }
+      Expenses.deleteWhere { Expenses.id eq expenseId }
     }
   }
 
