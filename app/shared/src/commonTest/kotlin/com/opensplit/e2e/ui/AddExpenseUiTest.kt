@@ -64,8 +64,8 @@ class AddExpenseUiTest {
     onNode(hasTestTag("expense-description")).performTextInput("Dinner")
 
     // Select "Split equally" (though it's default, we can just save it or explicitly verify)
-    // Wait for the button
-    onNode(hasText("equally")).assertExists()
+    // Verify equal split summary button exists
+    onNode(hasText("owes", substring = true)).assertExists()
 
     // Save
     onNode(hasContentDescription("Done", ignoreCase = true)).performClick()
@@ -84,15 +84,16 @@ class AddExpenseUiTest {
     // Enter description
     onNode(hasTestTag("expense-description")).performTextInput("Lunch")
 
-    // Click on split method to change
-    onNode(hasText("equally")).performClick()
+    // Click on quick split button to change
+    onNode(hasText("owes", substring = true)).performClick()
+
+    // Wait for Quick Split Screen, click More Options
+    onNode(hasText("More options")).waitForExistence().performClick()
 
     // Wait for Adjust Split Screen (MoreSplitOptionsScreen)
     onNode(hasText("Unequally", ignoreCase = true)).waitForExistence().performClick()
 
     // In UnequallySplitPage, we have text fields with exact-amount-<id>
-    // In fake db, user1@example.com is "u1", someone else is "u2", etc.
-    // Fake members usually are u1 and u2 or something. Let's just use text "you" for u1
     onNode(hasTestTag("exact-amount-user-1")).performTextReplacement("60")
     onNode(hasTestTag("exact-amount-user-2")).performTextReplacement("40")
 
@@ -115,8 +116,11 @@ class AddExpenseUiTest {
     // Enter description
     onNode(hasTestTag("expense-description")).performTextInput("Taxi")
 
-    // Click on split method to change
-    onNode(hasText("equally")).performClick()
+    // Click on quick split button to change
+    onNode(hasText("owes", substring = true)).performClick()
+
+    // Wait for Quick Split Screen, click More Options
+    onNode(hasText("More options")).waitForExistence().performClick()
 
     // Wait for Adjust Split Screen
     onNode(hasText("Percentage", ignoreCase = true)).waitForExistence().performClick()
@@ -144,9 +148,14 @@ class AddExpenseUiTest {
     // Enter description
     onNode(hasTestTag("expense-description")).performTextInput("Groceries")
 
-    // Click payer to change to multiple people
-    // Text should be the current user's name (which is Amir Hossein Parhizgar in Fake API)
-    onNode(hasText("Amir Hossein Parhizgar")).performClick()
+    // Click quick split button to change
+    onNode(hasText("owes", substring = true)).performClick()
+
+    // Wait for Quick Split Screen, click More Options
+    onNode(hasText("More options")).waitForExistence().performClick()
+
+    // On MoreSplitOptionsScreen, click "Paid by ..."
+    onNode(hasText("Paid by", substring = true)).performClick()
 
     // Click "Multiple people"
     onNode(hasText("Multiple people")).waitForExistence().performClick()
@@ -155,11 +164,14 @@ class AddExpenseUiTest {
     onNode(hasTestTag("paid-amount-user-1")).performTextReplacement("70")
     onNode(hasTestTag("paid-amount-user-2")).performTextReplacement("30")
 
-    // Click Done
+    // Click Done on PaidAmountsScreen -> returns to MoreSplitOptionsScreen
     onNode(hasContentDescription("Done", ignoreCase = true)).performClick()
 
-    // Amount should be updated on the main screen to 100.
-    onNode(hasText("100", substring = true)).assertExists()
+    // Click Done on MoreSplitOptionsScreen -> returns to Main Expense Form
+    onNode(hasContentDescription("Done", ignoreCase = true)).performClick()
+
+    // Amount should be updated on the main screen to 100.00
+    onNode(hasText("100.00", substring = true)).assertExists()
 
     // It's split equally by default
     onNode(hasText("equally")).assertExists()
