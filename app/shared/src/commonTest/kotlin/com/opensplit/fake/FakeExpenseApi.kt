@@ -10,6 +10,9 @@ import kotlin.time.Instant
 class FakeExpenseApi : ExpenseApi, FakeService {
   override var errorToThrow: Exception? = null
 
+  val createdExpenses = mutableListOf<ExpenseDto>()
+  val deletedCalls = mutableListOf<Pair<String, String>>()
+
   override suspend fun createExpense(
       householdId: String,
       title: String,
@@ -18,19 +21,23 @@ class FakeExpenseApi : ExpenseApi, FakeService {
       participants: List<ParticipantShareDto>,
       splitMethod: SplitMethod,
   ): ExpenseDto = fakeApiCall {
-    ExpenseDto(
-        id = "expense-1",
-        householdId = householdId,
-        title = title,
-        amount = amount,
-        creator = creator,
-        createdAt = Instant.fromEpochMilliseconds(123456789L),
-        shares = participants,
-        splitMethod = splitMethod,
-    )
+    val dto =
+        ExpenseDto(
+            id = "expense-${createdExpenses.size + 1}",
+            householdId = householdId,
+            title = title,
+            amount = amount,
+            creator = creator,
+            createdAt = Instant.fromEpochMilliseconds(123456789L),
+            shares = participants,
+            splitMethod = splitMethod,
+        )
+    createdExpenses.add(dto)
+    dto
   }
 
   override suspend fun deleteExpense(householdId: String, expenseId: String) = fakeApiCall {
-    // No-op
+    deletedCalls.add(householdId to expenseId)
+    Unit
   }
 }
