@@ -24,11 +24,12 @@ object FakeHouseholdMemberDtoFactory {
           name = name,
           email = "$id@example.com",
           balance = balance,
+          isCurrentUser = isCurrentUser,
       )
 
-  fun create1() = create("user-1", "Amir Hossein Parhizgar", 0.0)
+  fun create1() = create("user-1", "Amir Hossein Parhizgar", 0.0, isCurrentUser = true)
 
-  fun create2() = create("user-2", "Abolqasem Ferdowsi", 0.0)
+  fun create2() = create("user-2", "Abolqasem Ferdowsi", 0.0, isCurrentUser = false)
 
   fun createList() = listOf(create1(), create2())
 }

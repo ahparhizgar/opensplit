@@ -30,23 +30,29 @@ fun HouseholdEntity.toDto(members: List<HouseholdMemberDto>) =
 
 fun HouseholdWithMembers.toDto() = household.toDto(members.map { it.toDto() })
 
-fun HouseholdWithMembers.toDomain() =
-    Household(
-        id = household.id,
-        name = household.name,
-        members = members.map { it.toDomain() },
-        isOwner = household.isOwner,
-        inviteLink = household.inviteLink,
-    )
+fun HouseholdWithMembers.toDomain(): Household {
+  val memberList = members.map { it.toDomain() }
+  return Household(
+      id = household.id,
+      name = household.name,
+      members = memberList,
+      isOwner = household.isOwner,
+      inviteLink = household.inviteLink,
+      balance = memberList.find { it.isCurrentUser }?.balance ?: 0.0,
+  )
+}
 
-fun HouseholdDto.toDomain() =
-    Household(
-        id = id,
-        name = name,
-        members = members.map { it.toDomain() },
-        isOwner = isOwner,
-        inviteLink = inviteLink,
-    )
+fun HouseholdDto.toDomain(): Household {
+  val memberList = members.map { it.toDomain() }
+  return Household(
+      id = id,
+      name = name,
+      members = memberList,
+      isOwner = isOwner,
+      inviteLink = inviteLink,
+      balance = memberList.find { it.isCurrentUser }?.balance ?: 0.0,
+  )
+}
 
 fun HouseholdMemberDto.toEntity(householdId: String) =
     MemberEntity(

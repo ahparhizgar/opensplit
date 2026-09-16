@@ -361,8 +361,8 @@ private fun HouseholdCard(
           }
       val balanceColor =
           when {
-            household.balance > 0 -> MaterialTheme.colorSchemeExtended.youOwe
-            household.balance < 0 -> MaterialTheme.colorSchemeExtended.youAreOwed
+            household.balance > 0 -> MaterialTheme.colorSchemeExtended.youAreOwed
+            household.balance < 0 -> MaterialTheme.colorSchemeExtended.youOwe
             else -> MaterialTheme.colorScheme.onSurfaceVariant
           }
       Text(
