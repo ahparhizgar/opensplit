@@ -185,7 +185,7 @@ class DefaultSyncDaemon(
     scope.launch {
       while (isActive) {
         syncManager.sync()
-        delay(30.seconds) // Longer delay for background sync
+        delay(5.seconds) // Longer delay for background sync
       }
     }
   }
