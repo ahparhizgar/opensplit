@@ -22,10 +22,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,7 +57,6 @@ import com.arkivanov.decompose.value.MutableValue
 import com.opensplit.domain.Household
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.colorSchemeExtended
-import com.opensplit.ui.components.BottomNav
 import kotlinx.coroutines.launch
 
 @Composable
@@ -70,19 +72,12 @@ fun MyHouseholdsListScreen(
   ) {
     val scope = rememberCoroutineScope()
     var leaveConfirmHouseholdId by rememberSaveable { mutableStateOf<String?>(null) }
-    var selectedNavIndex by rememberSaveable { mutableStateOf(0) }
+    var menuExpanded by rememberSaveable { mutableStateOf(false) }
 
     val (activeHouseholds, settledHouseholds) =
         remember(uiState.households) { uiState.households.partition { !it.isSettled } }
 
     Scaffold(
-        bottomBar = {
-          BottomNav(
-              selectedIndex = selectedNavIndex,
-              onItemSelected = { selectedNavIndex = it },
-              modifier = Modifier.fillMaxWidth(),
-          )
-        },
         floatingActionButton = { AddExpenseFab(onClick = { /* Navigate to add expense */ }) },
         modifier = Modifier.testTag("household-active-shell"),
     ) { padding ->
@@ -108,6 +103,25 @@ fun MyHouseholdsListScreen(
                 contentDescription = "Add Household",
                 modifier = Modifier.testTag("header-add-group"),
             )
+          }
+          Box {
+            IconButton(onClick = { menuExpanded = true }) {
+              Icon(
+                  imageVector = Icons.Default.MoreVert,
+                  contentDescription = "More options",
+                  modifier = Modifier.testTag("header-more-options"),
+              )
+            }
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false },
+            ) {
+              DropdownMenuItem(
+                  text = { Text("Profile") },
+                  onClick = { menuExpanded = false },
+                  modifier = Modifier.testTag("menu-item-profile"),
+              )
+            }
           }
         }
 
