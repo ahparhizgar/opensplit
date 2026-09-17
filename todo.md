@@ -1,7 +1,6 @@
-1. expense sync has stopped working
-2. use enums in DAOs where possible
-3. separate dto and domain files and mention in AGENTS.md
-4. make expense list screen top bar collapsable
+1. use enums in DAOs where possible
+2. separate dto and domain files and mention in AGENTS.md
+3. make expense list screen top bar collapsable
 
 
 ### Done
@@ -21,6 +20,7 @@
 13. refactor backend structure using a Ktor course
 14. remove `val payerId: String` from expense and instead add `creator` field to Expense model
 15. remove currentTimeMillis function and use Clock.System.now() instead and note in AGENTS.md
+16. expense sync has stopped working
 
 ---
 ### After functional working

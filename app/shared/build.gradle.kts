@@ -41,10 +41,6 @@ kotlin {
 
   jvm()
 
-  //    js {
-  //        browser()
-  //    }
-
   @OptIn(ExperimentalWasmDsl::class) wasmJs { browser() }
 
   android {
@@ -91,6 +87,9 @@ kotlin {
       implementation(libs.androidx.datastore.preferences.core)
       implementation(libs.androidx.datastore.core.okio)
       implementation(libs.androidx.room3.runtime)
+      implementation(
+        npm("sqlite-wasm-worker", layout.projectDirectory.dir("worker").asFile)
+      )
     }
     commonTest.dependencies {
       implementation(libs.kotlin.test)

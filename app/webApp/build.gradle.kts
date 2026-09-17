@@ -8,11 +8,6 @@ plugins {
 }
 
 kotlin {
-  //    js {
-  //        browser()
-  //        binaries.executable()
-  //    }
-
   @OptIn(ExperimentalWasmDsl::class)
   wasmJs {
     browser()
@@ -22,6 +17,9 @@ kotlin {
   sourceSets {
     commonMain.dependencies {
       implementation(projects.app.shared)
+      implementation(libs.decompose)
+      implementation(libs.wrappers.browser)
+      implementation(libs.koin.core)
 
       implementation(libs.compose.ui)
     }

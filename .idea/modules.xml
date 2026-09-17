@@ -4,8 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.androidHostTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.androidHostTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.appleMain.iml" filepath="$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.appleMain.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.iosSimulatorArm64Main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.iosSimulatorArm64Main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.wasmJsMain.iml" filepath="$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.wasmJsMain.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.androidHostTest.iml" filepath="$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.androidHostTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.androidMain.iml" filepath="$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.androidMain.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.iosMain.iml" filepath="$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.iosMain.iml" />
