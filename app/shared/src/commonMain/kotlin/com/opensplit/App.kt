@@ -32,6 +32,8 @@ import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.features.household.my.MyHouseholdsListScreen
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.features.household.settings.HouseholdSettingsScreen
+import com.opensplit.features.profile.ProfileComponent
+import com.opensplit.features.profile.ProfileScreen
 import com.opensplit.root.FakeRootComponent
 import com.opensplit.root.RootComponent
 import com.opensplit.splash.SplashDestination
@@ -110,6 +112,13 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
 
         is ExpenseDetailsComponent -> {
           ExpenseDetailsScreen(
+              component = child,
+              modifier = Modifier.fillMaxSize(),
+          )
+        }
+
+        is ProfileComponent -> {
+          ProfileScreen(
               component = child,
               modifier = Modifier.fillMaxSize(),
           )

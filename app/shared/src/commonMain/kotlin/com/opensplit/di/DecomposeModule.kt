@@ -30,6 +30,8 @@ import com.opensplit.features.household.my.DefaultMyHouseholdsListComponentFacto
 import com.opensplit.features.household.my.MyHouseholdsListComponentFactory
 import com.opensplit.features.household.settings.DefaultHouseholdSettingsComponentFactory
 import com.opensplit.features.household.settings.HouseholdSettingsComponentFactory
+import com.opensplit.features.profile.DefaultProfileComponentFactory
+import com.opensplit.features.profile.ProfileComponentFactory
 import com.opensplit.root.ComponentProvider
 import com.opensplit.root.DefaultRootComponentFactory
 import com.opensplit.root.KoinComponentProvider
@@ -57,4 +59,5 @@ fun decomposeModule() = module {
   factoryOf(::DefaultMoreSplitOptionsComponentFactory).bind<MoreSplitOptionsComponentFactory>()
   factoryOf(::DefaultWhoPaidComponentFactory).bind<WhoPaidComponentFactory>()
   factoryOf(::DefaultQuickSplitComponentFactory).bind<QuickSplitComponentFactory>()
+  factoryOf(::DefaultProfileComponentFactory).bind<ProfileComponentFactory>()
 }

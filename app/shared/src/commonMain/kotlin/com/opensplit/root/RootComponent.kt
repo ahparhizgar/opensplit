@@ -27,6 +27,8 @@ import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponentFactory
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
 import com.opensplit.features.household.settings.HouseholdSettingsComponentFactory
+import com.opensplit.features.profile.ProfileComponent
+import com.opensplit.features.profile.ProfileComponentFactory
 import com.opensplit.repository.HouseholdRepository
 import com.opensplit.splash.SplashDestination
 import com.opensplit.sync.SyncDaemon
@@ -133,6 +135,11 @@ class DefaultRootComponent(
                   config = config,
                   onBack = { rootNavigation.pop() },
               )
+
+      is ProfileComponent.Config ->
+          componentProvider
+              .provide(ProfileComponentFactory::class)
+              .create(cContext)
 
       else -> error("Destination not defined in createChild")
     }

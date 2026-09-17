@@ -11,6 +11,7 @@ import com.opensplit.domain.FakeHouseholdFactory
 import com.opensplit.domain.Household
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
+import com.opensplit.features.profile.ProfileComponent
 import com.opensplit.repository.HouseholdRepository
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.Job
@@ -26,6 +27,8 @@ interface MyHouseholdsListComponent {
   fun onAddHouseholdClick()
 
   fun onHouseholdClick(id: String) {}
+
+  fun onProfileClick() {}
 
   fun onToggleSettledExpanded()
 
@@ -72,6 +75,10 @@ class DefaultMyHouseholdsListComponent(
 
   override fun onHouseholdClick(id: String) {
     navigation.pushNew(HouseholdDetailsComponent.Config(id))
+  }
+
+  override fun onProfileClick() {
+    navigation.pushNew(ProfileComponent.Config)
   }
 
   override fun leaveHousehold(householdId: String) = scope.launch {

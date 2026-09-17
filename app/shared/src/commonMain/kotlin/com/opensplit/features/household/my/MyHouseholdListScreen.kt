@@ -118,7 +118,10 @@ fun MyHouseholdsListScreen(
             ) {
               DropdownMenuItem(
                   text = { Text("Profile") },
-                  onClick = { menuExpanded = false },
+                  onClick = {
+                    menuExpanded = false
+                    component.onProfileClick()
+                  },
                   modifier = Modifier.testTag("menu-item-profile"),
               )
             }
