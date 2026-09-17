@@ -23,18 +23,18 @@ interface MoreSplitOptionsComponent {
   fun onPayerClicked()
 
   fun onDoneClicked()
+}
 
-  interface Factory {
-    fun create(
-        context: CContext,
-        participants: List<Member>,
-        totalAmount: Double,
-        initialSplitMethod: SplitMethod,
-        payerName: Value<String>,
-        onPayerClicked: () -> Unit,
-        onDone: (SplitMethod) -> Unit,
-    ): MoreSplitOptionsComponent
-  }
+interface MoreSplitOptionsComponentFactory {
+  fun create(
+      context: CContext,
+      participants: List<Member>,
+      totalAmount: Double,
+      initialSplitMethod: SplitMethod,
+      payerName: Value<String>,
+      onPayerClicked: () -> Unit,
+      onDone: (SplitMethod) -> Unit,
+  ): MoreSplitOptionsComponent
 }
 
 class DefaultMoreSplitOptionsComponent(
@@ -141,27 +141,27 @@ class DefaultMoreSplitOptionsComponent(
         }
     onDone(method)
   }
+}
 
-  class Factory : MoreSplitOptionsComponent.Factory {
-    override fun create(
-        context: CContext,
-        participants: List<Member>,
-        totalAmount: Double,
-        initialSplitMethod: SplitMethod,
-        payerName: Value<String>,
-        onPayerClicked: () -> Unit,
-        onDone: (SplitMethod) -> Unit,
-    ): MoreSplitOptionsComponent =
-        DefaultMoreSplitOptionsComponent(
-            context = context,
-            participants = participants,
-            totalAmount = totalAmount,
-            initialSplitMethod = initialSplitMethod,
-            payerName = payerName,
-            onPayerClicked = onPayerClicked,
-            onDone = onDone,
-        )
-  }
+class DefaultMoreSplitOptionsComponentFactory : MoreSplitOptionsComponentFactory {
+  override fun create(
+      context: CContext,
+      participants: List<Member>,
+      totalAmount: Double,
+      initialSplitMethod: SplitMethod,
+      payerName: Value<String>,
+      onPayerClicked: () -> Unit,
+      onDone: (SplitMethod) -> Unit,
+  ): MoreSplitOptionsComponent =
+      DefaultMoreSplitOptionsComponent(
+          context = context,
+          participants = participants,
+          totalAmount = totalAmount,
+          initialSplitMethod = initialSplitMethod,
+          payerName = payerName,
+          onPayerClicked = onPayerClicked,
+          onDone = onDone,
+      )
 }
 
 class FakeMoreSplitOptionsComponent(

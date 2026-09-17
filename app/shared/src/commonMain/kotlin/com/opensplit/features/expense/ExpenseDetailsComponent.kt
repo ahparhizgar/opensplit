@@ -28,14 +28,14 @@ interface ExpenseDetailsComponent {
 
   @Serializable
   data class Config(val householdId: String, val expenseId: String) : TopLevelDestinationConfig
+}
 
-  interface Factory {
-    fun create(
-        context: CContext,
-        config: Config,
-        onBack: () -> Unit,
-    ): ExpenseDetailsComponent
-  }
+interface ExpenseDetailsComponentFactory {
+  fun create(
+      context: CContext,
+      config: ExpenseDetailsComponent.Config,
+      onBack: () -> Unit,
+  ): ExpenseDetailsComponent
 }
 
 data class ExpenseDetailsUiState(
@@ -97,24 +97,24 @@ class DefaultExpenseDetailsComponent(
   override fun onAddReceiptClicked() {
     // TODO: implement add receipt
   }
+}
 
-  class Factory(
-      private val expenseRepository: ExpenseRepository,
-      private val householdRepository: HouseholdRepository,
-  ) : ExpenseDetailsComponent.Factory {
-    override fun create(
-        context: CContext,
-        config: ExpenseDetailsComponent.Config,
-        onBack: () -> Unit,
-    ): ExpenseDetailsComponent =
-        DefaultExpenseDetailsComponent(
-            context = context,
-            config = config,
-            expenseRepository = expenseRepository,
-            householdRepository = householdRepository,
-            onBack = onBack,
-        )
-  }
+class DefaultExpenseDetailsComponentFactory(
+    private val expenseRepository: ExpenseRepository,
+    private val householdRepository: HouseholdRepository,
+) : ExpenseDetailsComponentFactory {
+  override fun create(
+      context: CContext,
+      config: ExpenseDetailsComponent.Config,
+      onBack: () -> Unit,
+  ): ExpenseDetailsComponent =
+      DefaultExpenseDetailsComponent(
+          context = context,
+          config = config,
+          expenseRepository = expenseRepository,
+          householdRepository = householdRepository,
+          onBack = onBack,
+      )
 }
 
 class FakeExpenseDetailsComponent(uiState: ExpenseDetailsUiState = ExpenseDetailsUiState()) :

@@ -6,6 +6,7 @@ import com.opensplit.component.TestCContext
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.root.RootComponent
+import com.opensplit.root.RootComponentFactory
 import com.opensplit.splash.SplashDestination
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.integrationKoin
@@ -20,7 +21,7 @@ class E2EAuthTest : BehaviorSpec() {
     Given("app opens for first time") {
       val koin by integrationKoin()
       val context by testValue { TestCContext() }
-      var root by testValue { koin.get<RootComponent.Factory>().create(context) }
+      var root by testValue { koin.get<RootComponentFactory>().create(context) }
       Then("shows welcome screen") { root.assertSplash() }
       When("waiting") {
         beforeEach { testCoroutineScheduler.advanceUntilIdle() }

@@ -19,19 +19,6 @@ interface QuickSplitComponent {
 
   fun onAdjustSplitClicked()
 
-  interface Factory {
-    fun create(
-        context: CContext,
-        allParticipants: List<String>,
-        amountText: String,
-        amountSum: Double,
-        householdId: String,
-        initialOption: QuickSplitOption? = null,
-        onOptionSelected: (PayAmountsUiState, SplitMethod) -> Unit,
-        onAdjustSplitClicked: () -> Unit,
-    ): QuickSplitComponent
-  }
-
   enum class QuickSplitOption {
     YOU_PAID_SPLIT_EQUALLY,
     YOU_ARE_OWED_FULL_AMOUNT,
@@ -71,6 +58,19 @@ interface QuickSplitComponent {
       }
     }
   }
+}
+
+interface QuickSplitComponentFactory {
+  fun create(
+      context: CContext,
+      allParticipants: List<String>,
+      amountText: String,
+      amountSum: Double,
+      householdId: String,
+      initialOption: QuickSplitComponent.QuickSplitOption? = null,
+      onOptionSelected: (PayAmountsUiState, SplitMethod) -> Unit,
+      onAdjustSplitClicked: () -> Unit,
+  ): QuickSplitComponent
 }
 
 data class QuickSplitUiState(
@@ -156,34 +156,34 @@ class DefaultQuickSplitComponent(
   override fun onAdjustSplitClicked() {
     onAdjustSplitClicked.invoke()
   }
+}
 
-  class Factory(
-      private val repository: HouseholdRepository,
-      private val profileRepository: ProfileRepository,
-  ) : QuickSplitComponent.Factory {
-    override fun create(
-        context: CContext,
-        allParticipants: List<String>,
-        amountText: String,
-        amountSum: Double,
-        householdId: String,
-        initialOption: QuickSplitComponent.QuickSplitOption?,
-        onOptionSelected: (PayAmountsUiState, SplitMethod) -> Unit,
-        onAdjustSplitClicked: () -> Unit,
-    ): QuickSplitComponent {
-      return DefaultQuickSplitComponent(
-          context = context,
-          allParticipants = allParticipants,
-          amountText = amountText,
-          amountSum = amountSum,
-          repository = repository,
-          profileRepository = profileRepository,
-          onOptionSelected = onOptionSelected,
-          onAdjustSplitClicked = onAdjustSplitClicked,
-          householdId = householdId,
-          initialOption = initialOption,
-      )
-    }
+class DefaultQuickSplitComponentFactory(
+    private val repository: HouseholdRepository,
+    private val profileRepository: ProfileRepository,
+) : QuickSplitComponentFactory {
+  override fun create(
+      context: CContext,
+      allParticipants: List<String>,
+      amountText: String,
+      amountSum: Double,
+      householdId: String,
+      initialOption: QuickSplitComponent.QuickSplitOption?,
+      onOptionSelected: (PayAmountsUiState, SplitMethod) -> Unit,
+      onAdjustSplitClicked: () -> Unit,
+  ): QuickSplitComponent {
+    return DefaultQuickSplitComponent(
+        context = context,
+        allParticipants = allParticipants,
+        amountText = amountText,
+        amountSum = amountSum,
+        repository = repository,
+        profileRepository = profileRepository,
+        onOptionSelected = onOptionSelected,
+        onAdjustSplitClicked = onAdjustSplitClicked,
+        householdId = householdId,
+        initialOption = initialOption,
+    )
   }
 }
 

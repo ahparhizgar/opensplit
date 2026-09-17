@@ -43,18 +43,18 @@ interface AuthComponent : Destination {
   }
 
   @Serializable data object Config : TopLevelDestinationConfig
+}
 
-  interface Factory {
-    fun create(cContext: CContext): AuthComponent
-  }
+interface AuthComponentFactory {
+  fun create(cContext: CContext): AuthComponent
 }
 
 class DefaultAuthComponent(
     context: CContext,
-    private val welcomeFactory: WelcomeComponent.Factory,
-    private val loginFactory: LoginComponent.Factory,
-    private val signUpFactory: SignUpComponent.Factory,
-    private val resetPasswordFactory: ResetPasswordComponent.Factory,
+    private val welcomeFactory: WelcomeComponentFactory,
+    private val loginFactory: LoginComponentFactory,
+    private val signUpFactory: SignUpComponentFactory,
+    private val resetPasswordFactory: ResetPasswordComponentFactory,
 ) : AuthComponent, CContext by context {
 
   private val authNavigation = StackNavigation<AuthConfig>()
@@ -90,22 +90,22 @@ class DefaultAuthComponent(
   private fun onAuthenticated() {
     navigation.replaceCurrent(MyHouseholdsListComponent.Config)
   }
+}
 
-  class Factory(
-      private val welcomeFactory: WelcomeComponent.Factory,
-      private val loginFactory: LoginComponent.Factory,
-      private val signUpFactory: SignUpComponent.Factory,
-      private val resetPasswordFactory: ResetPasswordComponent.Factory,
-  ) : AuthComponent.Factory {
-    override fun create(cContext: CContext): AuthComponent =
-        DefaultAuthComponent(
-            cContext,
-            welcomeFactory,
-            loginFactory,
-            signUpFactory,
-            resetPasswordFactory,
-        )
-  }
+class DefaultAuthComponentFactory(
+    private val welcomeFactory: WelcomeComponentFactory,
+    private val loginFactory: LoginComponentFactory,
+    private val signUpFactory: SignUpComponentFactory,
+    private val resetPasswordFactory: ResetPasswordComponentFactory,
+) : AuthComponentFactory {
+  override fun create(cContext: CContext): AuthComponent =
+      DefaultAuthComponent(
+          cContext,
+          welcomeFactory,
+          loginFactory,
+          signUpFactory,
+          resetPasswordFactory,
+      )
 }
 
 class FakeAuthComponent(
@@ -122,8 +122,8 @@ class FakeAuthComponent(
         )
 ) : AuthComponent {
   override val backHandler: BackHandler = BackDispatcher()
+}
 
-  class Factory : AuthComponent.Factory {
-    override fun create(cContext: CContext): AuthComponent = FakeAuthComponent()
-  }
+class FakeAuthComponentFactory : AuthComponentFactory {
+  override fun create(cContext: CContext): AuthComponent = FakeAuthComponent()
 }

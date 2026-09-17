@@ -30,10 +30,10 @@ interface MyHouseholdsListComponent {
   fun onToggleSettledExpanded()
 
   @Serializable data object Config : TopLevelDestinationConfig
+}
 
-  interface Factory {
-    fun create(cContext: CContext): MyHouseholdsListComponent
-  }
+interface MyHouseholdsListComponentFactory {
+  fun create(cContext: CContext): MyHouseholdsListComponent
 }
 
 data class MyHouseholdsUiState(
@@ -85,13 +85,13 @@ class DefaultMyHouseholdsListComponent(
   override fun onToggleSettledExpanded() {
     _isSettledExpanded.value = !_isSettledExpanded.value
   }
+}
 
-  class Factory(
-      private val repository: HouseholdRepository,
-  ) : MyHouseholdsListComponent.Factory {
-    override fun create(cContext: CContext): MyHouseholdsListComponent =
-        DefaultMyHouseholdsListComponent(cContext, repository)
-  }
+class DefaultMyHouseholdsListComponentFactory(
+    private val repository: HouseholdRepository,
+) : MyHouseholdsListComponentFactory {
+  override fun create(cContext: CContext): MyHouseholdsListComponent =
+      DefaultMyHouseholdsListComponent(cContext, repository)
 }
 
 class FakeMyHouseholdsListComponent(

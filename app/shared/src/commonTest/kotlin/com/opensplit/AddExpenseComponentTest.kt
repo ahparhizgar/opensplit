@@ -7,6 +7,7 @@ import com.opensplit.domain.ParticipantShare
 import com.opensplit.dto.auth.UserProfile
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.features.expense.AddExpenseComponent
+import com.opensplit.features.expense.AddExpenseComponentFactory
 import com.opensplit.features.expense.PayAmountsUiState
 import com.opensplit.repository.ExpenseRepository
 import com.opensplit.repository.HouseholdRepository
@@ -32,7 +33,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
       var onFinishedCalled by testValue { false }
       val addExpenseComponent by testValue {
         koin
-            .get<AddExpenseComponent.Factory>()
+            .get<AddExpenseComponentFactory>()
             .create(
                 TestCContext(),
                 AddExpenseComponent.Config("h1"),
@@ -140,7 +141,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
           val createdExpense = koin.get<ExpenseDao>().getExpenses(householdId).first().first()
           val component =
               koin
-                  .get<AddExpenseComponent.Factory>()
+                  .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
                       AddExpenseComponent.Config(householdId, createdExpense.id),
@@ -175,7 +176,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
           val createdExpense = koin.get<ExpenseDao>().getExpenses(householdId).first().last()
           val component =
               koin
-                  .get<AddExpenseComponent.Factory>()
+                  .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
                       AddExpenseComponent.Config(householdId, createdExpense.id),
@@ -207,7 +208,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
           val createdExpense = koin.get<ExpenseDao>().getExpenses(householdId).first().last()
           val component =
               koin
-                  .get<AddExpenseComponent.Factory>()
+                  .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
                       AddExpenseComponent.Config(householdId, createdExpense.id),
@@ -240,7 +241,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
           val createdExpense = koin.get<ExpenseDao>().getExpenses(householdId).first().last()
           val component =
               koin
-                  .get<AddExpenseComponent.Factory>()
+                  .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
                       AddExpenseComponent.Config(householdId, createdExpense.id),
@@ -282,7 +283,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
           val createdExpense = koin.get<ExpenseDao>().getExpenses(householdId).first().last()
           val component =
               koin
-                  .get<AddExpenseComponent.Factory>()
+                  .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
                       AddExpenseComponent.Config(householdId, createdExpense.id),
@@ -302,7 +303,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
       When("Switch split method during edit") {
         val component by testValue {
           koin
-              .get<AddExpenseComponent.Factory>()
+              .get<AddExpenseComponentFactory>()
               .create(
                   TestCContext(),
                   AddExpenseComponent.Config(householdId),

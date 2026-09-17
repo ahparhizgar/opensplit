@@ -5,7 +5,9 @@ import com.opensplit.component.fakeStack
 import com.opensplit.dto.expense.SplitMethod.Equally
 import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.ExpenseDetailsComponent
+import com.opensplit.features.expense.ExpenseDetailsComponentFactory
 import com.opensplit.features.household.details.HouseholdDetailsComponent
+import com.opensplit.features.household.details.HouseholdDetailsComponentFactory
 import com.opensplit.repository.ExpenseRepository
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.integrationKoin
@@ -25,7 +27,7 @@ class ExpenseDetailsComponentTest : BehaviorSpec() {
       val cContext by testValue { TestCContext().resumed() }
       val detailsComponent by testValue {
         koin
-            .get<HouseholdDetailsComponent.Factory>()
+            .get<HouseholdDetailsComponentFactory>()
             .create(
                 cContext,
                 HouseholdDetailsComponent.Config("household-1"),
@@ -60,7 +62,7 @@ class ExpenseDetailsComponentTest : BehaviorSpec() {
       val cContext by testValue { TestCContext().resumed() }
       val expenseDetailsComponent by testValue {
         koin
-            .get<ExpenseDetailsComponent.Factory>()
+            .get<ExpenseDetailsComponentFactory>()
             .create(
                 cContext,
                 ExpenseDetailsComponent.Config("household-1", "expense-1"),

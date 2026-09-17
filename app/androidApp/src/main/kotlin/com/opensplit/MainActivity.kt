@@ -9,7 +9,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.arkivanov.decompose.defaultComponentContext
 import com.opensplit.component.defaultCContext
 import com.opensplit.root.FakeRootComponent
-import com.opensplit.root.RootComponent
+import com.opensplit.root.RootComponentFactory
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
 
-    val factory: RootComponent.Factory by inject()
+    val factory: RootComponentFactory by inject()
     val root = factory.create(defaultCContext(defaultComponentContext()))
 
     setContent { App(root) }

@@ -25,10 +25,10 @@ interface CreateJoinHouseholdComponent {
   fun useJoin()
 
   @Serializable class Config : TopLevelDestinationConfig
+}
 
-  interface Factory {
-    fun create(cContext: CContext): CreateJoinHouseholdComponent
-  }
+interface CreateJoinHouseholdComponentFactory {
+  fun create(cContext: CContext): CreateJoinHouseholdComponent
 }
 
 class DefaultCreateJoinHouseholdComponent(
@@ -57,13 +57,13 @@ class DefaultCreateJoinHouseholdComponent(
   override fun useJoin() {
     _activeTab.value = HouseholdTab.Join
   }
+}
 
-  class Factory(
-      private val householdRepository: HouseholdRepository,
-  ) : CreateJoinHouseholdComponent.Factory {
-    override fun create(cContext: CContext): CreateJoinHouseholdComponent =
-        DefaultCreateJoinHouseholdComponent(cContext, householdRepository)
-  }
+class DefaultCreateJoinHouseholdComponentFactory(
+    private val householdRepository: HouseholdRepository,
+) : CreateJoinHouseholdComponentFactory {
+  override fun create(cContext: CContext): CreateJoinHouseholdComponent =
+      DefaultCreateJoinHouseholdComponent(cContext, householdRepository)
 }
 
 class FakeCreateJoinHouseholdComponent(

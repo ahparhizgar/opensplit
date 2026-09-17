@@ -27,10 +27,10 @@ interface CreateHouseholdComponent {
   fun updateHouseholdName(name: String)
 
   fun submit(): Job
+}
 
-  interface Factory {
-    fun create(cContext: CContext, onDone: (Household) -> Unit): CreateHouseholdComponent
-  }
+interface CreateHouseholdComponentFactory {
+  fun create(cContext: CContext, onDone: (Household) -> Unit): CreateHouseholdComponent
 }
 
 class DefaultCreateHouseholdComponent(
@@ -81,16 +81,16 @@ class DefaultCreateHouseholdComponent(
       }
     }
   }
+}
 
-  class Factory(
-      private val householdRepository: HouseholdRepository,
-  ) : CreateHouseholdComponent.Factory {
-    override fun create(
-        cContext: CContext,
-        onDone: (Household) -> Unit,
-    ): CreateHouseholdComponent =
-        DefaultCreateHouseholdComponent(cContext, householdRepository, onDone)
-  }
+class DefaultCreateHouseholdComponentFactory(
+    private val householdRepository: HouseholdRepository,
+) : CreateHouseholdComponentFactory {
+  override fun create(
+      cContext: CContext,
+      onDone: (Household) -> Unit,
+  ): CreateHouseholdComponent =
+      DefaultCreateHouseholdComponent(cContext, householdRepository, onDone)
 }
 
 class FakeCreateHouseholdComponent(

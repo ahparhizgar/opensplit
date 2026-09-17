@@ -27,14 +27,14 @@ interface LoginComponent {
   fun onForgotPasswordClicked()
 
   fun onBackClicked()
+}
 
-  interface Factory {
-    fun create(
-        context: CContext,
-        navigation: StackNavigation<AuthConfig>,
-        onAuthenticated: () -> Unit,
-    ): LoginComponent
-  }
+interface LoginComponentFactory {
+  fun create(
+      context: CContext,
+      navigation: StackNavigation<AuthConfig>,
+      onAuthenticated: () -> Unit,
+  ): LoginComponent
 }
 
 data class LoginViewState(
@@ -108,26 +108,26 @@ class DefaultLoginComponent(
   override fun onBackClicked() {
     navigation.pop()
   }
+}
 
-  class Factory(
-      private val gateway: AuthApi,
-      private val tokenStorage: TokenStorage,
-      private val profileRepository: ProfileRepository,
-  ) : LoginComponent.Factory {
-    override fun create(
-        context: CContext,
-        navigation: StackNavigation<AuthConfig>,
-        onAuthenticated: () -> Unit,
-    ): LoginComponent =
-        DefaultLoginComponent(
-            context,
-            navigation,
-            gateway,
-            tokenStorage,
-            profileRepository,
-            onAuthenticated,
-        )
-  }
+class DefaultLoginComponentFactory(
+    private val gateway: AuthApi,
+    private val tokenStorage: TokenStorage,
+    private val profileRepository: ProfileRepository,
+) : LoginComponentFactory {
+  override fun create(
+      context: CContext,
+      navigation: StackNavigation<AuthConfig>,
+      onAuthenticated: () -> Unit,
+  ): LoginComponent =
+      DefaultLoginComponent(
+          context,
+          navigation,
+          gateway,
+          tokenStorage,
+          profileRepository,
+          onAuthenticated,
+      )
 }
 
 class FakeLoginComponent(state: LoginViewState = LoginViewState()) : LoginComponent {
@@ -142,12 +142,12 @@ class FakeLoginComponent(state: LoginViewState = LoginViewState()) : LoginCompon
   override fun onForgotPasswordClicked() {}
 
   override fun onBackClicked() {}
+}
 
-  class Factory : LoginComponent.Factory {
-    override fun create(
-        context: CContext,
-        navigation: StackNavigation<AuthConfig>,
-        onAuthenticated: () -> Unit,
-    ): LoginComponent = FakeLoginComponent()
-  }
+class FakeLoginComponentFactory : LoginComponentFactory {
+  override fun create(
+      context: CContext,
+      navigation: StackNavigation<AuthConfig>,
+      onAuthenticated: () -> Unit,
+  ): LoginComponent = FakeLoginComponent()
 }

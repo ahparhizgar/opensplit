@@ -3,6 +3,7 @@ package com.opensplit
 import com.opensplit.component.TestCContext
 import com.opensplit.component.fakeStack
 import com.opensplit.features.auth.AuthComponent
+import com.opensplit.features.auth.AuthComponentFactory
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.integrationKoin
@@ -20,7 +21,7 @@ class AuthComponentTest : BehaviorSpec() {
     Given("an Auth component") {
       val koin by integrationKoin()
       val cContext by testValue { TestCContext().resumed() }
-      var component by testValue { koin.get<AuthComponent.Factory>().create(cContext) }
+      var component by testValue { koin.get<AuthComponentFactory>().create(cContext) }
 
       When("navigating to sign up and using invalid input") {
         beforeEach {

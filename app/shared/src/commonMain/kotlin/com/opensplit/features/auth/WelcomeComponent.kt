@@ -7,10 +7,10 @@ interface WelcomeComponent {
   fun onSignUpClicked()
 
   fun onLoginClicked()
+}
 
-  interface Factory {
-    fun create(navigation: StackNavigation<AuthConfig>): WelcomeComponent
-  }
+interface WelcomeComponentFactory {
+  fun create(navigation: StackNavigation<AuthConfig>): WelcomeComponent
 }
 
 class DefaultWelcomeComponent(private val navigation: StackNavigation<AuthConfig>) :
@@ -22,20 +22,20 @@ class DefaultWelcomeComponent(private val navigation: StackNavigation<AuthConfig
   override fun onLoginClicked() {
     navigation.pushNew(AuthConfig.Login)
   }
+}
 
-  class Factory : WelcomeComponent.Factory {
-    override fun create(navigation: StackNavigation<AuthConfig>): WelcomeComponent =
-        DefaultWelcomeComponent(navigation)
-  }
+class DefaultWelcomeComponentFactory : WelcomeComponentFactory {
+  override fun create(navigation: StackNavigation<AuthConfig>): WelcomeComponent =
+      DefaultWelcomeComponent(navigation)
 }
 
 class FakeWelcomeComponent : WelcomeComponent {
   override fun onSignUpClicked() {}
 
   override fun onLoginClicked() {}
+}
 
-  class Factory : WelcomeComponent.Factory {
-    override fun create(navigation: StackNavigation<AuthConfig>): WelcomeComponent =
-        FakeWelcomeComponent()
-  }
+class FakeWelcomeComponentFactory : WelcomeComponentFactory {
+  override fun create(navigation: StackNavigation<AuthConfig>): WelcomeComponent =
+      FakeWelcomeComponent()
 }

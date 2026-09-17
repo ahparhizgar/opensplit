@@ -76,14 +76,14 @@ interface AddExpenseComponent {
 
     class MoreSplitOptions(val component: MoreSplitOptionsComponent) : Child()
   }
+}
 
-  interface Factory {
-    fun create(
-        context: CContext,
-        config: Config,
-        onFinished: () -> Unit,
-    ): AddExpenseComponent
-  }
+interface AddExpenseComponentFactory {
+  fun create(
+      context: CContext,
+      config: AddExpenseComponent.Config,
+      onFinished: () -> Unit,
+  ): AddExpenseComponent
 }
 
 @Serializable
@@ -189,9 +189,9 @@ class DefaultAddExpenseComponent(
     private val expenseRepository: ExpenseRepository,
     private val householdRepository: HouseholdRepository,
     private val profileRepository: ProfileRepository,
-    private val moreSplitOptionsComponentFactory: MoreSplitOptionsComponent.Factory,
-    private val whoPaidComponentFactory: WhoPaidComponent.Factory,
-    private val quickSplitComponentFactory: QuickSplitComponent.Factory,
+    private val moreSplitOptionsComponentFactory: MoreSplitOptionsComponentFactory,
+    private val whoPaidComponentFactory: WhoPaidComponentFactory,
+    private val quickSplitComponentFactory: QuickSplitComponentFactory,
     private val onFinished: () -> Unit,
 ) : AddExpenseComponent, CContext by context {
   private val householdId = config.householdId
@@ -239,7 +239,7 @@ class DefaultAddExpenseComponent(
                   )
               is AddExpenseChildConfig.PaidAmounts ->
                   AddExpenseComponent.Child.PaidAmounts(
-                      DefaultPaidAmountsComponent.Factory()
+                      DefaultPaidAmountsComponentFactory()
                           .create(
                               initial = _uiState.value.payAmountsDomain,
                               household = loadedHousehold!!,
@@ -557,32 +557,32 @@ class DefaultAddExpenseComponent(
       onFinished()
     }
   }
+}
 
-  class Factory(
-      private val expenseRepository: ExpenseRepository,
-      private val householdRepository: HouseholdRepository,
-      private val profileRepository: ProfileRepository,
-      private val moreSplitOptionsComponentFactory: MoreSplitOptionsComponent.Factory,
-      private val whoPaidComponentFactory: WhoPaidComponent.Factory,
-      private val quickSplitComponentFactory: QuickSplitComponent.Factory,
-  ) : AddExpenseComponent.Factory {
-    override fun create(
-        context: CContext,
-        config: AddExpenseComponent.Config,
-        onFinished: () -> Unit,
-    ): AddExpenseComponent =
-        DefaultAddExpenseComponent(
-            context = context,
-            config = config,
-            expenseRepository = expenseRepository,
-            householdRepository = householdRepository,
-            profileRepository = profileRepository,
-            moreSplitOptionsComponentFactory = moreSplitOptionsComponentFactory,
-            whoPaidComponentFactory = whoPaidComponentFactory,
-            quickSplitComponentFactory = quickSplitComponentFactory,
-            onFinished = onFinished,
-        )
-  }
+class DefaultAddExpenseComponentFactory(
+    private val expenseRepository: ExpenseRepository,
+    private val householdRepository: HouseholdRepository,
+    private val profileRepository: ProfileRepository,
+    private val moreSplitOptionsComponentFactory: MoreSplitOptionsComponentFactory,
+    private val whoPaidComponentFactory: WhoPaidComponentFactory,
+    private val quickSplitComponentFactory: QuickSplitComponentFactory,
+) : AddExpenseComponentFactory {
+  override fun create(
+      context: CContext,
+      config: AddExpenseComponent.Config,
+      onFinished: () -> Unit,
+  ): AddExpenseComponent =
+      DefaultAddExpenseComponent(
+          context = context,
+          config = config,
+          expenseRepository = expenseRepository,
+          householdRepository = householdRepository,
+          profileRepository = profileRepository,
+          moreSplitOptionsComponentFactory = moreSplitOptionsComponentFactory,
+          whoPaidComponentFactory = whoPaidComponentFactory,
+          quickSplitComponentFactory = quickSplitComponentFactory,
+          onFinished = onFinished,
+      )
 }
 
 class FakeAddExpenseComponent(

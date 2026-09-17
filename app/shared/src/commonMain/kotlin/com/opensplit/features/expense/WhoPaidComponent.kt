@@ -11,16 +11,16 @@ interface WhoPaidComponent {
   fun onParticipantSelected(userId: String)
 
   fun onMultiplePeopleClicked()
+}
 
-  interface Factory {
-    fun create(
-        context: CContext,
-        participants: List<Member>,
-        selectedUserId: String?,
-        onParticipantSelected: (String) -> Unit,
-        onMultiplePeopleClicked: () -> Unit,
-    ): WhoPaidComponent
-  }
+interface WhoPaidComponentFactory {
+  fun create(
+      context: CContext,
+      participants: List<Member>,
+      selectedUserId: String?,
+      onParticipantSelected: (String) -> Unit,
+      onMultiplePeopleClicked: () -> Unit,
+  ): WhoPaidComponent
 }
 
 data class WhoPaidUiState(
@@ -53,23 +53,23 @@ class DefaultWhoPaidComponent(
   override fun onMultiplePeopleClicked() {
     onMultiplePeopleClicked.invoke()
   }
+}
 
-  class Factory : WhoPaidComponent.Factory {
-    override fun create(
-        context: CContext,
-        participants: List<Member>,
-        selectedUserId: String?,
-        onParticipantSelected: (String) -> Unit,
-        onMultiplePeopleClicked: () -> Unit,
-    ): WhoPaidComponent {
-      return DefaultWhoPaidComponent(
-          context = context,
-          participants = participants,
-          selectedUserId = selectedUserId,
-          onParticipantSelected = onParticipantSelected,
-          onMultiplePeopleClicked = onMultiplePeopleClicked,
-      )
-    }
+class DefaultWhoPaidComponentFactory : WhoPaidComponentFactory {
+  override fun create(
+      context: CContext,
+      participants: List<Member>,
+      selectedUserId: String?,
+      onParticipantSelected: (String) -> Unit,
+      onMultiplePeopleClicked: () -> Unit,
+  ): WhoPaidComponent {
+    return DefaultWhoPaidComponent(
+        context = context,
+        participants = participants,
+        selectedUserId = selectedUserId,
+        onParticipantSelected = onParticipantSelected,
+        onMultiplePeopleClicked = onMultiplePeopleClicked,
+    )
   }
 }
 

@@ -17,10 +17,10 @@ interface ResetPasswordComponent {
   fun onResetClicked()
 
   fun onTabChanged(tab: ResetPasswordTab)
+}
 
-  interface Factory {
-    fun create(navigation: StackNavigation<AuthConfig>): ResetPasswordComponent
-  }
+interface ResetPasswordComponentFactory {
+  fun create(navigation: StackNavigation<AuthConfig>): ResetPasswordComponent
 }
 
 data class ResetPasswordViewState(
@@ -58,11 +58,11 @@ class DefaultResetPasswordComponent(private val navigation: StackNavigation<Auth
   override fun onTabChanged(tab: ResetPasswordTab) {
     TODO()
   }
+}
 
-  class Factory : ResetPasswordComponent.Factory {
-    override fun create(navigation: StackNavigation<AuthConfig>): ResetPasswordComponent =
-        DefaultResetPasswordComponent(navigation)
-  }
+class DefaultResetPasswordComponentFactory : ResetPasswordComponentFactory {
+  override fun create(navigation: StackNavigation<AuthConfig>): ResetPasswordComponent =
+      DefaultResetPasswordComponent(navigation)
 }
 
 class FakeResetPasswordComponent(state: ResetPasswordViewState = ResetPasswordViewState()) :
@@ -78,9 +78,9 @@ class FakeResetPasswordComponent(state: ResetPasswordViewState = ResetPasswordVi
   override fun onResetClicked() {}
 
   override fun onTabChanged(tab: ResetPasswordTab) {}
+}
 
-  class Factory : ResetPasswordComponent.Factory {
-    override fun create(navigation: StackNavigation<AuthConfig>): ResetPasswordComponent =
-        FakeResetPasswordComponent()
-  }
+class FakeResetPasswordComponentFactory : ResetPasswordComponentFactory {
+  override fun create(navigation: StackNavigation<AuthConfig>): ResetPasswordComponent =
+      FakeResetPasswordComponent()
 }

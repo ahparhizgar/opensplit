@@ -17,6 +17,7 @@ import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.opensplit.component.DefaultCContext
 import com.opensplit.di.appModule
 import com.opensplit.root.RootComponent
+import com.opensplit.root.RootComponentFactory
 import java.awt.Desktop
 import javax.swing.SwingUtilities
 import org.koin.core.context.GlobalContext.startKoin
@@ -43,7 +44,7 @@ fun main(vararg args: String) {
 
   val backDispatcher = BackDispatcher()
   val context = DefaultCContext(lifecycle = lifecycle, backHandler = backDispatcher)
-  val root = runOnUiThread { koin.get<RootComponent.Factory>().create(context) }
+  val root = runOnUiThread { koin.get<RootComponentFactory>().create(context) }
   DecomposeSettings.settings = DecomposeSettings(duplicateConfigurationsEnabled = true)
 
   Desktop.getDesktop().setOpenURIHandler { event ->

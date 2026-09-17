@@ -13,13 +13,20 @@ import com.arkivanov.essenty.backhandler.BackHandler
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.features.auth.AuthComponent
+import com.opensplit.features.auth.AuthComponentFactory
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.expense.AddExpenseComponent
+import com.opensplit.features.expense.AddExpenseComponentFactory
 import com.opensplit.features.expense.ExpenseDetailsComponent
+import com.opensplit.features.expense.ExpenseDetailsComponentFactory
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
+import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponentFactory
 import com.opensplit.features.household.details.HouseholdDetailsComponent
+import com.opensplit.features.household.details.HouseholdDetailsComponentFactory
 import com.opensplit.features.household.my.MyHouseholdsListComponent
+import com.opensplit.features.household.my.MyHouseholdsListComponentFactory
 import com.opensplit.features.household.settings.HouseholdSettingsComponent
+import com.opensplit.features.household.settings.HouseholdSettingsComponentFactory
 import com.opensplit.repository.HouseholdRepository
 import com.opensplit.splash.SplashDestination
 import com.opensplit.sync.SyncDaemon
@@ -34,10 +41,10 @@ interface RootComponent {
   val messageHolder: MessageHolder
 
   fun onBack()
+}
 
-  interface Factory {
-    fun create(context: CContext): RootComponent
-  }
+interface RootComponentFactory {
+  fun create(context: CContext): RootComponent
 }
 
 class DefaultRootComponent(
@@ -91,27 +98,27 @@ class DefaultRootComponent(
     return when (config) {
       is SplashDestination -> SplashDestination
       is AuthComponent.Config ->
-          componentProvider.provide(AuthComponent.Factory::class).create(cContext)
+          componentProvider.provide(AuthComponentFactory::class).create(cContext)
 
       is CreateJoinHouseholdComponent.Config ->
-          componentProvider.provide(CreateJoinHouseholdComponent.Factory::class).create(cContext)
+          componentProvider.provide(CreateJoinHouseholdComponentFactory::class).create(cContext)
 
       is MyHouseholdsListComponent.Config ->
-          componentProvider.provide(MyHouseholdsListComponent.Factory::class).create(cContext)
+          componentProvider.provide(MyHouseholdsListComponentFactory::class).create(cContext)
 
       is HouseholdDetailsComponent.Config ->
           componentProvider
-              .provide(HouseholdDetailsComponent.Factory::class)
+              .provide(HouseholdDetailsComponentFactory::class)
               .create(cContext, config)
 
       is HouseholdSettingsComponent.Config ->
           componentProvider
-              .provide(HouseholdSettingsComponent.Factory::class)
+              .provide(HouseholdSettingsComponentFactory::class)
               .create(cContext, config)
 
       is AddExpenseComponent.Config ->
           componentProvider
-              .provide(AddExpenseComponent.Factory::class)
+              .provide(AddExpenseComponentFactory::class)
               .create(
                   context = cContext,
                   config = config,
@@ -120,7 +127,7 @@ class DefaultRootComponent(
 
       is ExpenseDetailsComponent.Config ->
           componentProvider
-              .provide(ExpenseDetailsComponent.Factory::class)
+              .provide(ExpenseDetailsComponentFactory::class)
               .create(
                   context = cContext,
                   config = config,
@@ -130,22 +137,22 @@ class DefaultRootComponent(
       else -> error("Destination not defined in createChild")
     }
   }
+}
 
-  class Factory(
-      private val componentProvider: ComponentProvider,
-      private val tokenStorage: TokenStorage,
-      private val householdRepository: HouseholdRepository,
-      private val syncDaemon: SyncDaemon,
-  ) : RootComponent.Factory {
-    override fun create(context: CContext): RootComponent =
-        DefaultRootComponent(
-            cContext = context,
-            componentProvider = componentProvider,
-            tokenStorage = tokenStorage,
-            householdRepository = householdRepository,
-            syncDaemon = syncDaemon,
-        )
-  }
+class DefaultRootComponentFactory(
+    private val componentProvider: ComponentProvider,
+    private val tokenStorage: TokenStorage,
+    private val householdRepository: HouseholdRepository,
+    private val syncDaemon: SyncDaemon,
+) : RootComponentFactory {
+  override fun create(context: CContext): RootComponent =
+      DefaultRootComponent(
+          cContext = context,
+          componentProvider = componentProvider,
+          tokenStorage = tokenStorage,
+          householdRepository = householdRepository,
+          syncDaemon = syncDaemon,
+      )
 }
 
 class FakeRootComponent : RootComponent {

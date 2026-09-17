@@ -14,14 +14,14 @@ interface PaidAmountsComponent {
   fun onParticipantAmountChanged(userId: String, amount: String)
 
   fun onDone()
+}
 
-  interface Factory {
-    fun create(
-        initial: PayAmounts,
-        household: Household,
-        onDone: (PayAmountsUiState) -> Unit,
-    ): PaidAmountsComponent
-  }
+interface PaidAmountsComponentFactory {
+  fun create(
+      initial: PayAmounts,
+      household: Household,
+      onDone: (PayAmountsUiState) -> Unit,
+  ): PaidAmountsComponent
 }
 
 data class ParticipantValue(val userId: String, val name: String, val value: String)
@@ -94,15 +94,15 @@ class DefaultPaidAmountsComponent(
         }
     )
   }
+}
 
-  class Factory : PaidAmountsComponent.Factory {
-    override fun create(
-        initial: PayAmounts,
-        household: Household,
-        onDone: (PayAmountsUiState) -> Unit,
-    ): PaidAmountsComponent {
-      return DefaultPaidAmountsComponent(initial = initial, household = household, onDone = onDone)
-    }
+class DefaultPaidAmountsComponentFactory : PaidAmountsComponentFactory {
+  override fun create(
+      initial: PayAmounts,
+      household: Household,
+      onDone: (PayAmountsUiState) -> Unit,
+  ): PaidAmountsComponent {
+    return DefaultPaidAmountsComponent(initial = initial, household = household, onDone = onDone)
   }
 }
 

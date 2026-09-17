@@ -10,6 +10,7 @@ import com.arkivanov.essenty.lifecycle.stop
 import com.opensplit.component.DefaultCContext
 import com.opensplit.di.appModule
 import com.opensplit.root.RootComponent
+import com.opensplit.root.RootComponentFactory
 import kotlinx.browser.document
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -33,7 +34,7 @@ fun main() {
 
   val backDispatcher = BackDispatcher()
   val context = DefaultCContext(lifecycle = lifecycle, backHandler = backDispatcher)
-  val root = koin.get<RootComponent.Factory>().create(context)
+  val root = koin.get<RootComponentFactory>().create(context)
   DecomposeSettings.settings = DecomposeSettings(duplicateConfigurationsEnabled = true)
 
   // Attach the LifecycleRegistry to document

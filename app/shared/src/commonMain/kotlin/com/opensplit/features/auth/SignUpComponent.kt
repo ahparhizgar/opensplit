@@ -29,14 +29,14 @@ interface SignUpComponent {
   fun onBackClicked()
 
   fun onDoneClicked()
+}
 
-  interface Factory {
-    fun create(
-        context: CContext,
-        navigation: StackNavigation<AuthConfig>,
-        onAuthenticated: () -> Unit,
-    ): SignUpComponent
-  }
+interface SignUpComponentFactory {
+  fun create(
+      context: CContext,
+      navigation: StackNavigation<AuthConfig>,
+      onAuthenticated: () -> Unit,
+  ): SignUpComponent
 }
 
 data class SignUpViewState(
@@ -110,26 +110,26 @@ class DefaultSignUpComponent(
       }
     }
   }
+}
 
-  class Factory(
-      private val gateway: AuthApi,
-      private val tokenStorage: TokenStorage,
-      private val profileRepository: ProfileRepository,
-  ) : SignUpComponent.Factory {
-    override fun create(
-        context: CContext,
-        navigation: StackNavigation<AuthConfig>,
-        onAuthenticated: () -> Unit,
-    ): SignUpComponent =
-        DefaultSignUpComponent(
-            context,
-            navigation,
-            gateway,
-            tokenStorage,
-            profileRepository,
-            onAuthenticated,
-        )
-  }
+class DefaultSignUpComponentFactory(
+    private val gateway: AuthApi,
+    private val tokenStorage: TokenStorage,
+    private val profileRepository: ProfileRepository,
+) : SignUpComponentFactory {
+  override fun create(
+      context: CContext,
+      navigation: StackNavigation<AuthConfig>,
+      onAuthenticated: () -> Unit,
+  ): SignUpComponent =
+      DefaultSignUpComponent(
+          context,
+          navigation,
+          gateway,
+          tokenStorage,
+          profileRepository,
+          onAuthenticated,
+      )
 }
 
 class FakeSignUpComponent(state: SignUpViewState = SignUpViewState()) : SignUpComponent {
@@ -146,12 +146,12 @@ class FakeSignUpComponent(state: SignUpViewState = SignUpViewState()) : SignUpCo
   override fun onBackClicked() {}
 
   override fun onDoneClicked() {}
+}
 
-  class Factory : SignUpComponent.Factory {
-    override fun create(
-        context: CContext,
-        navigation: StackNavigation<AuthConfig>,
-        onAuthenticated: () -> Unit,
-    ): SignUpComponent = FakeSignUpComponent()
-  }
+class FakeSignUpComponentFactory : SignUpComponentFactory {
+  override fun create(
+      context: CContext,
+      navigation: StackNavigation<AuthConfig>,
+      onAuthenticated: () -> Unit,
+  ): SignUpComponent = FakeSignUpComponent()
 }

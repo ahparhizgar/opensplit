@@ -11,6 +11,7 @@ import com.arkivanov.essenty.lifecycle.resume
 import com.opensplit.component.TestCContext
 import com.opensplit.component.TestDecomposeSettings
 import com.opensplit.root.RootComponent
+import com.opensplit.root.RootComponentFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.core.Koin
@@ -37,7 +38,7 @@ fun SemanticsNodeInteraction.waitForExistence(
 suspend fun Koin.injectUiRoot(context: TestCContext, resume: Boolean = true): RootComponent =
     withContext(Dispatchers.Main) {
       DecomposeSettings.settings = TestDecomposeSettings
-      val root = get<RootComponent.Factory>().create(context)
+      val root = get<RootComponentFactory>().create(context)
       if (resume) {
         context.lifecycleRegistry.resume()
       }

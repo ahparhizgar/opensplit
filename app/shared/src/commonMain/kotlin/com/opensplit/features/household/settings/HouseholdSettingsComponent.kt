@@ -30,15 +30,15 @@ interface HouseholdSettingsComponent {
 
   @Serializable data class Config(val householdId: String) : TopLevelDestinationConfig
 
-  interface Factory {
-    fun create(cContext: CContext, config: Config): HouseholdSettingsComponent
-  }
-
   data class UiState(
       val household: Household? = null,
       val isLoading: Boolean = false,
       val error: String? = null,
   )
+}
+
+interface HouseholdSettingsComponentFactory {
+  fun create(cContext: CContext, config: HouseholdSettingsComponent.Config): HouseholdSettingsComponent
 }
 
 class DefaultHouseholdSettingsComponent(
@@ -94,16 +94,16 @@ class DefaultHouseholdSettingsComponent(
           }
         }
       }
+}
 
-  class Factory(
-      private val householdRepository: HouseholdRepository,
-  ) : HouseholdSettingsComponent.Factory {
-    override fun create(
-        cContext: CContext,
-        config: HouseholdSettingsComponent.Config,
-    ): HouseholdSettingsComponent =
-        DefaultHouseholdSettingsComponent(cContext, config, householdRepository)
-  }
+class DefaultHouseholdSettingsComponentFactory(
+    private val householdRepository: HouseholdRepository,
+) : HouseholdSettingsComponentFactory {
+  override fun create(
+      cContext: CContext,
+      config: HouseholdSettingsComponent.Config,
+  ): HouseholdSettingsComponent =
+      DefaultHouseholdSettingsComponent(cContext, config, householdRepository)
 }
 
 class FakeHouseholdSettingsComponent(

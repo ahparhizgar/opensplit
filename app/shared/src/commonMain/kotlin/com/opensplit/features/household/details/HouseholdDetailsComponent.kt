@@ -34,15 +34,15 @@ interface HouseholdDetailsComponent {
 
   @Serializable data class Config(val householdId: String) : TopLevelDestinationConfig
 
-  interface Factory {
-    fun create(cContext: CContext, config: Config): HouseholdDetailsComponent
-  }
-
   data class UiState(
       val household: Household? = null,
       val expenses: List<Expense> = emptyList(),
       val error: String? = null,
   )
+}
+
+interface HouseholdDetailsComponentFactory {
+  fun create(cContext: CContext, config: HouseholdDetailsComponent.Config): HouseholdDetailsComponent
 }
 
 class DefaultHouseholdDetailsComponent(
@@ -88,17 +88,17 @@ class DefaultHouseholdDetailsComponent(
   override fun onBack() {
     navigation.pop()
   }
+}
 
-  class Factory(
-      private val householdRepository: HouseholdRepository,
-      private val expenseRepository: ExpenseRepository,
-  ) : HouseholdDetailsComponent.Factory {
-    override fun create(
-        cContext: CContext,
-        config: HouseholdDetailsComponent.Config,
-    ): HouseholdDetailsComponent =
-        DefaultHouseholdDetailsComponent(cContext, config, householdRepository, expenseRepository)
-  }
+class DefaultHouseholdDetailsComponentFactory(
+    private val householdRepository: HouseholdRepository,
+    private val expenseRepository: ExpenseRepository,
+) : HouseholdDetailsComponentFactory {
+  override fun create(
+      cContext: CContext,
+      config: HouseholdDetailsComponent.Config,
+  ): HouseholdDetailsComponent =
+      DefaultHouseholdDetailsComponent(cContext, config, householdRepository, expenseRepository)
 }
 
 class FakeHouseholdDetailsComponent(

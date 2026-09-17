@@ -10,9 +10,13 @@ import com.opensplit.dto.household.FakeHouseholdDtoFactory
 import com.opensplit.fake.FakeHouseholdApi
 import com.opensplit.fake.FakeSyncApi
 import com.opensplit.features.expense.AddExpenseComponent
+import com.opensplit.features.expense.AddExpenseComponentFactory
 import com.opensplit.features.expense.ExpenseDetailsComponent
+import com.opensplit.features.expense.ExpenseDetailsComponentFactory
 import com.opensplit.features.household.details.HouseholdDetailsComponent
+import com.opensplit.features.household.details.HouseholdDetailsComponentFactory
 import com.opensplit.features.household.my.MyHouseholdsListComponent
+import com.opensplit.features.household.my.MyHouseholdsListComponentFactory
 import com.opensplit.repository.HouseholdRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.sync.SyncManager
@@ -37,12 +41,12 @@ class E2EHouseholdBalanceTest : BehaviorSpec() {
       val syncManager by testValue { koin.get<SyncManager>() }
 
       val myHouseholdsListComponent by testValue {
-        koin.get<MyHouseholdsListComponent.Factory>().create(TestCContext().resumed())
+        koin.get<MyHouseholdsListComponentFactory>().create(TestCContext().resumed())
       }
 
       val householdDetailsComponent by testValue {
         koin
-            .get<HouseholdDetailsComponent.Factory>()
+            .get<HouseholdDetailsComponentFactory>()
             .create(TestCContext().resumed(), HouseholdDetailsComponent.Config("household-1"))
       }
 
@@ -67,7 +71,7 @@ class E2EHouseholdBalanceTest : BehaviorSpec() {
         beforeEach {
           val addExpenseComponent =
               koin
-                  .get<AddExpenseComponent.Factory>()
+                  .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext().resumed(),
                       AddExpenseComponent.Config("household-1"),
@@ -92,7 +96,7 @@ class E2EHouseholdBalanceTest : BehaviorSpec() {
             val targetExpenseId = householdDetailsComponent.uiState.value.expenses.first().id
             val editExpenseComponent =
                 koin
-                    .get<AddExpenseComponent.Factory>()
+                    .get<AddExpenseComponentFactory>()
                     .create(
                         TestCContext().resumed(),
                         AddExpenseComponent.Config("household-1", targetExpenseId),
@@ -117,7 +121,7 @@ class E2EHouseholdBalanceTest : BehaviorSpec() {
               val targetExpenseId = householdDetailsComponent.uiState.value.expenses.first().id
               val expenseDetailsComponent =
                   koin
-                      .get<ExpenseDetailsComponent.Factory>()
+                      .get<ExpenseDetailsComponentFactory>()
                       .create(
                           TestCContext().resumed(),
                           ExpenseDetailsComponent.Config("household-1", targetExpenseId),

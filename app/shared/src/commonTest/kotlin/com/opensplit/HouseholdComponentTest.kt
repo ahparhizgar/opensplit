@@ -4,8 +4,10 @@ import com.arkivanov.essenty.lifecycle.create
 import com.opensplit.component.TestCContext
 import com.opensplit.component.defaultCContext
 import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
+import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponentFactory
 import com.opensplit.features.household.createjoin.HouseholdTab
 import com.opensplit.features.household.my.MyHouseholdsListComponent
+import com.opensplit.features.household.my.MyHouseholdsListComponentFactory
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.createComponentContext
 import com.opensplit.util.integrationKoin
@@ -28,7 +30,7 @@ class HouseholdComponentTest : BehaviorSpec() {
     Given("a CreateJoinHouseholdComponent – Create tab") {
       var createJoinComponent by testValue {
         koin
-            .get<CreateJoinHouseholdComponent.Factory>()
+            .get<CreateJoinHouseholdComponentFactory>()
             .create(defaultCContext(createComponentContext()))
       }
 
@@ -85,7 +87,7 @@ class HouseholdComponentTest : BehaviorSpec() {
     Given("a MyHouseholdsListComponent") {
       var cContext by testValue { TestCContext() }
       var listComponent by testValue {
-        koin.get<MyHouseholdsListComponent.Factory>().create(cContext)
+        koin.get<MyHouseholdsListComponentFactory>().create(cContext)
       }
 
       When("loading overview") {

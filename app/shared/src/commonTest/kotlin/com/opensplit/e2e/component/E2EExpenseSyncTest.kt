@@ -11,8 +11,11 @@ import com.opensplit.fake.FakeExpenseApi
 import com.opensplit.fake.FakeHouseholdApi
 import com.opensplit.fake.FakeSyncApi
 import com.opensplit.features.expense.AddExpenseComponent
+import com.opensplit.features.expense.AddExpenseComponentFactory
 import com.opensplit.features.expense.ExpenseDetailsComponent
+import com.opensplit.features.expense.ExpenseDetailsComponentFactory
 import com.opensplit.features.household.details.HouseholdDetailsComponent
+import com.opensplit.features.household.details.HouseholdDetailsComponentFactory
 import com.opensplit.repository.HouseholdRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.sync.SyncManager
@@ -39,7 +42,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
       val householdDetailsComponent by testValue {
         koin
-            .get<HouseholdDetailsComponent.Factory>()
+            .get<HouseholdDetailsComponentFactory>()
             .create(TestCContext().resumed(), HouseholdDetailsComponent.Config("household-1"))
       }
 
@@ -59,7 +62,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
         var addFinished = false
         val addExpenseComponent by testValue {
           koin
-              .get<AddExpenseComponent.Factory>()
+              .get<AddExpenseComponentFactory>()
               .create(
                   TestCContext().resumed(),
                   AddExpenseComponent.Config("household-1"),
@@ -108,7 +111,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
               val targetExpenseId = householdDetailsComponent.uiState.value.expenses.first().id
               val editExpenseComponent =
                   koin
-                      .get<AddExpenseComponent.Factory>()
+                      .get<AddExpenseComponentFactory>()
                       .create(
                           TestCContext().resumed(),
                           AddExpenseComponent.Config("household-1", targetExpenseId),
@@ -149,7 +152,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
                   deleteTargetId = householdDetailsComponent.uiState.value.expenses.first().id
                   val expenseDetailsComponent =
                       koin
-                          .get<ExpenseDetailsComponent.Factory>()
+                          .get<ExpenseDetailsComponentFactory>()
                           .create(
                               TestCContext().resumed(),
                               ExpenseDetailsComponent.Config("household-1", deleteTargetId),
@@ -191,7 +194,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
       val householdDetailsComponent by testValue {
         koin
-            .get<HouseholdDetailsComponent.Factory>()
+            .get<HouseholdDetailsComponentFactory>()
             .create(TestCContext().resumed(), HouseholdDetailsComponent.Config("household-1"))
       }
 
