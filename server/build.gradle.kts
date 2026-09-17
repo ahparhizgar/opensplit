@@ -24,6 +24,7 @@ dependencies {
   api(projects.core)
   implementation(libs.logback)
   implementation(libs.ktor.serverCore)
+  implementation(libs.ktor.serverCors)
   implementation(libs.ktor.serverNetty)
   implementation(libs.koin.ktor)
   implementation(libs.ktor.serverContentNegotiation)
