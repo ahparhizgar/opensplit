@@ -9,7 +9,7 @@ import com.opensplit.component.componentScope
 import com.opensplit.domain.Expense
 import com.opensplit.domain.Member
 import com.opensplit.repository.ExpenseRepository
-import com.opensplit.repository.HouseholdRepository
+import com.opensplit.repository.GroupRepository
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -25,7 +25,7 @@ interface ExpenseDetailsComponent {
   fun onEditClicked()
 
   @Serializable
-  data class Config(val householdId: String, val expenseId: String) : TopLevelDestinationConfig
+  data class Config(val groupId: String, val expenseId: String) : TopLevelDestinationConfig
 }
 
 interface ExpenseDetailsComponentFactory {
@@ -38,7 +38,7 @@ interface ExpenseDetailsComponentFactory {
 
 data class ExpenseDetailsUiState(
     val expense: Expense? = null,
-    val householdMembers: List<Member> = emptyList(),
+    val groupMembers: List<Member> = emptyList(),
     val isLoading: Boolean = false,
 )
 
@@ -46,7 +46,7 @@ class DefaultExpenseDetailsComponent(
     context: CContext,
     private val config: ExpenseDetailsComponent.Config,
     private val expenseRepository: ExpenseRepository,
-    private val householdRepository: HouseholdRepository,
+    private val groupRepository: GroupRepository,
     private val onBack: () -> Unit,
 ) : ExpenseDetailsComponent, CContext by context {
 
@@ -62,8 +62,8 @@ class DefaultExpenseDetailsComponent(
     _uiState.update { it.copy(isLoading = true) }
 
     launch {
-      householdRepository.observeHousehold(config.householdId).collectLatest { household ->
-        _uiState.update { it.copy(householdMembers = household?.members ?: emptyList()) }
+      groupRepository.observeGroup(config.groupId).collectLatest { group ->
+        _uiState.update { it.copy(groupMembers = group?.members ?: emptyList()) }
       }
     }
 
@@ -78,7 +78,7 @@ class DefaultExpenseDetailsComponent(
 
   override fun onDeleteClicked() {
     scope.launch {
-      expenseRepository.deleteExpense(config.householdId, config.expenseId)
+      expenseRepository.deleteExpense(config.groupId, config.expenseId)
       onBack()
     }
   }
@@ -86,7 +86,7 @@ class DefaultExpenseDetailsComponent(
   override fun onEditClicked() {
     navigation.pushNew(
         AddExpenseComponent.Config(
-            householdId = config.householdId,
+            groupId = config.groupId,
             expenseId = config.expenseId,
         )
     )
@@ -95,7 +95,7 @@ class DefaultExpenseDetailsComponent(
 
 class DefaultExpenseDetailsComponentFactory(
     private val expenseRepository: ExpenseRepository,
-    private val householdRepository: HouseholdRepository,
+    private val groupRepository: GroupRepository,
 ) : ExpenseDetailsComponentFactory {
   override fun create(
       context: CContext,
@@ -106,7 +106,7 @@ class DefaultExpenseDetailsComponentFactory(
           context = context,
           config = config,
           expenseRepository = expenseRepository,
-          householdRepository = householdRepository,
+          groupRepository = groupRepository,
           onBack = onBack,
       )
 }

@@ -22,7 +22,7 @@ purpose: "Token-efficient context for downstream PRD creation"
 
 ## MVP Scope Signals
 
-- In scope for v1: household/group setup, expense entry, payer assignment, equal splits, unequal splits, balance calculation, original-currency preservation per expense, settlement tracking, web support, mobile support, offline support.
+- In scope for v1: group/group setup, expense entry, payer assignment, equal splits, unequal splits, balance calculation, original-currency preservation per expense, settlement tracking, web support, mobile support, offline support.
 - Unequal split support is explicitly required.
 - Settlement tracking is explicitly required.
 - Partial settlement is allowed.
@@ -72,7 +72,7 @@ purpose: "Token-efficient context for downstream PRD creation"
 
 ## User Scenario Notes
 
-- Primary recurring scenario is roommates sharing groceries, utilities, subscriptions, and one-off household purchases.
+- Primary recurring scenario is roommates sharing groceries, utilities, subscriptions, and one-off group purchases.
 - Important trust moment is end-of-month or ad hoc settlement when users need confidence in the totals.
 - Product should reduce both math friction and social friction.
 

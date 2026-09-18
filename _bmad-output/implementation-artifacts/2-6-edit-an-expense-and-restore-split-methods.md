@@ -3,7 +3,7 @@
 Status: done
 
 ## Story
-As a household member,
+As a group member,
 I want to edit an existing expense and have its split method restored,
 so that I can easily adjust details while maintaining the original intent.
 
@@ -18,7 +18,7 @@ so that I can easily adjust details while maintaining the original intent.
 ### Backend Tests (`ExpenseRoutesTest.kt`)
 - **Scenario: Successfully update expense title and amount**
   - **Given** an existing expense with ID `exp-1`, amount `100.0`, and Equal split
-  - **When** a `PUT /households/{hId}/expenses/exp-1` request is made with title "New Title" and amount `150.0`
+  - **When** a `PUT /groups/{hId}/expenses/exp-1` request is made with title "New Title" and amount `150.0`
   - **Then** the server returns 200 OK
   - **And** the expense title is `New Title` and amount is `150.0` in the database
   - **And** `ExpenseParticipants` owed amounts are updated to `75.0` each (for 2 members)
@@ -26,7 +26,7 @@ so that I can easily adjust details while maintaining the original intent.
   - **Given** an expense where User A paid `100.0` and split equally with User B
   - **When** the expense is updated to set User B as the payer
   - **Then** the `ExpenseParticipants` table reflects that User B paid `100.0`
-  - **And** the household balances are adjusted accordingly
+  - **And** the group balances are adjusted accordingly
 - **Scenario: Update split method from Equal to Unequal**
   - **Given** an expense with Equal split
   - **When** it is updated to Unequal split with specific `owedAmount` values
@@ -35,9 +35,9 @@ so that I can easily adjust details while maintaining the original intent.
 - **Scenario: Fail to update non-existent expense**
   - **When** a `PUT` request is made for a non-existent expense ID
   - **Then** the server returns 404 Not Found
-- **Scenario: Fail to update expense in a household the user doesn't belong to**
-  - **Given** an expense in Household X
-  - **When** a user who is NOT a member of Household X tries to `PUT` the expense
+- **Scenario: Fail to update expense in a group the user doesn't belong to**
+  - **Given** an expense in Group X
+  - **When** a user who is NOT a member of Group X tries to `PUT` the expense
   - **Then** the server returns 403 Forbidden
 
 ### Client Tests (`AddExpenseComponentTest.kt`)
@@ -73,8 +73,8 @@ so that I can easily adjust details while maintaining the original intent.
 - [x] **Repository Update:** Implement `updateExpense` in `ExpenseRepository`.
   - Handle updating the `Expenses` table.
   - Surgical update or delete/re-insert for `ExpenseParticipants`.
-- [x] **API Update:** Implement `PUT /households/{hId}/expenses/{expenseId}` in `ExpenseRoutes.kt`.
-- [x] **Validation:** Ensure the user belongs to the household before allowing the update.
+- [x] **API Update:** Implement `PUT /groups/{hId}/expenses/{expenseId}` in `ExpenseRoutes.kt`.
+- [x] **Validation:** Ensure the user belongs to the group before allowing the update.
 
 ### 2. Client: Logic & Navigation
 - [x] **Component State:** Update `AddExpenseComponent` to accept an `expenseId` for Edit mode.
@@ -119,8 +119,8 @@ Story 2-6 implements expense editing functionality following red-green-refactor 
 - UI: Header shows "Edit Expense", save button wired correctly, form pre-filled
 
 ✅ **Security improvements:**
-- Expense update verifies that the expense belongs to the specified household
-- Prevents unauthorized updates across household boundaries
+- Expense update verifies that the expense belongs to the specified group
+- Prevents unauthorized updates across group boundaries
 
 ✅ **Test coverage:**
 - Backend: 6 new test scenarios covering update success, payer change, split method change, error cases
@@ -144,8 +144,8 @@ app/shared/src/commonTest/kotlin/com/opensplit/AddExpenseComponentTest.kt
 - Added updateExpense and findExpenseById methods to ExpenseRepository interface (2026-08-21)
 - Implemented updateExpense in ExpenseRepositoryImpl with balance reversal and sync tracking (2026-08-21)
 - Added updateExpense method to ExpenseService with membership validation (2026-08-21)
-- **Added household verification in updateExpense to prevent cross-household updates** (2026-08-21)
-- Implemented PUT /households/{hId}/expenses/{expenseId} endpoint in ExpenseRoutes (2026-08-21)
+- **Added group verification in updateExpense to prevent cross-group updates** (2026-08-21)
+- Implemented PUT /groups/{hId}/expenses/{expenseId} endpoint in ExpenseRoutes (2026-08-21)
 - Added 6 backend test scenarios for expense update functionality (2026-08-21)
 - Updated AddExpenseComponent.Config to accept optional expenseId parameter (2026-08-21)
 - Added loadExpenseForEdit method to restore expense data and split method (2026-08-21)

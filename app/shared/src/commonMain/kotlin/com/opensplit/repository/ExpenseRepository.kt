@@ -5,7 +5,7 @@ import androidx.room3.useWriterConnection
 import com.opensplit.db.AppDatabase
 import com.opensplit.db.ExpenseDao
 import com.opensplit.db.ExpenseEntity
-import com.opensplit.db.HouseholdDao
+import com.opensplit.db.GroupDao
 import com.opensplit.db.OperationType
 import com.opensplit.db.SyncQueueDao
 import com.opensplit.db.SyncQueueEntity
@@ -24,14 +24,14 @@ import kotlinx.serialization.json.Json
 
 class ExpenseRepository(
     private val expenseDao: ExpenseDao,
-    private val householdDao: HouseholdDao,
+    private val groupDao: GroupDao,
     private val syncQueueDao: SyncQueueDao,
     private val database: AppDatabase,
     private val syncManager: SyncManager,
 ) {
 
-  fun getExpenses(householdId: String): Flow<List<Expense>> {
-    return expenseDao.getExpenses(householdId).map { entities ->
+  fun getExpenses(groupId: String): Flow<List<Expense>> {
+    return expenseDao.getExpenses(groupId).map { entities ->
       entities.map { entity ->
         // TODO should we optimize this 1+n query?
         val participants = expenseDao.getParticipants(entity.id).map { it.toDomain() }
@@ -50,7 +50,7 @@ class ExpenseRepository(
   }
 
   suspend fun createExpense(
-      householdId: String,
+      groupId: String,
       title: String,
       amount: Double,
       creator: String,
@@ -63,7 +63,7 @@ class ExpenseRepository(
     val expenseEntity =
         ExpenseEntity(
             id = expenseId,
-            householdId = householdId,
+            groupId = groupId,
             title = title,
             amount = amount,
             creator = creator,
@@ -86,10 +86,10 @@ class ExpenseRepository(
       connection.immediateTransaction {
         expenseDao.insertExpenseWithParticipants(expenseEntity, participantEntities)
 
-        // Optimistic UI: Update local household/member balances
+        // Optimistic UI: Update local group/member balances
         shares.forEach { participant ->
           val delta = participant.paidShare - participant.consumedShare
-          householdDao.updateMemberBalance(householdId, participant.userId, delta)
+          groupDao.updateMemberBalance(groupId, participant.userId, delta)
         }
 
         syncQueueDao.enqueue(syncEntry)
@@ -98,7 +98,7 @@ class ExpenseRepository(
     syncManager.triggerSync()
   }
 
-  suspend fun deleteExpense(householdId: String, expenseId: String) {
+  suspend fun deleteExpense(groupId: String, expenseId: String) {
     val participants = expenseDao.getParticipants(expenseId)
 
     database.useWriterConnection { connection ->
@@ -106,7 +106,7 @@ class ExpenseRepository(
         // Reverse optimistic UI balance
         participants.forEach { participant ->
           val delta = participant.paidShare - participant.consumedShare
-          householdDao.updateMemberBalance(householdId, participant.userId, -delta)
+          groupDao.updateMemberBalance(groupId, participant.userId, -delta)
         }
 
         expenseDao.deleteExpense(expenseId)
@@ -116,7 +116,7 @@ class ExpenseRepository(
                 operation = OperationType.DELETE,
                 entityType = "EXPENSE",
                 entityId = expenseId,
-                metadata = householdId,
+                metadata = groupId,
                 createdAt = Clock.System.now().toEpochMilliseconds(),
             )
         )
@@ -126,7 +126,7 @@ class ExpenseRepository(
   }
 
   suspend fun updateExpense(
-      householdId: String,
+      groupId: String,
       expenseId: String,
       title: String,
       amount: Double,
@@ -142,7 +142,7 @@ class ExpenseRepository(
     val expenseEntity =
         ExpenseEntity(
             id = expenseId,
-            householdId = householdId,
+            groupId = groupId,
             title = title,
             amount = amount,
             creator = creator,
@@ -159,7 +159,7 @@ class ExpenseRepository(
         // Reverse old balances
         oldParticipants.forEach { participant ->
           val delta = participant.paidShare - participant.consumedShare
-          householdDao.updateMemberBalance(householdId, participant.userId, -delta)
+          groupDao.updateMemberBalance(groupId, participant.userId, -delta)
         }
 
         // Update expense and participants
@@ -168,7 +168,7 @@ class ExpenseRepository(
         // Apply new balances
         shares.forEach { participant ->
           val delta = participant.paidShare - participant.consumedShare
-          householdDao.updateMemberBalance(householdId, participant.userId, delta)
+          groupDao.updateMemberBalance(groupId, participant.userId, delta)
         }
 
         val syncEntry =

@@ -14,7 +14,7 @@ class FakeExpenseApi : ExpenseApi, FakeService {
   val deletedCalls = mutableListOf<Pair<String, String>>()
 
   override suspend fun createExpense(
-      householdId: String,
+      groupId: String,
       title: String,
       amount: Double,
       creator: String,
@@ -24,7 +24,7 @@ class FakeExpenseApi : ExpenseApi, FakeService {
     val dto =
         ExpenseDto(
             id = "expense-${createdExpenses.size + 1}",
-            householdId = householdId,
+            groupId = groupId,
             title = title,
             amount = amount,
             creator = creator,
@@ -36,8 +36,8 @@ class FakeExpenseApi : ExpenseApi, FakeService {
     dto
   }
 
-  override suspend fun deleteExpense(householdId: String, expenseId: String) = fakeApiCall {
-    deletedCalls.add(householdId to expenseId)
+  override suspend fun deleteExpense(groupId: String, expenseId: String) = fakeApiCall {
+    deletedCalls.add(groupId to expenseId)
     Unit
   }
 }

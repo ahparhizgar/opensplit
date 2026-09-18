@@ -19,7 +19,7 @@ class ExpenseRepositoryImpl(
     transaction(database) {
       Expenses.insert {
         it[id] = expense.id
-        it[householdId] = expense.householdId
+        it[groupId] = expense.groupId
         it[title] = expense.title
         it[amount] = expense.amount
         it[creator] = expense.creator
@@ -38,8 +38,7 @@ class ExpenseRepositoryImpl(
 
         // Update Denormalized Balance
         Memberships.update({
-          (Memberships.householdId eq expense.householdId) and
-              (Memberships.userId eq participant.userId)
+          (Memberships.groupId eq expense.groupId) and (Memberships.userId eq participant.userId)
         }) {
           it[balance] = balance + (participant.paidAmount - participant.owedAmount)
         }
@@ -49,10 +48,9 @@ class ExpenseRepositoryImpl(
     }
   }
 
-  override fun findExpensesByHouseholdId(householdId: String): List<ExpenseRecord> =
+  override fun findExpensesByGroupId(groupId: String): List<ExpenseRecord> =
       transaction(database) {
-        val expenseRows =
-            Expenses.selectAll().where { Expenses.householdId eq householdId }.toList()
+        val expenseRows = Expenses.selectAll().where { Expenses.groupId eq groupId }.toList()
 
         expenseRows.map { row ->
           val expenseId = row[Expenses.id]
@@ -70,7 +68,7 @@ class ExpenseRepositoryImpl(
       val expense =
           Expenses.selectAll().where { Expenses.id eq expenseId }.firstOrNull()
               ?: return@transaction
-      val householdId = expense[Expenses.householdId]
+      val groupId = expense[Expenses.groupId]
 
       val participants =
           ExpenseParticipants.selectAll()
@@ -80,7 +78,7 @@ class ExpenseRepositoryImpl(
       participants.forEach { participant ->
         // Reverse Denormalized Balance
         Memberships.update({
-          (Memberships.householdId eq householdId) and (Memberships.userId eq participant.userId)
+          (Memberships.groupId eq groupId) and (Memberships.userId eq participant.userId)
         }) {
           it[balance] = balance - (participant.paidAmount - participant.owedAmount)
         }
@@ -98,7 +96,7 @@ class ExpenseRepositoryImpl(
       val oldExpense =
           Expenses.selectAll().where { Expenses.id eq expense.id }.firstOrNull()
               ?: throw IllegalArgumentException("Expense not found")
-      val householdId = oldExpense[Expenses.householdId]
+      val groupId = oldExpense[Expenses.groupId]
 
       val oldParticipants =
           ExpenseParticipants.selectAll()
@@ -108,7 +106,7 @@ class ExpenseRepositoryImpl(
       // Reverse old balances
       oldParticipants.forEach { participant ->
         Memberships.update({
-          (Memberships.householdId eq householdId) and (Memberships.userId eq participant.userId)
+          (Memberships.groupId eq groupId) and (Memberships.userId eq participant.userId)
         }) {
           it[balance] = balance - (participant.paidAmount - participant.owedAmount)
         }
@@ -135,7 +133,7 @@ class ExpenseRepositoryImpl(
 
         // Apply new balances
         Memberships.update({
-          (Memberships.householdId eq householdId) and (Memberships.userId eq participant.userId)
+          (Memberships.groupId eq groupId) and (Memberships.userId eq participant.userId)
         }) {
           it[balance] = balance + (participant.paidAmount - participant.owedAmount)
         }
@@ -162,7 +160,7 @@ class ExpenseRepositoryImpl(
   ): ExpenseRecord =
       ExpenseRecord(
           id = get(Expenses.id),
-          householdId = get(Expenses.householdId),
+          groupId = get(Expenses.groupId),
           title = get(Expenses.title),
           amount = get(Expenses.amount),
           creator = get(Expenses.creator),

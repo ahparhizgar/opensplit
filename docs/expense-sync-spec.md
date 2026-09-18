@@ -24,7 +24,7 @@ Bidirectional offline-first sync engine. Outbox pattern for upstream (Client -> 
   * `timestamp`: Long -> epoch millis.
 * **`expenses`**
   * `id`: VARCHAR(36) (PK)
-  * `household_id`: VARCHAR(36) (FK -> households.id)
+  * `group_id`: VARCHAR(36) (FK -> groups.id)
   * `title`: VARCHAR(255)
   * `amount`: Double
   * `creator`: VARCHAR(36) (FK -> users.id)
@@ -38,14 +38,14 @@ Bidirectional offline-first sync engine. Outbox pattern for upstream (Client -> 
   * `paid_amount`: Double
   * `owed_amount`: Double
   * `version`: Long
-* **`households`** / **`memberships`**
+* **`groups`** / **`memberships`**
   * Contain `version`: Long, tracked via `change_log`.
 
 ### Client Local DB (Room)
 
 * **`expenses`**
   * `id`: String (PK)
-  * `householdId`: String
+  * `groupId`: String
   * `title`: String
   * `amount`: Double
   * `creator`: String
@@ -60,7 +60,7 @@ Bidirectional offline-first sync engine. Outbox pattern for upstream (Client -> 
   * `operation`: `OperationType` (`CREATE` | `UPDATE` | `DELETE`)
   * `entityType`: String (`"EXPENSE"`)
   * `entityId`: String (UUID)
-  * `metadata`: String? (e.g. `householdId` for deletes)
+  * `metadata`: String? (e.g. `groupId` for deletes)
   * `createdAt`: Long
 * **`sync_metadata`**
   * `key`: String (PK) -> e.g. `"last_sync_version"`
@@ -93,7 +93,7 @@ data class DeletedEntitiesDto(
 @Serializable
 data class ExpenseDto(
     val id: String,
-    val householdId: String,
+    val groupId: String,
     val title: String,
     val amount: Double,
     val creator: String,
@@ -125,15 +125,15 @@ Trigger: `SyncDaemon` interval (5s) or `SyncManager.triggerSync()`. Wrapped in M
 2. **Process `EXPENSE` Ops**:
    * **`CREATE`**:
      * Fetch local `ExpenseEntity` + `ParticipantEntity`.
-     * Call `POST /households/{id}/expenses`.
+     * Call `POST /groups/{id}/expenses`.
      * Server creates expense -> calls `syncRepository.recordChange("EXPENSE", id, "INSERT")` -> returns server `ExpenseDto`.
      * In Room transaction:
        * Reconcile balances (`updateBalances`).
        * Replace temporary local record with server entity (`syncStatus = SYNCED`).
        * Dequeue item from `sync_queue`.
    * **`DELETE`**:
-     * Extract `householdId` from `entry.metadata`.
-     * Call `DELETE /households/{householdId}/expenses/{id}`.
+     * Extract `groupId` from `entry.metadata`.
+     * Call `DELETE /groups/{groupId}/expenses/{id}`.
      * Server deletes expense -> calls `recordChange("EXPENSE", id, "DELETE")`.
      * Dequeue item from `sync_queue`.
    * **`UPDATE`**: Dequeues (future feature).
@@ -153,8 +153,8 @@ Fetch last_sync_version -> GET /sync?sinceVersion=N -> Server filters ChangeLog 
    * `GET /sync?sinceVersion={last_sync_version}` with bearer auth.
 2. **Server Processing** (`SyncRepositoryImpl.getChanges`):
    * `latestVersion` = max `id` in `change_log`.
-   * `userHouseholdIds` = memberships for requesting user.
-   * `changedExpenses` = `Expenses` where `version > sinceVersion` AND `householdId IN (userHouseholdIds)`.
+   * `userGroupIds` = memberships for requesting user.
+   * `changedExpenses` = `Expenses` where `version > sinceVersion` AND `groupId IN (userGroupIds)`.
    * `deletedExpenses` = `ChangeLog` entry IDs where `id > sinceVersion` AND `entityType == "EXPENSE"` AND `operation == "DELETE"`.
    * Responds `SyncResponse(latestVersion, changedEntities, deletedEntities)`.
 3. **Client Apply** (`applyChanges`):
@@ -174,4 +174,4 @@ Member balance delta calculation on expense add/update/delete:
 memberDelta = (newPaid - newConsumed) - (oldPaid - oldConsumed)
 ```
 
-Executed via `updateBalances()` -> applies SQL delta directly to `household_members.balance`.
+Executed via `updateBalances()` -> applies SQL delta directly to `group_members.balance`.

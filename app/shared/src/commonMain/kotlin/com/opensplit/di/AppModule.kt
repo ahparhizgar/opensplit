@@ -10,12 +10,12 @@ import com.opensplit.features.auth.KtorAuthApi
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.expense.ExpenseApi
 import com.opensplit.features.expense.KtorExpenseApi
-import com.opensplit.features.household.HouseholdApi
-import com.opensplit.features.household.KtorHouseholdApi
+import com.opensplit.features.group.GroupApi
+import com.opensplit.features.group.KtorGroupApi
 import com.opensplit.ktor.createHttpClient
 import com.opensplit.repository.DataStoreProfileRepository
 import com.opensplit.repository.ExpenseRepository
-import com.opensplit.repository.HouseholdRepository
+import com.opensplit.repository.GroupRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.sync.DefaultSyncDaemon
 import com.opensplit.sync.KtorSyncApi
@@ -41,7 +41,7 @@ fun othersModule() = module {
   singleOf(::DataStoreTokenStorage).bind<TokenStorage>()
   singleOf(::DataStoreProfileRepository).bind<ProfileRepository>()
   factoryOf(::KtorAuthApi).bind<AuthApi>()
-  factoryOf(::KtorHouseholdApi).bind<HouseholdApi>()
+  factoryOf(::KtorGroupApi).bind<GroupApi>()
   factoryOf(::KtorExpenseApi).bind<ExpenseApi>()
   factoryOf(::KtorSyncApi).bind<SyncApi>()
   single { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
@@ -52,12 +52,12 @@ fun othersModule() = module {
         Dispatchers.Default,
     )
   }
-  single { get<AppDatabase>().householdDao() }
+  single { get<AppDatabase>().groupDao() }
   single { get<AppDatabase>().expenseDao() }
   single { get<AppDatabase>().syncQueueDao() }
   single { get<AppDatabase>().syncMetadataDao() }
 
-  singleOf(::HouseholdRepository)
+  singleOf(::GroupRepository)
   singleOf(::ExpenseRepository)
   single {
     SyncManager(

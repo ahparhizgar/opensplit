@@ -22,7 +22,7 @@ object Users : Table("users") {
   override val primaryKey = PrimaryKey(id)
 }
 
-object Households : Table("households") {
+object Groups : Table("groups") {
   val id = varchar("id", 36)
   val name = varchar("name", 255)
   val ownerId = varchar("owner_id", 36).references(Users.id)
@@ -32,13 +32,13 @@ object Households : Table("households") {
   override val primaryKey = PrimaryKey(id)
 
   init {
-    uniqueIndex("uq_households_invite_code", inviteCode)
+    uniqueIndex("uq_groups_invite_code", inviteCode)
   }
 }
 
 object Memberships : Table("memberships") {
   val id = varchar("id", 36)
-  val householdId = varchar("household_id", 36).references(Households.id)
+  val groupId = varchar("group_id", 36).references(Groups.id)
   val userId = varchar("user_id", 36).references(Users.id)
   val balance = double("balance").default(0.0)
   val version = long("version").default(0)
@@ -48,7 +48,7 @@ object Memberships : Table("memberships") {
 
 object Expenses : Table("expenses") {
   val id = varchar("id", 36)
-  val householdId = varchar("household_id", 36).references(Households.id)
+  val groupId = varchar("group_id", 36).references(Groups.id)
   val title = varchar("title", 255)
   val amount = double("amount")
   val creator = varchar("creator", 36).references(Users.id)

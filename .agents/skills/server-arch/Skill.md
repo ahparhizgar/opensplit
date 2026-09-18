@@ -16,7 +16,7 @@ description: architecture of server of this repo
 - Do not use default constructor parameters.
 - Prefer nested routing:
   ```kotlin
-  route("/household") {
+  route("/group") {
       get { }
   }
   ```

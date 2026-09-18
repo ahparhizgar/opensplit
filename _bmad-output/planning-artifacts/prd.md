@@ -35,7 +35,7 @@ workflowType: prd
 
 ## Executive Summary
 
-OpenSplit is a greenfield mobile-first shared-expense product for roommates who need a fast, simple, trustworthy way to log shared costs and understand debts without friction. The product solves the recurring pain of tracking groceries, utilities, subscriptions, and one-off household purchases across multiple people, where the real problem is not just bookkeeping but confidence: users need to know the numbers are right and settlement is clear.
+OpenSplit is a greenfield mobile-first shared-expense product for roommates who need a fast, simple, trustworthy way to log shared costs and understand debts without friction. The product solves the recurring pain of tracking groceries, utilities, subscriptions, and one-off group purchases across multiple people, where the real problem is not just bookkeeping but confidence: users need to know the numbers are right and settlement is clear.
 
 The core experience is optimized for speed and simplicity. Users should be able to create an account quickly, add an expense in seconds, assign payers and splits, and immediately see how balances change. Mobile is the primary surface; web support is also important for fast access to balances and expense entry. The product is intentionally minimal in UI and workflow so it stays faster than chat threads, spreadsheets, or memory-based tracking.
 
@@ -79,7 +79,7 @@ The app should deliver a 98% crash-free session rate. Android startup time on a 
 
 ### Core Release
 
-- Quick household creation
+- Quick group creation
 - Fast expense entry
 - Equal and unequal splits
 - Balance calculation
@@ -104,7 +104,7 @@ OpenSplit becomes the fastest way for roommates and adjacent shared-living group
 
 ### Primary User - Success Path
 
-Maya is a roommate who just paid for groceries after work. She opens OpenSplit on her phone while standing in the kitchen and wants the app to get out of the way. The expense form comes prefilled with the current household, the current user as payer, and an equal split by default, so she only changes what is necessary and saves in a few taps. The app updates balances immediately so she can see who owes what without mental math or old chat threads.
+Maya is a roommate who just paid for groceries after work. She opens OpenSplit on her phone while standing in the kitchen and wants the app to get out of the way. The expense form comes prefilled with the current group, the current user as payer, and an equal split by default, so she only changes what is necessary and saves in a few taps. The app updates balances immediately so she can see who owes what without mental math or old chat threads.
 
 The critical moment is the save. If it feels instant and obvious, Maya trusts the app and keeps using it. If it feels slow or cluttered, she falls back to notes or chat. The journey succeeds when expense entry is faster than her current workaround and the balance result is clear enough to settle later without confusion.
 
@@ -114,11 +114,11 @@ Maya is trying to add a shared utility bill, but her phone is offline. She still
 
 The critical moment is recovery after reconnect. If the app handles sync cleanly, Maya continues using it without thinking about the technical layer. If data appears missing or altered, trust breaks immediately. This journey requires offline creation, edit, settlement recording, sync, and conflict handling.
 
-### Household Admin / Setup User
+### Group Admin / Setup User
 
-Maya creates a new roommate household when the group first starts using OpenSplit. She needs a fast setup path with minimal friction so the group can begin logging expenses right away. She names the household, invites roommates, and confirms the group is ready. The setup flow should feel lightweight, not like onboarding for a complex finance tool.
+Maya creates a new roommate group when the group first starts using OpenSplit. She needs a fast setup path with minimal friction so the group can begin logging expenses right away. She names the group, invites roommates, and confirms the group is ready. The setup flow should feel lightweight, not like onboarding for a complex finance tool.
 
-The critical moment is first successful household creation. If that is quick, the rest of the product becomes usable immediately. If setup feels heavy, the group never gets to the core value. This journey reveals requirements for account creation, household setup, and fast invitation or joining flow.
+The critical moment is first successful group creation. If that is quick, the rest of the product becomes usable immediately. If setup feels heavy, the group never gets to the core value. This journey reveals requirements for account creation, group setup, and fast invitation or joining flow.
 
 ### Web Access / Quick Check Journey
 
@@ -129,7 +129,7 @@ The critical moment is fast access to the current state. If she can see balances
 ### Journey Requirements Summary
 
 - Default-first expense entry
-- Fast account and household creation
+- Fast account and group creation
 - Minimal-tap expense entry
 - Equal and unequal split support
 - Immediate balance calculation
@@ -150,7 +150,7 @@ The critical moment is fast access to the current state. If she can see balances
 
 ### Risk Mitigations
 - Avoid unnecessary personal data collection
-- Keep expense and household data protected by default
+- Keep expense and group data protected by default
 - Make sync behavior predictable so users trust their data
 - Prevent slow or heavy UI flows from hurting the core experience
 
@@ -188,13 +188,13 @@ OpenSplit is a mobile-first app with shared code across platforms using Kotlin M
 **Core User Journeys Supported:**
 - Fast expense entry with smart defaults
 - Offline expense creation, editing, and settlement
-- Household setup and quick access
+- Group setup and quick access
 - Balance review on mobile and web
 - Settlement tracking with clear debt visibility
 
 **Must-Have Capabilities:**
 - Native mobile apps with shared Kotlin code
-- Fast account and household creation
+- Fast account and group creation
 - Default-first expense entry
 - Equal and unequal splits
 - Immediate balance calculation
@@ -222,19 +222,19 @@ Keep the first release focused on speed, offline reliability, and trustable sync
 Validate that users actually adopt the product by focusing on the fastest possible expense-entry loop and clear balances.
 
 **Resource Risks:**
-If resources tighten, preserve the core loop: create household, add expense, calculate debt, settle. Everything else is secondary.
+If resources tighten, preserve the core loop: create group, add expense, calculate debt, settle. Everything else is secondary.
 
 ## Functional Requirements
 
-### Account and Household Management
+### Account and Group Management
 
 - FR1: Users can create an account to access OpenSplit.
-- FR2: Users can create a household/group for shared expenses.
-- FR3: Users can join a household/group.
-- FR4: Users can view the household they belong to.
-- FR5: Users can switch between households they have access to.
-- FR6: Users can leave a household they belong to.
-- FR7: Users can view household members.
+- FR2: Users can create a group/group for shared expenses.
+- FR3: Users can join a group/group.
+- FR4: Users can view the group they belong to.
+- FR5: Users can switch between groups they have access to.
+- FR6: Users can leave a group they belong to.
+- FR7: Users can view group members.
 
 ### Expense Management
 
@@ -250,12 +250,12 @@ If resources tighten, preserve the core loop: create household, add expense, cal
 
 ### Balances and Settlement
 
-- FR17: Users can view current balances within a household.
-- FR18: Users can view who owes whom in a household.
+- FR17: Users can view current balances within a group.
+- FR18: Users can view who owes whom in a group.
 - FR19: Users can record a full settlement.
 - FR20: Users can record a partial settlement.
 - FR21: Users can view settlement history.
-- FR22: Users can see settlement status for each household member.
+- FR22: Users can see settlement status for each group member.
 - FR23: Users can settle an outstanding balance between members.
 
 ### Offline and Sync
@@ -272,7 +272,7 @@ If resources tighten, preserve the core loop: create household, add expense, cal
 - FR30: Users can access OpenSplit on mobile.
 - FR31: Users can access OpenSplit on web.
 - FR32: Users can sign in securely.
-- FR33: Users can keep their household and expense data private by default.
+- FR33: Users can keep their group and expense data private by default.
 - FR34: Users can choose only the information needed for expense tracking.
 
 ### Product Experience
@@ -291,7 +291,7 @@ If resources tighten, preserve the core loop: create household, add expense, cal
 
 ### Security
 
-- User and household data should be privacy-first by default.
+- User and group data should be privacy-first by default.
 - Only the minimum data needed for expense tracking should be collected.
 - Account access should be securely handled.
 

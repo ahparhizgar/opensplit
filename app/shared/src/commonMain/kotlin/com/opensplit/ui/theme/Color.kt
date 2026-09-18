@@ -1,4 +1,5 @@
 package com.opensplit.ui.theme
+
 import androidx.compose.ui.graphics.Color
 
 val primaryLight = Color(0xFF8C4E29)
@@ -318,4 +319,3 @@ val youAreOwedDarkHighContrast = Color(0xFFAAFFFB)
 val onYouAreOwedDarkHighContrast = Color(0xFF000000)
 val youAreOwedContainerDarkHighContrast = Color(0xFF7CD1CE)
 val onYouAreOwedContainerDarkHighContrast = Color(0xFF000E0D)
-

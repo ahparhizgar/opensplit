@@ -6,13 +6,13 @@ Status: done
 
 As a new or returning user,
 I want to create an account and sign in securely,
-so that I can access my households and expenses on mobile or web.
+so that I can access my groups and expenses on mobile or web.
 
 ## Acceptance Criteria
 
 1. Given a new user is on the sign-up screen, when they submit a valid email and password, then the account is created and the user is signed in.
 2. Given a new user signs up, then only the minimum access information is required.
-3. Given a returning user is on the sign-in screen, when they submit valid credentials, then the user is authenticated and routed to their household context.
+3. Given a returning user is on the sign-in screen, when they submit valid credentials, then the user is authenticated and routed to their group context.
 4. Given the user enters invalid credentials or incomplete data, when they submit the form, then inline validation or an error message is shown.
 5. Given the user submits invalid data, then no token is created.
 
@@ -22,7 +22,7 @@ so that I can access my households and expenses on mobile or web.
   - [x] Replace the placeholder `App()` experience with an auth-aware root flow.
   - [x] Add sign-up and sign-in screens with inline validation and clear error states.
   - [x] Keep the form minimal: email + password only for v1.
-  - [x] Route successful auth into the protected post-auth household context shell, not into household creation logic.
+  - [x] Route successful auth into the protected post-auth group context shell, not into group creation logic.
 - [x] Implement shared auth DTOs and validation. (AC: 1, 2, 4, 5)
   - [x] Add request/response models for sign-up, sign-in, and auth session state in `shared`.
   - [x] Reuse shared validation rules for email and password shape so client and server stay aligned.
@@ -38,8 +38,8 @@ so that I can access my households and expenses on mobile or web.
 
 ## Dev Notes
 
-- This story is only about secure account creation and sign-in. Do not implement household creation/join flows here; those belong to Story 1.3.
-- Treat the post-auth destination as a protected household-context shell/safe landing state. If no household exists yet, show the authenticated landing state rather than inventing household setup in this story.
+- This story is only about secure account creation and sign-in. Do not implement group creation/join flows here; those belong to Story 1.3.
+- Treat the post-auth destination as a protected group-context shell/safe landing state. If no group exists yet, show the authenticated landing state rather than inventing group setup in this story.
 - Keep the UX minimal and fast. The product goal is the smallest viable auth form with clear inline validation and obvious success/failure feedback.
 - Do not add unrelated auth providers, password reset, MFA, or guest access. The architecture explicitly defers expanded auth options.
 - Reuse the existing Kotlin Multiplatform starter shape and extend it feature-first. Do not introduce a second flat root-package auth implementation.
@@ -49,7 +49,7 @@ so that I can access my households and expenses on mobile or web.
 - Use the pinned project stack already in the repo: Kotlin 2.3.21, Compose Multiplatform 1.10.3, Ktor 3.4.3.
 - Use bearer-token auth on the server; do not introduce cookie/session state inside this story.
 - Keep credentials and token secrets out of UI state and logs.
-- Preserve household-scoped authorization assumptions from the architecture: auth establishes identity, later stories enforce household membership.
+- Preserve group-scoped authorization assumptions from the architecture: auth establishes identity, later stories enforce group membership.
 - Validation must happen both client-side for immediate feedback and server-side for trust.
 
 ### Architecture Compliance
@@ -150,10 +150,10 @@ gpt-5.4-mini
 ### Completion Notes List
 
 - Created a comprehensive implementation guide for secure account creation and sign-in.
-- Scoped the story to auth only and explicitly deferred household creation/joining to Story 1.3.
+- Scoped the story to auth only and explicitly deferred group creation/joining to Story 1.3.
 - Anchored the implementation to the existing KMP starter, the pinned Ktor 3.4.3 stack, and the feature-first architecture.
 - Added `client/features/auth`, `server/features/auth`, `shared/dto/auth`, and `shared/validation/auth`.
-- Added JWT-backed sign-up, sign-in, and household-context server endpoints.
+- Added JWT-backed sign-up, sign-in, and group-context server endpoints.
 - Added client-side real HTTP auth calls with Ktor and platform client factories.
 - Added a JVM integration test covering the auth gateway network path.
 - Verified implementation with `./gradlew :shared:jvmTest :client:jvmTest :server:test` and `./gradlew test`.

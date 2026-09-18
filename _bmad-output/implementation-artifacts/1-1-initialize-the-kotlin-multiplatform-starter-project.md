@@ -29,7 +29,7 @@ so that the app has the agreed shared client/server structure before feature wor
 ## Dev Notes
 
 - Use the Kotlin Multiplatform wizard at `https://kmp.jetbrains.com/` and enable Share UI; this is the selected starter path in the architecture.
-- Keep the first implementation narrow: project initialization only, not auth, not household flows, not offline sync.
+- Keep the first implementation narrow: project initialization only, not auth, not group flows, not offline sync.
 - Architecture requires shared business logic across client and server, REST later, and feature-first organization under `client`, `server`, and `shared`.
 - Preserve the future boundaries implied by the architecture: client owns UI/navigation/state, shared owns DTOs/domain/validation, server owns routes/persistence/auth.
 - This story is the foundation for the whole project, so avoid introducing ad hoc folders or one-off abstractions that will fight the planned structure.

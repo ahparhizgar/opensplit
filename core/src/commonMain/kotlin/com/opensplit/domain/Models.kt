@@ -16,7 +16,7 @@ data class Member(
 )
 
 @Serializable
-data class Household(
+data class Group(
     val id: String,
     val name: String,
     val members: List<Member>,
@@ -41,7 +41,7 @@ data class ParticipantShare(
 @Serializable
 data class Expense(
     val id: String,
-    val householdId: String,
+    val groupId: String,
     val title: String,
     val amount: Double,
     val creator: String,

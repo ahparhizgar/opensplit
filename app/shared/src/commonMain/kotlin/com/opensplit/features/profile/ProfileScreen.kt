@@ -66,9 +66,7 @@ fun ProfileScreen(
       modifier = modifier,
   ) { paddingValues ->
     Column(
-        modifier =
-            Modifier.fillMaxSize()
-                .padding(paddingValues),
+        modifier = Modifier.fillMaxSize().padding(paddingValues),
     ) {
       ProfileHeader(
           component = component,
@@ -134,18 +132,12 @@ private fun ProfileHeader(
 private fun AvatarWithCamera(modifier: Modifier = Modifier) {
   Box(modifier = modifier.size(68.dp)) {
     Box(
-        modifier =
-            Modifier.size(60.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF35A79C)),
+        modifier = Modifier.size(60.dp).clip(CircleShape).background(Color(0xFF35A79C)),
         contentAlignment = Alignment.Center,
     ) {
       // Stylized avatar background
       Box(
-          modifier =
-              Modifier.size(36.dp)
-                  .clip(CircleShape)
-                  .background(Color(0xFF80CBC4)),
+          modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFF80CBC4)),
       )
     }
 

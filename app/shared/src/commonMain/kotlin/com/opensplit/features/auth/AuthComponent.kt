@@ -10,7 +10,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.backhandler.BackHandler
 import com.opensplit.component.CContext
-import com.opensplit.features.household.my.MyHouseholdsListComponent
+import com.opensplit.features.group.my.MyGroupsListComponent
 import com.opensplit.root.Destination
 import com.opensplit.root.TopLevelDestinationConfig
 import kotlinx.serialization.Serializable
@@ -88,7 +88,7 @@ class DefaultAuthComponent(
   }
 
   private fun onAuthenticated() {
-    navigation.replaceCurrent(MyHouseholdsListComponent.Config)
+    navigation.replaceCurrent(MyGroupsListComponent.Config)
   }
 }
 

@@ -28,7 +28,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 ### Requirements Overview
 
 **Functional Requirements:**
-OpenSplit is a shared-expense product centered on household creation, member management, expense entry, split calculation, balance review, settlement tracking, offline capture, sync recovery, and secure access on mobile and web. Architecturally, this implies a household-scoped domain model, expense and settlement workflows, offline persistence, sync conflict handling, and shared business logic for consistent calculations across platforms.
+OpenSplit is a shared-expense product centered on group creation, member management, expense entry, split calculation, balance review, settlement tracking, offline capture, sync recovery, and secure access on mobile and web. Architecturally, this implies a group-scoped domain model, expense and settlement workflows, offline persistence, sync conflict handling, and shared business logic for consistent calculations across platforms.
 
 **Non-Functional Requirements:**
 The architecture must prioritize speed, reliability, privacy, and offline resilience. Key constraints include sub-0.5s Android startup on a Galaxy A50, at least 98% crash-free sessions, responsive core flows, secure authentication, minimum data collection, WCAG 2.1 AA accessibility, and predictable sync behavior users can trust.
@@ -45,7 +45,7 @@ The project is medium complexity with a focused domain and multiple cross-cuttin
 - Kotlin Multiplatform for shared business logic across platforms
 - Offline-first behavior is a core v1 requirement, not an enhancement
 - Mobile performance is critical, especially on lower-end Android hardware
-- Web access must expose the same core household and balance model
+- Web access must expose the same core group and balance model
 - Security and privacy must be handled by default with minimal personal data collection
 - Sync must preserve user-entered data and resolve conflicts predictably
 
@@ -53,7 +53,7 @@ The project is medium complexity with a focused domain and multiple cross-cuttin
 
 - Offline persistence and synchronization
 - Balance calculation consistency across platforms
-- Authentication and household-scoped access control
+- Authentication and group-scoped access control
 - Privacy and secure data handling
 - Performance and startup responsiveness
 - Responsive UX consistency between mobile and web
@@ -118,7 +118,7 @@ Current JetBrains-supported path, with wizard-generated project structure and pl
 - Offline persistence must be treated as core behavior
 - Sync conflicts must be resolved predictably and visibly
 - Shared business logic must remain the source of truth for balance calculation
-- Household-scoped access control must be enforced consistently
+- Group-scoped access control must be enforced consistently
 - DTOs can be shared between Kotlin backend and Kotlin client to reduce drift
 
 **Deferred Decisions (Post-MVP):**
@@ -132,7 +132,7 @@ OpenSplit uses a local-first data model with synchronization to a server-backed 
 
 ### Authentication & Security
 
-Authentication starts with email/password and secure session handling. A mixed approach can be added later, but the initial system should stay simple and consistent across mobile and web. Authorization is household-scoped, meaning access checks must verify membership before reading or mutating household data. Privacy-first handling and minimal data collection remain default requirements.
+Authentication starts with email/password and secure session handling. A mixed approach can be added later, but the initial system should stay simple and consistent across mobile and web. Authorization is group-scoped, meaning access checks must verify membership before reading or mutating group data. Privacy-first handling and minimal data collection remain default requirements.
 
 ### API & Communication Patterns
 
@@ -153,14 +153,14 @@ OpenSplit will be deployed on a VPS with Docker Compose managing the backend run
 2. Set up shared domain models and validation
 3. Build local persistence and sync foundations
 4. Implement email/password auth and session handling
-5. Define REST endpoints for household, expense, settlement, and sync flows
+5. Define REST endpoints for group, expense, settlement, and sync flows
 6. Build shared UI screens and shared interactions
 7. Prepare VPS and Docker Compose deployment scripts
 
 **Cross-Component Dependencies:**
 - Local-first storage depends on REST sync endpoints and shared data models
 - Shared UI depends on shared domain logic for consistent display and behavior
-- Auth and household access rules affect every API and data mutation path
+- Auth and group access rules affect every API and data mutation path
 - VPS deployment depends on Docker Compose and environment configuration conventions
 - Shared Kotlin DTOs depend on a common module boundary that both client and backend can consume
 
@@ -174,10 +174,10 @@ OpenSplit will be deployed on a VPS with Docker Compose managing the backend run
 ### Naming Patterns
 
 **Database Naming Conventions:**
-Use lowercase camelCase-compatible names in code and API-facing models. Keep entity names singular in domain code and use consistent identifiers like `householdId`, `expenseId`, and `memberId` throughout shared logic.
+Use lowercase camelCase-compatible names in code and API-facing models. Keep entity names singular in domain code and use consistent identifiers like `groupId`, `expenseId`, and `memberId` throughout shared logic.
 
 **API Naming Conventions:**
-Use plural REST endpoints such as `/households`, `/expenses`, and `/settlements`. Route params should use a simple `:id` style in documentation and implementation. JSON fields should use camelCase.
+Use plural REST endpoints such as `/groups`, `/expenses`, and `/settlements`. Route params should use a simple `:id` style in documentation and implementation. JSON fields should use camelCase.
 
 **Code Naming Conventions:**
 Use PascalCase for types and components, camelCase for functions and variables, and camelCase file names where practical in shared code. Keep names domain-first and avoid abbreviations unless they are already established in the product language.
@@ -201,7 +201,7 @@ Use camelCase JSON fields, booleans as true/false, ISO timestamps for dates, and
 ### Communication Patterns
 
 **Event System Patterns:**
-If events are introduced later, use clear domain names tied to household actions, but do not introduce an event system unless a concrete use case requires it.
+If events are introduced later, use clear domain names tied to group actions, but do not introduce an event system unless a concrete use case requires it.
 
 **State Management Patterns:**
 Use unidirectional state flow with immutable state. Prefer a Decompose-based navigation/state structure with MVVM-like presentation logic, not MVI. State changes should be explicit and predictable so shared UI stays consistent.
@@ -233,8 +233,8 @@ Keep loading states local to the affected screen or component unless a global sy
 ### Pattern Examples
 
 **Good Examples:**
-- `householdId`, `expenseId`, `memberName`
-- `/households/123/expenses`
+- `groupId`, `expenseId`, `memberName`
+- `/groups/123/expenses`
 - `ExpenseListScreen`, `settlementStatus`, `SyncState`
 - Feature folder plus shared domain layer
 - Inline validation error plus global sync banner
@@ -270,7 +270,7 @@ opensplit/
 │   │   │       ├── app/
 │   │   │       ├── features/
 │   │   │       │   ├── auth/
-│   │   │       │   ├── households/
+│   │   │       │   ├── groups/
 │   │   │       │   ├── expenses/
 │   │   │       │   ├── balances/
 │   │   │       │   └── settlements/
@@ -291,7 +291,7 @@ opensplit/
 │   │   │   │   ├── app/
 │   │   │   │   ├── features/
 │   │   │   │   │   ├── auth/
-│   │   │   │   │   ├── households/
+│   │   │   │   │   ├── groups/
 │   │   │   │   │   ├── expenses/
 │   │   │   │   │   ├── balances/
 │   │   │   │   │   └── settlements/
@@ -322,13 +322,13 @@ opensplit/
 ### Architectural Boundaries
 
 **API Boundaries:**
-The server owns REST endpoints for auth, households, expenses, balances, settlements, and sync. The client consumes those endpoints and should not duplicate server rules. Shared DTOs define the contract shape for both sides.
+The server owns REST endpoints for auth, groups, expenses, balances, settlements, and sync. The client consumes those endpoints and should not duplicate server rules. Shared DTOs define the contract shape for both sides.
 
 **Component Boundaries:**
 The client owns UI composition, Decompose navigation, and presentation state. The shared module owns DTOs, domain models, validation, and shared calculation logic. The server owns request handling, authorization checks, persistence, and sync orchestration.
 
 **Service Boundaries:**
-Feature code stays within its own directory, but common cross-feature concerns live in shared core layers. Auth, household access, and sync logic must not leak into unrelated features.
+Feature code stays within its own directory, but common cross-feature concerns live in shared core layers. Auth, group access, and sync logic must not leak into unrelated features.
 
 **Data Boundaries:**
 Shared DTOs define the transport layer, while shared domain models define business meaning. The server persists canonical state; the client keeps local state for offline use and sync recovery.
@@ -337,7 +337,7 @@ Shared DTOs define the transport layer, while shared domain models define busine
 
 **Feature/Epic Mapping:**
 - Account and auth flows → `client/features/auth`, `server/features/auth`, `shared/dto`
-- Household management → `client/features/households`, `server/features/households`, `shared/domain`
+- Group management → `client/features/groups`, `server/features/groups`, `shared/domain`
 - Expense management → `client/features/expenses`, `server/features/expenses`, `shared/domain`
 - Balances and settlements → `client/features/balances`, `client/features/settlements`, `server/features/balances`, `server/features/settlements`
 - Offline sync → `client/core/state`, `client/core/error`, `server/core/persistence`, `server/routes`
@@ -400,7 +400,7 @@ The project tree supports client/server/shared separation, shared DTO reuse, fea
 ### Requirements Coverage Validation ✅
 
 **Functional Requirements Coverage:**
-The architecture supports auth, households, expenses, balances, settlements, offline sync, and web/mobile access.
+The architecture supports auth, groups, expenses, balances, settlements, offline sync, and web/mobile access.
 
 **Non-Functional Requirements Coverage:**
 Performance, reliability, privacy, accessibility, and offline resilience are covered at the architectural level.

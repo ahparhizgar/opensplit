@@ -3,20 +3,20 @@ package com.opensplit.features.expense
 import com.opensplit.dto.expense.CreateExpenseRequest
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.features.auth.UserPrincipal
-import com.opensplit.features.household.HouseholdRepository
+import com.opensplit.features.group.GroupRepository
 import java.util.*
 import kotlin.time.Clock
 
 class ExpenseService(
     private val expenseRepository: ExpenseRepository,
-    private val householdRepository: HouseholdRepository,
+    private val groupRepository: GroupRepository,
 ) {
   fun createExpense(
-      householdId: String,
+      groupId: String,
       request: CreateExpenseRequest,
       creator: String,
   ): ExpenseDto {
-    if (!householdRepository.hasMembership(householdId, creator)) {
+    if (!groupRepository.hasMembership(groupId, creator)) {
       throw NotAMemberException()
     }
 
@@ -32,7 +32,7 @@ class ExpenseService(
     val expense =
         ExpenseRecord(
             id = UUID.randomUUID().toString(),
-            householdId = householdId,
+            groupId = groupId,
             title = request.title,
             amount = request.amount,
             creator = creator,
@@ -44,12 +44,12 @@ class ExpenseService(
     return expense.toDto()
   }
 
-  fun getExpenses(householdId: String): List<ExpenseDto> {
-    return expenseRepository.findExpensesByHouseholdId(householdId).map { it.toDto() }
+  fun getExpenses(groupId: String): List<ExpenseDto> {
+    return expenseRepository.findExpensesByGroupId(groupId).map { it.toDto() }
   }
 
-  fun deleteExpense(user: UserPrincipal, householdId: String, expenseId: String) {
-    if (!householdRepository.hasMembership(householdId, user.userId)) {
+  fun deleteExpense(user: UserPrincipal, groupId: String, expenseId: String) {
+    if (!groupRepository.hasMembership(groupId, user.userId)) {
       throw NotAMemberException()
     }
     expenseRepository.deleteExpense(expenseId)
@@ -57,19 +57,19 @@ class ExpenseService(
 
   fun updateExpense(
       user: UserPrincipal,
-      householdId: String,
+      groupId: String,
       expenseId: String,
       request: CreateExpenseRequest,
   ): ExpenseDto {
-    if (!householdRepository.hasMembership(householdId, user.userId)) {
+    if (!groupRepository.hasMembership(groupId, user.userId)) {
       throw NotAMemberException()
     }
 
     val existingExpense =
         expenseRepository.findExpenseById(expenseId) ?: throw ExpenseNotFoundException()
 
-    // Verify the expense belongs to the specified household
-    if (existingExpense.householdId != householdId) {
+    // Verify the expense belongs to the specified group
+    if (existingExpense.groupId != groupId) {
       throw ExpenseNotFoundException()
     }
 

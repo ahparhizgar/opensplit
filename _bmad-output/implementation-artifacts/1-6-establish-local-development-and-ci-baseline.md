@@ -95,7 +95,7 @@ So that the greenfield project can be built, tested, and run consistently from t
 - PRD: `_bmad-output/planning-artifacts/prd.md`
 - Architecture: `_bmad-output/planning-artifacts/architecture.md`
 - AGENTS.md: `AGENTS.md` (contains project-specific build and test guidance).
-- Prior story: `_bmad-output/implementation-artifacts/1-5-use-opensplit-on-mobile-and-web-with-clear-household-context.md`
+- Prior story: `_bmad-output/implementation-artifacts/1-5-use-opensplit-on-mobile-and-web-with-clear-group-context.md`
 
 ## Dev Agent Record
 

@@ -11,7 +11,6 @@ import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.db.AppDatabase
-import com.opensplit.dto.auth.UserProfile
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.repository.ProfileRepository
@@ -24,11 +23,12 @@ interface ProfileComponent {
   val uiState: Value<ProfileUiState>
 
   fun onBack(): Unit
+
   fun onEditClicked(): Unit
+
   fun onLogoutClicked(): Job
 
-  @Serializable
-  data object Config : TopLevelDestinationConfig
+  @Serializable data object Config : TopLevelDestinationConfig
 }
 
 data class ProfileUiState(
@@ -70,31 +70,31 @@ class DefaultProfileComponent(
     navigation.pop()
   }
 
-  override fun onEditClicked() {
-  }
+  override fun onEditClicked() {}
 
   override fun onLogoutClicked(): Job = scope.launch {
     tokenStorage.clearAccessToken()
     profileRepository.setProfile(null)
     database.useWriterConnection { connection ->
-      connection.immediateTransaction {
-        database.clearAllTables()
-      }
+      connection.immediateTransaction { database.clearAllTables() }
     }
     navigation.replaceAll(AuthComponent.Config)
   }
 }
 
 class FakeProfileComponent(
-    uiState: ProfileUiState = ProfileUiState(
-        name = "AmirHossein",
-        email = "amparhizgar@gmail.com",
-    )
+    uiState: ProfileUiState =
+        ProfileUiState(
+            name = "AmirHossein",
+            email = "amparhizgar@gmail.com",
+        )
 ) : ProfileComponent {
   override val uiState: Value<ProfileUiState> = MutableValue(uiState)
 
   override fun onBack() {}
+
   override fun onEditClicked() {}
+
   override fun onLogoutClicked(): Job = Job()
 }
 

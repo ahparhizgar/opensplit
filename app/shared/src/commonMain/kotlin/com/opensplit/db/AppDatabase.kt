@@ -11,7 +11,7 @@ import kotlinx.coroutines.Dispatchers
 @Database(
     entities =
         [
-            HouseholdEntity::class,
+            GroupEntity::class,
             MemberEntity::class,
             ExpenseEntity::class,
             ParticipantEntity::class,
@@ -22,7 +22,7 @@ import kotlinx.coroutines.Dispatchers
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
-  abstract fun householdDao(): HouseholdDao
+  abstract fun groupDao(): GroupDao
 
   abstract fun expenseDao(): ExpenseDao
 

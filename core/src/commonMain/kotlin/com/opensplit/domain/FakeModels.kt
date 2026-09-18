@@ -36,16 +36,16 @@ object FakeMemberFactory {
   fun createListWith3Members() = listOf(create1(), create2(), create3())
 }
 
-object FakeHouseholdFactory {
+object FakeGroupFactory {
   fun create(
-      id: String = "household-1",
-      name: String = "My Household",
+      id: String = "group-1",
+      name: String = "My Group",
       members: List<Member> = FakeMemberFactory.createList(),
       isOwner: Boolean = false,
       inviteLink: String = "https://opensplit.com/invite/85243892",
       balance: Double = 0.0,
   ) =
-      Household(
+      Group(
           id = id,
           name = name,
           members = members,
@@ -66,7 +66,7 @@ object FakeParticipantShareFactory {
 object FakeExpenseFactory {
   fun create(
       id: String = "expense-1",
-      householdId: String = "household-1",
+      groupId: String = "group-1",
       title: String = "Pizza",
       amount: Double = 20.0,
       creator: String = "user-1",
@@ -77,7 +77,7 @@ object FakeExpenseFactory {
   ) =
       Expense(
           id = id,
-          householdId = householdId,
+          groupId = groupId,
           title = title,
           amount = amount,
           creator = creator,

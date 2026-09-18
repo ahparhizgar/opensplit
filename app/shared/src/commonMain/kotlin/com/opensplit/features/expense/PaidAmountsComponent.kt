@@ -3,9 +3,9 @@ package com.opensplit.features.expense
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
-import com.opensplit.domain.FakeHouseholdFactory
+import com.opensplit.domain.FakeGroupFactory
 import com.opensplit.domain.FakeMemberFactory
-import com.opensplit.domain.Household
+import com.opensplit.domain.Group
 import com.opensplit.dto.expense.ParticipantAmount
 
 interface PaidAmountsComponent {
@@ -19,7 +19,7 @@ interface PaidAmountsComponent {
 interface PaidAmountsComponentFactory {
   fun create(
       initial: PayAmounts,
-      household: Household,
+      group: Group,
       onDone: (PayAmountsUiState) -> Unit,
   ): PaidAmountsComponent
 }
@@ -33,7 +33,7 @@ data class PaidAmountsUiState(
 
 class DefaultPaidAmountsComponent(
     initial: PayAmounts,
-    household: Household,
+    group: Group,
     private val onDone: (PayAmountsUiState) -> Unit,
 ) : PaidAmountsComponent {
 
@@ -48,7 +48,7 @@ class DefaultPaidAmountsComponent(
               allParticipantAmounts =
                   when (initial) {
                     is PayAmounts.OnePerson ->
-                        household.members.map { member ->
+                        group.members.map { member ->
                           if (member.userId == initial.userId)
                               ParticipantValue(
                                   initial.userId,
@@ -59,7 +59,7 @@ class DefaultPaidAmountsComponent(
                         }
 
                     is PayAmounts.MultiplePeople ->
-                        household.members.map { member ->
+                        group.members.map { member ->
                           initial.amounts
                               .find { it.userId == member.userId }
                               ?.let {
@@ -99,17 +99,17 @@ class DefaultPaidAmountsComponent(
 class DefaultPaidAmountsComponentFactory : PaidAmountsComponentFactory {
   override fun create(
       initial: PayAmounts,
-      household: Household,
+      group: Group,
       onDone: (PayAmountsUiState) -> Unit,
   ): PaidAmountsComponent {
-    return DefaultPaidAmountsComponent(initial = initial, household = household, onDone = onDone)
+    return DefaultPaidAmountsComponent(initial = initial, group = group, onDone = onDone)
   }
 }
 
 class FakePaidAmountsComponent(
     initial: PayAmounts = PayAmounts.OnePerson("user-1", 100.0),
-    household: Household =
-        FakeHouseholdFactory.create(
+    group: Group =
+        FakeGroupFactory.create(
             members = listOf(FakeMemberFactory.create(userId = "user-1", isCurrentUser = true))
         ),
     private val onDone: (PayAmounts) -> Unit = {},
@@ -126,7 +126,7 @@ class FakePaidAmountsComponent(
               allParticipantAmounts =
                   when (initial) {
                     is PayAmounts.OnePerson ->
-                        household.members.map { member ->
+                        group.members.map { member ->
                           if (member.userId == initial.userId)
                               ParticipantValue(
                                   initial.userId,
@@ -137,7 +137,7 @@ class FakePaidAmountsComponent(
                         }
 
                     is PayAmounts.MultiplePeople ->
-                        household.members.map { member ->
+                        group.members.map { member ->
                           initial.amounts
                               .find { it.userId == member.userId }
                               ?.let {

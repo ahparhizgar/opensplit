@@ -11,7 +11,7 @@ class DatabaseInitializer(private val database: Database) {
           MigrationUtils.statementsRequiredForDatabaseMigration(
               ChangeLog,
               Users,
-              Households,
+              Groups,
               Memberships,
               Expenses,
               ExpenseParticipants,

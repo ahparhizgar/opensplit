@@ -21,15 +21,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Note
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -59,7 +56,6 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.ui.OpenSplitTheme
-import com.opensplit.ui.colorSchemeExtended
 import com.opensplit.util.formatAmount
 
 @Composable
@@ -353,7 +349,7 @@ val previewParticipants = FakeMemberFactory.createList()
 
 val previewUiState =
     AddExpenseUiState(
-        householdName = " Home",
+        groupName = " Home",
         title = "Dinner at restaurant",
         splitMethod = SplitMethod.Equally(previewParticipants.map { it.userId }),
         allParticipants = previewParticipants.map { it.userId },

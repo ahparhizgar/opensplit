@@ -8,7 +8,7 @@ import com.opensplit.component.componentScope
 import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.domain.Member
 import com.opensplit.dto.expense.SplitMethod
-import com.opensplit.repository.HouseholdRepository
+import com.opensplit.repository.GroupRepository
 import com.opensplit.repository.ProfileRepository
 import kotlinx.coroutines.launch
 
@@ -66,7 +66,7 @@ interface QuickSplitComponentFactory {
       allParticipants: List<String>,
       amountText: String,
       amountSum: Double,
-      householdId: String,
+      groupId: String,
       initialOption: QuickSplitComponent.QuickSplitOption? = null,
       onOptionSelected: (PayAmountsUiState, SplitMethod) -> Unit,
       onAdjustSplitClicked: () -> Unit,
@@ -85,11 +85,11 @@ class DefaultQuickSplitComponent(
     private val allParticipants: List<String>,
     private val amountText: String,
     amountSum: Double,
-    householdId: String,
+    groupId: String,
     initialOption: QuickSplitComponent.QuickSplitOption?,
     private val onOptionSelected: (PayAmountsUiState, SplitMethod) -> Unit,
     private val onAdjustSplitClicked: () -> Unit,
-    private val repository: HouseholdRepository,
+    private val repository: GroupRepository,
     private val profileRepository: ProfileRepository,
 ) : QuickSplitComponent, CContext by context {
 
@@ -99,8 +99,8 @@ class DefaultQuickSplitComponent(
 
   init {
     scope.launch {
-      val household = repository.getHousehold(householdId)
-      val members = household?.members ?: emptyList()
+      val group = repository.getGroup(groupId)
+      val members = group?.members ?: emptyList()
 
       val currentUserId = profileRepository.profile.value?.id
       val otherMember = members.firstOrNull { it.userId != currentUserId }
@@ -159,7 +159,7 @@ class DefaultQuickSplitComponent(
 }
 
 class DefaultQuickSplitComponentFactory(
-    private val repository: HouseholdRepository,
+    private val repository: GroupRepository,
     private val profileRepository: ProfileRepository,
 ) : QuickSplitComponentFactory {
   override fun create(
@@ -167,7 +167,7 @@ class DefaultQuickSplitComponentFactory(
       allParticipants: List<String>,
       amountText: String,
       amountSum: Double,
-      householdId: String,
+      groupId: String,
       initialOption: QuickSplitComponent.QuickSplitOption?,
       onOptionSelected: (PayAmountsUiState, SplitMethod) -> Unit,
       onAdjustSplitClicked: () -> Unit,
@@ -181,7 +181,7 @@ class DefaultQuickSplitComponentFactory(
         profileRepository = profileRepository,
         onOptionSelected = onOptionSelected,
         onAdjustSplitClicked = onAdjustSplitClicked,
-        householdId = householdId,
+        groupId = groupId,
         initialOption = initialOption,
     )
   }

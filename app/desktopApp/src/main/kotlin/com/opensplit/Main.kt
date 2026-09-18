@@ -16,7 +16,6 @@ import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.opensplit.component.DefaultCContext
 import com.opensplit.di.appModule
-import com.opensplit.root.RootComponent
 import com.opensplit.root.RootComponentFactory
 import java.awt.Desktop
 import javax.swing.SwingUtilities

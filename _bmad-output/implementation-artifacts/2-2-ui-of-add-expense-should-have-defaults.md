@@ -3,12 +3,12 @@
 Status: done
 
 Summary:
-Ensure the Add Expense UI uses sensible defaults so users can add an expense with minimal taps: default household, current user as payer, and equal split among participants.
+Ensure the Add Expense UI uses sensible defaults so users can add an expense with minimal taps: default group, current user as payer, and equal split among participants.
 
 Acceptance Criteria:
-- The expense form preselects the current household.
+- The expense form preselects the current group.
 - The current user is preselected as payer.
-- The split defaults to equal among household members.
+- The split defaults to equal among group members.
 - Quick-save flow completes in 2 taps for typical use.
 
 Implementation notes:

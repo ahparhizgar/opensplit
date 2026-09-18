@@ -9,62 +9,59 @@ import androidx.room3.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface HouseholdDao {
+interface GroupDao {
   @Transaction
-  @Query("SELECT * FROM households")
-  fun getHouseholdsWithMembers(): Flow<List<HouseholdWithMembers>>
-
-  @Transaction
-  @Query("SELECT * FROM households WHERE id = :id")
-  fun observeHouseholdWithMembers(id: String): Flow<HouseholdWithMembers?>
+  @Query("SELECT * FROM groups")
+  fun getGroupsWithMembers(): Flow<List<GroupWithMembers>>
 
   @Transaction
-  @Query("SELECT * FROM households WHERE id = :id")
-  suspend fun getHouseholdWithMembers(id: String): HouseholdWithMembers?
+  @Query("SELECT * FROM groups WHERE id = :id")
+  fun observeGroupWithMembers(id: String): Flow<GroupWithMembers?>
 
-  @Query("SELECT * FROM households") fun getHouseholds(): Flow<List<HouseholdEntity>>
+  @Transaction
+  @Query("SELECT * FROM groups WHERE id = :id")
+  suspend fun getGroupWithMembers(id: String): GroupWithMembers?
 
-  @Query("SELECT * FROM households WHERE id = :id")
-  suspend fun getHousehold(id: String): HouseholdEntity?
+  @Query("SELECT * FROM groups") fun getGroups(): Flow<List<GroupEntity>>
+
+  @Query("SELECT * FROM groups WHERE id = :id") suspend fun getGroup(id: String): GroupEntity?
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
-  suspend fun insertHouseholds(households: List<HouseholdEntity>)
+  suspend fun insertGroups(groups: List<GroupEntity>)
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun insertMembers(members: List<MemberEntity>)
 
-  @Query("DELETE FROM household_members WHERE householdId = :householdId")
-  suspend fun deleteMembersByHousehold(householdId: String)
+  @Query("DELETE FROM group_members WHERE groupId = :groupId")
+  suspend fun deleteMembersByGroup(groupId: String)
 
   @Transaction
-  suspend fun insertHouseholdWithMembers(household: HouseholdEntity, members: List<MemberEntity>) {
-    insertHouseholds(listOf(household))
-    deleteMembersByHousehold(household.id)
+  suspend fun insertGroupWithMembers(group: GroupEntity, members: List<MemberEntity>) {
+    insertGroups(listOf(group))
+    deleteMembersByGroup(group.id)
     insertMembers(members)
   }
 
   @Query(
-      "UPDATE household_members SET balance = balance + :delta WHERE householdId = :householdId AND userId = :userId"
+      "UPDATE group_members SET balance = balance + :delta WHERE groupId = :groupId AND userId = :userId"
   )
-  suspend fun updateMemberBalance(householdId: String, userId: String, delta: Double)
+  suspend fun updateMemberBalance(groupId: String, userId: String, delta: Double)
 
   @Transaction
-  suspend fun deleteHousehold(id: String) {
-    deleteMembersByHousehold(id)
+  suspend fun deleteGroup(id: String) {
+    deleteMembersByGroup(id)
     deleteById(id)
   }
 
-  @Query("DELETE FROM households WHERE id = :id") suspend fun deleteById(id: String)
+  @Query("DELETE FROM groups WHERE id = :id") suspend fun deleteById(id: String)
 
-  @Query("DELETE FROM households") suspend fun deleteAll()
+  @Query("DELETE FROM groups") suspend fun deleteAll()
 }
 
 @Dao
 interface ExpenseDao {
-  @Query(
-      "SELECT * FROM expenses WHERE householdId = :householdId ORDER BY createdAtEpochMillis DESC"
-  )
-  fun getExpenses(householdId: String): Flow<List<ExpenseEntity>>
+  @Query("SELECT * FROM expenses WHERE groupId = :groupId ORDER BY createdAtEpochMillis DESC")
+  fun getExpenses(groupId: String): Flow<List<ExpenseEntity>>
 
   @Query("SELECT * FROM expenses WHERE id = :id") suspend fun getExpense(id: String): ExpenseEntity?
 

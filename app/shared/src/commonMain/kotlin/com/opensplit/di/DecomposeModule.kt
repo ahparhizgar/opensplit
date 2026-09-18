@@ -20,18 +20,18 @@ import com.opensplit.features.expense.ExpenseDetailsComponentFactory
 import com.opensplit.features.expense.MoreSplitOptionsComponentFactory
 import com.opensplit.features.expense.QuickSplitComponentFactory
 import com.opensplit.features.expense.WhoPaidComponentFactory
-import com.opensplit.features.household.createjoin.CreateHouseholdComponentFactory
-import com.opensplit.features.household.createjoin.DefaultCreateHouseholdComponentFactory
-import com.opensplit.features.household.createjoin.DefaultHouseholdSelectionComponentFactory
-import com.opensplit.features.household.createjoin.DefaultJoinHouseholdComponentFactory
-import com.opensplit.features.household.createjoin.HouseholdSelectionComponentFactory
-import com.opensplit.features.household.createjoin.JoinHouseholdComponentFactory
-import com.opensplit.features.household.details.DefaultHouseholdDetailsComponentFactory
-import com.opensplit.features.household.details.HouseholdDetailsComponentFactory
-import com.opensplit.features.household.my.DefaultMyHouseholdsListComponentFactory
-import com.opensplit.features.household.my.MyHouseholdsListComponentFactory
-import com.opensplit.features.household.settings.DefaultHouseholdSettingsComponentFactory
-import com.opensplit.features.household.settings.HouseholdSettingsComponentFactory
+import com.opensplit.features.group.createjoin.CreateGroupComponentFactory
+import com.opensplit.features.group.createjoin.DefaultCreateGroupComponentFactory
+import com.opensplit.features.group.createjoin.DefaultGroupSelectionComponentFactory
+import com.opensplit.features.group.createjoin.DefaultJoinGroupComponentFactory
+import com.opensplit.features.group.createjoin.GroupSelectionComponentFactory
+import com.opensplit.features.group.createjoin.JoinGroupComponentFactory
+import com.opensplit.features.group.details.DefaultGroupDetailsComponentFactory
+import com.opensplit.features.group.details.GroupDetailsComponentFactory
+import com.opensplit.features.group.my.DefaultMyGroupsListComponentFactory
+import com.opensplit.features.group.my.MyGroupsListComponentFactory
+import com.opensplit.features.group.settings.DefaultGroupSettingsComponentFactory
+import com.opensplit.features.group.settings.GroupSettingsComponentFactory
 import com.opensplit.features.profile.DefaultProfileComponentFactory
 import com.opensplit.features.profile.ProfileComponentFactory
 import com.opensplit.root.ComponentProvider
@@ -50,13 +50,12 @@ fun decomposeModule() = module {
   factoryOf(::DefaultLoginComponentFactory).bind<LoginComponentFactory>()
   factoryOf(::DefaultSignUpComponentFactory).bind<SignUpComponentFactory>()
   factoryOf(::DefaultResetPasswordComponentFactory).bind<ResetPasswordComponentFactory>()
-  factoryOf(::DefaultHouseholdSelectionComponentFactory)
-      .bind<HouseholdSelectionComponentFactory>()
-  factoryOf(::DefaultCreateHouseholdComponentFactory).bind<CreateHouseholdComponentFactory>()
-  factoryOf(::DefaultJoinHouseholdComponentFactory).bind<JoinHouseholdComponentFactory>()
-  factoryOf(::DefaultMyHouseholdsListComponentFactory).bind<MyHouseholdsListComponentFactory>()
-  factoryOf(::DefaultHouseholdDetailsComponentFactory).bind<HouseholdDetailsComponentFactory>()
-  factoryOf(::DefaultHouseholdSettingsComponentFactory).bind<HouseholdSettingsComponentFactory>()
+  factoryOf(::DefaultGroupSelectionComponentFactory).bind<GroupSelectionComponentFactory>()
+  factoryOf(::DefaultCreateGroupComponentFactory).bind<CreateGroupComponentFactory>()
+  factoryOf(::DefaultJoinGroupComponentFactory).bind<JoinGroupComponentFactory>()
+  factoryOf(::DefaultMyGroupsListComponentFactory).bind<MyGroupsListComponentFactory>()
+  factoryOf(::DefaultGroupDetailsComponentFactory).bind<GroupDetailsComponentFactory>()
+  factoryOf(::DefaultGroupSettingsComponentFactory).bind<GroupSettingsComponentFactory>()
   factoryOf(::DefaultAddExpenseComponentFactory).bind<AddExpenseComponentFactory>()
   factoryOf(::DefaultExpenseDetailsComponentFactory).bind<ExpenseDetailsComponentFactory>()
   factoryOf(::DefaultMoreSplitOptionsComponentFactory).bind<MoreSplitOptionsComponentFactory>()

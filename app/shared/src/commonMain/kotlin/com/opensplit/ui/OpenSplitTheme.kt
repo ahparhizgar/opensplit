@@ -2,8 +2,6 @@ package com.opensplit.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
@@ -17,19 +15,17 @@ import com.opensplit.ui.theme.extendedLight
 import com.opensplit.ui.theme.lightScheme
 
 internal object ExtendedTheme {
-    val colors: ExtendedColorScheme
-        @Composable
-        @ReadOnlyComposable
-        get() = LocalExtendedTheme.current
+  val colors: ExtendedColorScheme
+    @Composable @ReadOnlyComposable get() = LocalExtendedTheme.current
 
-    val LocalExtendedTheme: ProvidableCompositionLocal<ExtendedColorScheme> =
-        staticCompositionLocalOf { extendedLight }
+  val LocalExtendedTheme: ProvidableCompositionLocal<ExtendedColorScheme> =
+      staticCompositionLocalOf {
+        extendedLight
+      }
 }
 
 val MaterialTheme.colorSchemeExtended: ExtendedColorScheme
-    @Composable
-    @ReadOnlyComposable
-    get() = ExtendedTheme.colors
+  @Composable @ReadOnlyComposable get() = ExtendedTheme.colors
 
 @Composable
 fun OpenSplitTheme(

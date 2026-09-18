@@ -37,7 +37,7 @@ OpenSplit should feel like the fastest, clearest way for roommates to record sha
 
 ### Target Users
 
-The primary users are roommates living together in small households. They need a low-friction way to log groceries, utilities, subscriptions, and one-off shared purchases, then see who owes whom without reconstructing the story from chat history or memory.
+The primary users are roommates living together in small groups. They need a low-friction way to log groceries, utilities, subscriptions, and one-off shared purchases, then see who owes whom without reconstructing the story from chat history or memory.
 
 ### Key Design Challenges
 
@@ -48,7 +48,7 @@ The primary users are roommates living together in small households. They need a
 ### Design Opportunities
 
 - Use strong defaults to minimize taps and decisions during expense entry.
-- Make balances visually obvious so users can understand the household at a glance.
+- Make balances visually obvious so users can understand the group at a glance.
 - Treat offline resilience and recovery as part of the trust-building experience, not hidden technical behavior.
 
 ## Core User Experience
@@ -63,7 +63,7 @@ OpenSplit is a mobile-first product with web as a fast companion surface. Mobile
 
 ### Effortless Interactions
 
-- Default the household, payer, and equal split whenever possible.
+- Default the group, payer, and equal split whenever possible.
 - Minimize required fields and keep the expense form short.
 - Update balances immediately after save so users do not need to mentally recalculate.
 - Preserve offline actions locally and sync them later without interrupting the user.
@@ -74,7 +74,7 @@ OpenSplit is a mobile-first product with web as a fast companion surface. Mobile
 - The first successful expense save: users should feel the app is faster than chat or a spreadsheet.
 - The moment balances update: users should instantly understand who owes whom.
 - Offline recovery: users should feel confident that nothing was lost or changed unexpectedly.
-- First-time household setup: it must feel lightweight enough to get the group started immediately.
+- First-time group setup: it must feel lightweight enough to get the group started immediately.
 
 ### Experience Principles
 
@@ -126,7 +126,7 @@ Users should feel calm, confident, and in control when using OpenSplit. The expe
 ### Transferable UX Patterns
 
 **Navigation Patterns**
-- Group-first context - useful for keeping users anchored in one household.
+- Group-first context - useful for keeping users anchored in one group.
 - Short-path task flow - useful for expense entry and settlement.
 
 **Interaction Patterns**
@@ -253,11 +253,11 @@ Choose a restrained, utility-focused direction: clean cards, direct hierarchy, s
 
 ### Fast Expense Entry
 
-Maya opens OpenSplit, lands in her household, and taps add expense. The form opens with the household and payer already set, an equal split preselected, and the most important fields first. She fills only what changed, saves, and immediately sees the balances update. If she is offline, the app keeps the expense locally and shows that it will sync later.
+Maya opens OpenSplit, lands in her group, and taps add expense. The form opens with the group and payer already set, an equal split preselected, and the most important fields first. She fills only what changed, saves, and immediately sees the balances update. If she is offline, the app keeps the expense locally and shows that it will sync later.
 
 ```mermaid
 flowchart TD
-  A[Open app] --> B[Land in household]
+  A[Open app] --> B[Land in group]
   B --> C[Tap add expense]
   C --> D[Prefilled form]
   D --> E[Edit amount/details]
@@ -322,11 +322,11 @@ Material 3 provides the base for buttons, text fields, cards, sheets, tabs, dial
 
 ### Custom Components
 
-### Household Balance Card
+### Group Balance Card
 
-**Purpose:** Show the most important household balance at a glance.
+**Purpose:** Show the most important group balance at a glance.
 **Usage:** Home screen, group summary, and quick review states.
-**Anatomy:** Household name, net balance, status label, primary relationship summary.
+**Anatomy:** Group name, net balance, status label, primary relationship summary.
 **States:** Default, loading, empty, positive, negative, warning.
 **Variants:** Compact and expanded.
 **Accessibility:** Clear text labels, readable amounts, logical reading order.
@@ -350,7 +350,7 @@ Material 3 provides the base for buttons, text fields, cards, sheets, tabs, dial
 **Usage:** Balance review, settlement confirmation, and history.
 **Anatomy:** Who owes whom, amount, action button, confirmation state.
 **States:** Default, pending, complete, conflict.
-**Variants:** Member-level and household-level.
+**Variants:** Member-level and group-level.
 **Accessibility:** Descriptive action labels and status announcements.
 **Content Guidelines:** Use plain language and avoid finance jargon.
 **Interaction Behavior:** One clear next action at a time.
@@ -374,7 +374,7 @@ Material 3 provides the base for buttons, text fields, cards, sheets, tabs, dial
 
 ### Implementation Roadmap
 
-**Phase 1 - Core Components:** Household Balance Card, Expense Entry Sheet
+**Phase 1 - Core Components:** Group Balance Card, Expense Entry Sheet
 
 **Phase 2 - Supporting Components:** Settlement Summary, Sync Status Banner
 
@@ -392,11 +392,11 @@ Success feedback should be immediate, calm, and specific. Errors should explain 
 
 ### Form Patterns
 
-Forms should default to the most likely household, payer, and split. The most important fields appear first, and optional details come later. Validation should happen inline and only when needed. Save should remain available once required fields are complete.
+Forms should default to the most likely group, payer, and split. The most important fields appear first, and optional details come later. Validation should happen inline and only when needed. Save should remain available once required fields are complete.
 
 ### Navigation Patterns
 
-Navigation should keep users anchored in a single household context. Household summary, balances, expense history, and settlement should stay easy to reach without deep nesting. Mobile navigation should stay shallow and predictable; web can expose more detail without adding complexity.
+Navigation should keep users anchored in a single group context. Group summary, balances, expense history, and settlement should stay easy to reach without deep nesting. Mobile navigation should stay shallow and predictable; web can expose more detail without adding complexity.
 
 ### Additional Patterns
 
@@ -409,7 +409,7 @@ Navigation should keep users anchored in a single household context. Household s
 
 ### Responsive Strategy
 
-OpenSplit should be mobile-first, with layouts that scale up cleanly to tablet and desktop. Mobile prioritizes the active household, quick add-expense entry, and balance visibility. Tablet can show a split-pane view for balances and details. Desktop can support denser review and editing, but should still keep the core task prominent.
+OpenSplit should be mobile-first, with layouts that scale up cleanly to tablet and desktop. Mobile prioritizes the active group, quick add-expense entry, and balance visibility. Tablet can show a split-pane view for balances and details. Desktop can support denser review and editing, but should still keep the core task prominent.
 
 ### Breakpoint Strategy
 
@@ -439,26 +439,26 @@ Target WCAG 2.1 AA. The product should support keyboard navigation, screen reade
 - Keep responsive changes layout-first, not feature-first.
 - Ensure offline and sync messages remain understandable at every size.
 
-## Story 1.4 Desktop View - Household Membership Workspace
+## Story 1.4 Desktop View - Group Membership Workspace
 
 ### Design Goal
 
-The desktop version of household membership management should turn the current stacked mobile view into a calm workspace that helps users answer three questions quickly: who is in this household, which household am I currently in, and what happens if I switch or leave? The design should keep the product lightweight while using the extra width to reduce scrolling and decision friction.
+The desktop version of group membership management should turn the current stacked mobile view into a calm workspace that helps users answer three questions quickly: who is in this group, which group am I currently in, and what happens if I switch or leave? The design should keep the product lightweight while using the extra width to reduce scrolling and decision friction.
 
 ### User Intent
 
-- Confirm the active household context at a glance.
+- Confirm the active group context at a glance.
 - Scan current members without opening secondary navigation.
-- Switch to another household quickly when the current context is wrong.
-- Leave a household safely, with clear confirmation and outcome messaging.
+- Switch to another group quickly when the current context is wrong.
+- Leave a group safely, with clear confirmation and outcome messaging.
 
 ### Scope Alignment
 
 This design stays inside Story 1.4 scope:
 
-- View household members
-- Switch households
-- Leave a household
+- View group members
+- Switch groups
+- Leave a group
 
 It intentionally avoids adding new navigation depth, invitation management, or expense data into this screen.
 
@@ -470,7 +470,7 @@ Use a two-column workspace inside a centered desktop container.
 - Max content width: 1200px
 - Outer margins: 48px to 64px depending on viewport
 - Grid: 12 columns, 24px gutters
-- Main split: 7 columns for membership context, 5 columns for household actions
+- Main split: 7 columns for membership context, 5 columns for group actions
 - Vertical rhythm: 24px section spacing, 16px card spacing, 8px internal element spacing
 
 ### Information Hierarchy
@@ -480,23 +480,23 @@ Use a two-column workspace inside a centered desktop container.
 The header should anchor context before users touch anything destructive.
 
 - Product label: OpenSplit
-- Page title: Household membership
-- Active household pill showing the current household name
+- Page title: Group membership
+- Active group pill showing the current group name
 - Optional secondary text: member count or ownership status
 - Top-right utility actions: Refresh, profile/avatar menu
 
-#### Left Column - Current Household Context
+#### Left Column - Current Group Context
 
 This is the primary reading column.
 
-1. **Active household summary card**
-   - Household name
-   - Current status label: Active household
+1. **Active group summary card**
+   - Group name
+   - Current status label: Active group
    - Small metadata row: member count, user role, invite/join context if available
 
 2. **Members card**
    - Section title: Members
-   - Intro text: "Everyone who can currently share expenses in this household"
+   - Intro text: "Everyone who can currently share expenses in this group"
    - Member rows with:
      - Display email or name
      - Owner badge when applicable
@@ -504,37 +504,37 @@ This is the primary reading column.
      - Optional subdued status text for edge cases later, but not required in v1
 
 3. **Safety note**
-   - One-line helper copy explaining that changing household only changes context, not data ownership
+   - One-line helper copy explaining that changing group only changes context, not data ownership
 
-#### Right Column - Household Actions
+#### Right Column - Group Actions
 
 This is the action column and should stay visually secondary to the active context.
 
-1. **Switch household card**
-   - Section title: Your households
-   - Support text: "Change which household you are currently viewing"
-   - Household list rows with:
-     - Household name
+1. **Switch group card**
+   - Section title: Your groups
+   - Support text: "Change which group you are currently viewing"
+   - Group list rows with:
+     - Group name
      - Member count
-     - Current-state highlight for active household
-     - Primary action: Switch (disabled for active household, labeled Current)
+     - Current-state highlight for active group
+     - Primary action: Switch (disabled for active group, labeled Current)
 
-2. **Leave household area**
+2. **Leave group area**
    - Destructive actions should not appear as the primary action in the row
    - Present Leave as a tertiary/destructive action aligned to the row end
-   - For the active household, show subtle explanatory copy when leaving changes the visible context
+   - For the active group, show subtle explanatory copy when leaving changes the visible context
 
 ### Desktop Wireframe Logic
 
 ```text
 ------------------------------------------------------------------------------------------------
- OpenSplit                              Household membership                   [Refresh] [Avatar]
+ OpenSplit                              Group membership                   [Refresh] [Avatar]
                                         [Active: Maple House]
 ------------------------------------------------------------------------------------------------
 
   ---------------------------------------------------    --------------------------------------
-  Maple House                                          |    Your households                     |
-  Active household • 4 members • You are owner         |    Change which household you view    |
+  Maple House                                          |    Your groups                     |
+  Active group • 4 members • You are owner         |    Change which group you view    |
                                                         |                                      |
   Members                                               |    [Current] Maple House  4 members   |
   Everyone who can currently share expenses here        |              [Current]    [Leave]     |
@@ -544,8 +544,8 @@ This is the action column and should stay visually secondary to the active conte
   leo@example.com                                      |                                      |
   nina@example.com                                     |    River House   5 members            |
                                                         |              [Switch]     [Leave]     |
-  Switching households changes your current context,    |                                      |
-  not your membership in other households.              |                                      |
+  Switching groups changes your current context,    |                                      |
+  not your membership in other groups.              |                                      |
   ---------------------------------------------------    --------------------------------------
 
 ------------------------------------------------------------------------------------------------
@@ -553,36 +553,36 @@ This is the action column and should stay visually secondary to the active conte
 
 ### Key Interaction Patterns
 
-#### Switching Households
+#### Switching Groups
 
-- Switch is a primary action only for non-active households.
+- Switch is a primary action only for non-active groups.
 - On click, the selected row enters a brief loading state and all switch actions disable until the request completes.
 - After success:
-  - Active household pill updates
+  - Active group pill updates
   - Left column summary and members refresh in place
   - Success toast/snackbar: "Switched to Cedar Flat"
-  - Keyboard focus moves to the updated left-column heading or the active household pill
+  - Keyboard focus moves to the updated left-column heading or the active group pill
 
-#### Leaving a Household
+#### Leaving a Group
 
 Leaving should always require explicit confirmation, even on desktop.
 
-- Trigger: destructive text button or outlined destructive button in the household row
+- Trigger: destructive text button or outlined destructive button in the group row
 - Confirmation pattern: modal dialog, not inline expansion, to create clear interruption for a destructive action
 - Dialog content:
-  - Title: "Leave household?"
-  - Body for non-active household: "You will lose access to this household's shared expenses unless someone invites you again."
-  - Body for active household with alternatives remaining: "You will leave Maple House and switch to another household you still belong to."
-  - Body for last accessible household: "You will leave Maple House and return to household setup."
-  - Primary button: Leave household
+  - Title: "Leave group?"
+  - Body for non-active group: "You will lose access to this group's shared expenses unless someone invites you again."
+  - Body for active group with alternatives remaining: "You will leave Maple House and switch to another group you still belong to."
+  - Body for last accessible group: "You will leave Maple House and return to group setup."
+  - Primary button: Leave group
   - Secondary button: Cancel
 
 After confirmation:
 
 - Show progress in the dialog button state
 - On success, close dialog and show contextual confirmation message
-- If another household remains, automatically land in the next valid household context
-- If no households remain, route to the safe setup/landing state with a success banner
+- If another group remains, automatically land in the next valid group context
+- If no groups remain, route to the safe setup/landing state with a success banner
 
 ### Empty and Edge States
 
@@ -591,26 +591,26 @@ After confirmation:
 If the members list is unexpectedly empty:
 
 - Show calm fallback text: "No members found yet"
-- Keep the household summary visible so the user still knows where they are
+- Keep the group summary visible so the user still knows where they are
 
-#### Single Household State
+#### Single Group State
 
-If the user belongs to only one household:
+If the user belongs to only one group:
 
-- Keep the household list card, but replace multi-row switching affordances with a single current row
-- Include helper text: "You only belong to one household right now"
+- Keep the group list card, but replace multi-row switching affordances with a single current row
+- Include helper text: "You only belong to one group right now"
 - Leave action remains available but visually separated from switching copy
 
 #### Loading State
 
-- Use skeleton blocks for member rows and household rows
+- Use skeleton blocks for member rows and group rows
 - Keep layout stable while loading to avoid desktop jitter
 - Preserve title and active context shell during refresh
 
 #### Error State
 
 - Show inline error banner above the affected card
-- Use plain language, e.g. "We couldn't refresh your household list. Try again."
+- Use plain language, e.g. "We couldn't refresh your group list. Try again."
 - Keep the last successful data visible whenever possible
 
 ### Component-Level Guidance
@@ -621,7 +621,7 @@ If the user belongs to only one household:
 - Content aligned left; badges aligned right
 - Use subtle separators instead of heavy borders
 
-#### Household Row
+#### Group Row
 
 - Row height: 72px to 88px
 - Name and member count stacked on the left
@@ -636,30 +636,30 @@ If the user belongs to only one household:
 
 ### Content Guidelines
 
-- Prefer household names over raw ids in visible desktop UI.
+- Prefer group names over raw ids in visible desktop UI.
 - Use ids only in debug or fallback states.
 - Replace technical wording like "context switch" with plain language like "viewing" in user-facing copy.
 - Destructive copy should explain the outcome, not just the action.
 
 ### Accessibility Requirements for Desktop
 
-- Support full keyboard navigation across household rows and dialog actions.
-- Ensure logical tab order: header utilities → left-column summary → members → right-column household actions.
+- Support full keyboard navigation across group rows and dialog actions.
+- Ensure logical tab order: header utilities → left-column summary → members → right-column group actions.
 - Provide visible focus indicators on all buttons and actionable rows.
 - Announce confirmation and success states to assistive technologies.
-- Do not rely on background color alone to identify the current household; include the `Current` label.
+- Do not rely on background color alone to identify the current group; include the `Current` label.
 
 ### Implementation Notes for Shared Compose UI
 
 - Replace the current narrow `widthIn(max = 420.dp)` active view on large screens with a breakpoint-aware container.
-- Preserve the same data model and actions from `HouseholdComponent`; the desktop change is layout and interaction treatment, not a new feature slice.
+- Preserve the same data model and actions from `GroupComponent`; the desktop change is layout and interaction treatment, not a new feature slice.
 - The leave flow should gain a confirmation dialog to align the UI with Story 1.4 acceptance criteria.
 - Keep existing test tags, and add desktop-safe tags only where they help verify dialog and responsive layout behavior.
 
 ### Success Criteria for This View
 
-- Users can identify the active household in under a glance.
-- Members and household-switch actions are visible without scrolling on a common laptop viewport.
+- Users can identify the active group in under a glance.
+- Members and group-switch actions are visible without scrolling on a common laptop viewport.
 - Leave is clearly available but visually subordinate to switch.
 - Destructive actions feel safe because the confirmation explains the landing outcome.
 

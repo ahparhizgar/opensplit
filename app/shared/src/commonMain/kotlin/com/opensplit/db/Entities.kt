@@ -6,17 +6,17 @@ import androidx.room3.PrimaryKey
 import androidx.room3.Relation
 import com.opensplit.dto.expense.SyncStatus
 
-@Entity(tableName = "households")
-data class HouseholdEntity(
+@Entity(tableName = "groups")
+data class GroupEntity(
     @PrimaryKey val id: String,
     val name: String,
     val inviteLink: String,
     val isOwner: Boolean,
 )
 
-@Entity(tableName = "household_members", primaryKeys = ["householdId", "userId"])
+@Entity(tableName = "group_members", primaryKeys = ["groupId", "userId"])
 data class MemberEntity(
-    val householdId: String,
+    val groupId: String,
     val userId: String,
     val name: String,
     val email: String,
@@ -25,16 +25,15 @@ data class MemberEntity(
     val balance: Double,
 )
 
-data class HouseholdWithMembers(
-    @Embedded val household: HouseholdEntity,
-    @Relation(parentColumns = ["id"], entityColumns = ["householdId"])
-    val members: List<MemberEntity>,
+data class GroupWithMembers(
+    @Embedded val group: GroupEntity,
+    @Relation(parentColumns = ["id"], entityColumns = ["groupId"]) val members: List<MemberEntity>,
 )
 
 @Entity(tableName = "expenses")
 data class ExpenseEntity(
     @PrimaryKey val id: String,
-    val householdId: String,
+    val groupId: String,
     val title: String,
     val amount: Double,
     val creator: String,

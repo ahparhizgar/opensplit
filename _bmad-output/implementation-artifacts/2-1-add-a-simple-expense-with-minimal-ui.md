@@ -4,26 +4,26 @@ Status: done
 
 ## Story
 
-As a household member,
+As a group member,
 I want to add an expense using a minimal form,
 So that I can log shared costs without unnecessary complexity.
 
 ## Acceptance Criteria
 
-1. **Given** the user is in a household, **When** they navigate to the "Add Expense" screen, **Then** they see a minimal form with fields for description and amount.
-2. **Given** the user enters a valid description and amount, **When** they save the expense, **Then** the expense is recorded and appears in the household history.
+1. **Given** the user is in a group, **When** they navigate to the "Add Expense" screen, **Then** they see a minimal form with fields for description and amount.
+2. **Given** the user enters a valid description and amount, **When** they save the expense, **Then** the expense is recorded and appears in the group history.
 
 ## Tasks / Subtasks
 
 ### Backend (Server) Implementation
 - [x] Create `Expenses` table in `server/src/main/kotlin/com/opensplit/database/Tables.kt` (AC: 2)
-  - Fields: `id`, `household_id`, `title`, `amount`, `payer_id`, `created_at`
+  - Fields: `id`, `group_id`, `title`, `amount`, `payer_id`, `created_at`
 - [x] Update `DatabaseInitializer.kt` to include `Expenses` table (AC: 2)
 - [x] Create `ExpenseRecord` and `CreateExpenseRequest` in a new `server/src/main/kotlin/com/opensplit/features/expense/ExpenseModels.kt` (AC: 2)
 - [x] Implement `ExpenseRepository` and `ExpenseRepositoryImpl` in `server/src/main/kotlin/com/opensplit/features/expense/` (AC: 2)
 - [x] Create `ExpenseService` to handle business logic and DTO mapping (AC: 2)
 - [x] Implement `ExpenseRoutes` and Ktor/Koin modules for expenses (AC: 2)
-  - Endpoint: `POST /households/{id}/expenses`
+  - Endpoint: `POST /groups/{id}/expenses`
 
 ### Core (Shared) Implementation
 - [x] Create `ExpenseDto` and `CreateExpenseRequest` in `core/src/commonMain/kotlin/com/opensplit/dto/expense/ExpenseDtos.kt` (AC: 2)
@@ -32,28 +32,28 @@ So that I can log shared costs without unnecessary complexity.
 ### Client (Shared UI) Implementation
 - [x] Create `ExpenseApi` and `KtorExpenseApi` for expense-specific network calls (AC: 2)
 - [x] Create `AddExpenseComponent` and `AddExpenseScreen` in `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/` (AC: 1)
-- [x] Add "Add Expense" navigation to `HouseholdDetailsComponent` (AC: 1)
+- [x] Add "Add Expense" navigation to `GroupDetailsComponent` (AC: 1)
 - [x] Implement simple form with `title` and `amount` fields (AC: 1)
 - [x] Wire save button to call `createExpense` and navigate back on success (AC: 2)
 
 ### Testing Implementation
 - [x] **Backend Integration Test:** `ExpenseRoutesTest.kt`
-  - [x] `POST /households/{id}/expenses` returns `BadRequest` when title is empty
-  - [x] `POST /households/{id}/expenses` returns `Created` when form is valid
+  - [x] `POST /groups/{id}/expenses` returns `BadRequest` when title is empty
+  - [x] `POST /groups/{id}/expenses` returns `Created` when form is valid
 - [x] **Component Integration Test:** `AddExpenseComponentTest.kt`
-  - [x] Navigate from `HouseholdDetailsComponent` to `AddExpenseComponent` on button click
+  - [x] Navigate from `GroupDetailsComponent` to `AddExpenseComponent` on button click
   - [x] `AddExpenseComponent` shows field errors when submitting empty form
-  - [x] `AddExpenseComponent` navigates back to `HouseholdDetails` on successful save
+  - [x] `AddExpenseComponent` navigates back to `GroupDetails` on successful save
 
 ## Dev Notes
 
 - **Architecture Compliance:**
-  - Follow the **REST** pattern: `POST /households/{id}/expenses`.
+  - Follow the **REST** pattern: `POST /groups/{id}/expenses`.
   - Use **Exposed** for database operations in `server`.
   - Share **DTOs** in `core` module.
   - Use **Decompose** for navigation and component logic.
   - Use **Compose Multiplatform** for UI.
-- **Data Handling:** Use `Double` for amount for now as per current `HouseholdMemberDto` pattern, but consider `BigDecimal` or `Long` (cents) if specified in future stories.
+- **Data Handling:** Use `Double` for amount for now as per current `GroupMemberDto` pattern, but consider `BigDecimal` or `Long` (cents) if specified in future stories.
 - **Validation:** Description must not be empty; amount must be greater than 0.
 
 ## Testing Requirements
@@ -69,11 +69,11 @@ So that I can log shared costs without unnecessary complexity.
 ### Review Findings
 
 - [x] [Review][Defer] Financial Precision (ID 1) — The code uses `Double` for expense amounts. Your Dev Notes acknowledge this but defer switching to `BigDecimal` or `Long` (cents). Should we make the switch now to avoid a migration later? — deferred, will fix later
-- [x] [Review][Patch] Missing History UI (ID 7) — AC 2 requires expenses to appear in the "household history." The current changes implement the adding flow but not the viewing flow on the `HouseholdDetailsScreen`. Is this intended for this story or a follow-up? -> Implement minimal history UI.
+- [x] [Review][Patch] Missing History UI (ID 7) — AC 2 requires expenses to appear in the "group history." The current changes implement the adding flow but not the viewing flow on the `GroupDetailsScreen`. Is this intended for this story or a follow-up? -> Implement minimal history UI.
 - [x] [Review][Patch] Security (ID 6) [ExpenseService.kt:12]
 - [x] [Review][Patch] Error Masking (ID 2) [KtorExpenseApi.kt:34]
 - [x] [Review][Patch] Validation Gaps (ID 4, 5, 9) [ExpenseValidation.kt:11, 12]
-- [x] [Review][Patch] UI Stability (ID 3) [DefaultHouseholdDetailsComponent.kt]
+- [x] [Review][Patch] UI Stability (ID 3) [DefaultGroupDetailsComponent.kt]
 - [x] [Review][Defer] Fake Fragility (ID 10) [FakeExpenseApi.kt] — deferred, pre-existing
 
 ### References
@@ -105,8 +105,8 @@ Amelia (Senior Software Engineer)
 - `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/ExpenseApi.kt`
 - `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/AddExpenseComponent.kt`
 - `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/AddExpenseScreen.kt`
-- `app/shared/src/commonMain/kotlin/com/opensplit/features/household/details/HouseholdDetailsComponent.kt`
-- `app/shared/src/commonMain/kotlin/com/opensplit/features/household/details/HouseholdDetailsScreen.kt`
+- `app/shared/src/commonMain/kotlin/com/opensplit/features/group/details/GroupDetailsComponent.kt`
+- `app/shared/src/commonMain/kotlin/com/opensplit/features/group/details/GroupDetailsScreen.kt`
 - `app/shared/src/commonMain/kotlin/com/opensplit/di/DecomposeModule.kt`
 - `app/shared/src/commonMain/kotlin/com/opensplit/di/AppModule.kt`
 - `app/shared/src/commonMain/kotlin/com/opensplit/root/RootComponent.kt`

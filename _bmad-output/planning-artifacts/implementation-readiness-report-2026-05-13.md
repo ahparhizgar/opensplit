@@ -18,12 +18,12 @@ stepsCompleted:
 ### Functional Requirements
 
 FR1: Users can create an account to access OpenSplit.
-FR2: Users can create a household/group for shared expenses.
-FR3: Users can join a household/group.
-FR4: Users can view the household they belong to.
-FR5: Users can switch between households they have access to.
-FR6: Users can leave a household they belong to.
-FR7: Users can view household members.
+FR2: Users can create a group/group for shared expenses.
+FR3: Users can join a group/group.
+FR4: Users can view the group they belong to.
+FR5: Users can switch between groups they have access to.
+FR6: Users can leave a group they belong to.
+FR7: Users can view group members.
 FR8: Users can create a shared expense.
 FR9: Users can assign themselves or another user as the payer.
 FR10: Users can edit an existing expense.
@@ -33,12 +33,12 @@ FR13: Users can add an expense with unequal split.
 FR14: Users can assign specific participants to an expense split.
 FR15: Users can record an expense in its original currency.
 FR16: Users can view expense history.
-FR17: Users can view current balances within a household.
-FR18: Users can view who owes whom in a household.
+FR17: Users can view current balances within a group.
+FR18: Users can view who owes whom in a group.
 FR19: Users can record a full settlement.
 FR20: Users can record a partial settlement.
 FR21: Users can view settlement history.
-FR22: Users can see settlement status for each household member.
+FR22: Users can see settlement status for each group member.
 FR23: Users can settle an outstanding balance between members.
 FR24: Users can create expenses while offline.
 FR25: Users can edit expenses while offline.
@@ -49,7 +49,7 @@ FR29: The system can resolve sync conflicts in a way users can understand.
 FR30: Users can access OpenSplit on mobile.
 FR31: Users can access OpenSplit on web.
 FR32: Users can sign in securely.
-FR33: Users can keep their household and expense data private by default.
+FR33: Users can keep their group and expense data private by default.
 FR34: Users can choose only the information needed for expense tracking.
 FR35: The system can prefill common expense entry defaults.
 FR36: The system can support a minimal, streamlined expense-entry flow.
@@ -60,7 +60,7 @@ FR37: The system can display the most recent balances quickly.
 NFR1: Android app startup time on a Galaxy A50 should stay under 0.5 seconds.
 NFR2: Core expense entry, balance review, and settlement flows should feel immediate.
 NFR3: The app should stay responsive during offline use and sync recovery.
-NFR4: User and household data should be privacy-first by default.
+NFR4: User and group data should be privacy-first by default.
 NFR5: Only the minimum data needed for expense tracking should be collected.
 NFR6: Account access should be securely handled.
 NFR7: The app should maintain at least a 98% crash-free session rate.
@@ -83,7 +83,7 @@ NFR14: The first release should prioritize stability and speed over large-scale 
 - No special device features required for v1.
 - Widget support is not part of v1.
 - The product targets 1,000 users as the early business success milestone.
-- The core release scope includes quick household creation, fast expense entry, equal and unequal splits, balance calculation, settlement tracking, mobile-first experience, web access, offline support, and minimal UI.
+- The core release scope includes quick group creation, fast expense entry, equal and unequal splits, balance calculation, settlement tracking, mobile-first experience, web access, offline support, and minimal UI.
 
 ### PRD Completeness Assessment
 
@@ -96,12 +96,12 @@ The PRD is broadly complete and well-scoped for implementation readiness. It pro
 | FR Number | PRD Requirement | Epic Coverage | Status |
 | --- | --- | --- | --- |
 | FR1 | Users can create an account to access OpenSplit. | Epic 1 - Secure account creation | ✓ Covered |
-| FR2 | Users can create a household/group for shared expenses. | Epic 1 - Household setup | ✓ Covered |
-| FR3 | Users can join a household/group. | Epic 1 - Join a household | ✓ Covered |
-| FR4 | Users can view the household they belong to. | Epic 1 - View current household | ✓ Covered |
-| FR5 | Users can switch between households they have access to. | Epic 1 - Switch between households | ✓ Covered |
-| FR6 | Users can leave a household they belong to. | Epic 1 - Leave a household | ✓ Covered |
-| FR7 | Users can view household members. | Epic 1 - View household members | ✓ Covered |
+| FR2 | Users can create a group/group for shared expenses. | Epic 1 - Group setup | ✓ Covered |
+| FR3 | Users can join a group/group. | Epic 1 - Join a group | ✓ Covered |
+| FR4 | Users can view the group they belong to. | Epic 1 - View current group | ✓ Covered |
+| FR5 | Users can switch between groups they have access to. | Epic 1 - Switch between groups | ✓ Covered |
+| FR6 | Users can leave a group they belong to. | Epic 1 - Leave a group | ✓ Covered |
+| FR7 | Users can view group members. | Epic 1 - View group members | ✓ Covered |
 | FR8 | Users can create a shared expense. | Epic 2 - Create a shared expense | ✓ Covered |
 | FR9 | Users can assign themselves or another user as the payer. | Epic 2 - Choose the payer | ✓ Covered |
 | FR10 | Users can edit an existing expense. | Epic 2 - Edit an expense | ✓ Covered |
@@ -111,12 +111,12 @@ The PRD is broadly complete and well-scoped for implementation readiness. It pro
 | FR14 | Users can assign specific participants to an expense split. | Epic 2 - Participant-specific splits | ✓ Covered |
 | FR15 | Users can record an expense in its original currency. | Epic 2 - Original currency capture | ✓ Covered |
 | FR16 | Users can view expense history. | Epic 2 - Expense history | ✓ Covered |
-| FR17 | Users can view current balances within a household. | Epic 3 - View current balances | ✓ Covered |
-| FR18 | Users can view who owes whom in a household. | Epic 3 - See who owes whom | ✓ Covered |
+| FR17 | Users can view current balances within a group. | Epic 3 - View current balances | ✓ Covered |
+| FR18 | Users can view who owes whom in a group. | Epic 3 - See who owes whom | ✓ Covered |
 | FR19 | Users can record a full settlement. | Epic 3 - Record full settlement | ✓ Covered |
 | FR20 | Users can record a partial settlement. | Epic 3 - Record partial settlement | ✓ Covered |
 | FR21 | Users can view settlement history. | Epic 3 - View settlement history | ✓ Covered |
-| FR22 | Users can see settlement status for each household member. | Epic 3 - See member settlement status | ✓ Covered |
+| FR22 | Users can see settlement status for each group member. | Epic 3 - See member settlement status | ✓ Covered |
 | FR23 | Users can settle an outstanding balance between members. | Epic 3 - Settle outstanding balances | ✓ Covered |
 | FR24 | Users can create expenses while offline. | Epic 4 - Create expenses offline | ✓ Covered |
 | FR25 | Users can edit expenses while offline. | Epic 4 - Edit expenses offline | ✓ Covered |
@@ -127,7 +127,7 @@ The PRD is broadly complete and well-scoped for implementation readiness. It pro
 | FR30 | Users can access OpenSplit on mobile. | Epic 1 - Access on mobile | ✓ Covered |
 | FR31 | Users can access OpenSplit on web. | Epic 1 - Access on web | ✓ Covered |
 | FR32 | Users can sign in securely. | Epic 1 - Secure sign-in | ✓ Covered |
-| FR33 | Users can keep their household and expense data private by default. | Epic 1 - Keep data private by default | ✓ Covered |
+| FR33 | Users can keep their group and expense data private by default. | Epic 1 - Keep data private by default | ✓ Covered |
 | FR34 | Users can choose only the information needed for expense tracking. | Epic 1 - Collect only needed tracking data | ✓ Covered |
 | FR35 | The system can prefill common expense entry defaults. | Epic 2 - Prefill common entry defaults | ✓ Covered |
 | FR36 | The system can support a minimal, streamlined expense-entry flow. | Epic 2 - Streamlined expense-entry flow | ✓ Covered |
@@ -151,7 +151,7 @@ Found: `_bmad-output/planning-artifacts/ux-design-specification.md`
 
 ### Alignment Issues
 
-No blocking misalignments found between UX, PRD, and Architecture. The UX reinforces the PRD's core flows for fast expense entry, balance visibility, offline resilience, and mobile/web access, and the architecture supports the same shared Kotlin, REST, offline-first, and household-scoped model.
+No blocking misalignments found between UX, PRD, and Architecture. The UX reinforces the PRD's core flows for fast expense entry, balance visibility, offline resilience, and mobile/web access, and the architecture supports the same shared Kotlin, REST, offline-first, and group-scoped model.
 
 ### Warnings
 

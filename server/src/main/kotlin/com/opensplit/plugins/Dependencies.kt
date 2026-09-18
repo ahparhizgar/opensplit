@@ -8,7 +8,7 @@ import com.opensplit.database.createHikariDataSource
 import com.opensplit.features.auth.authKoinModule
 import com.opensplit.features.auth.testAuthKoinModule
 import com.opensplit.features.expense.expenseKoinModule
-import com.opensplit.features.household.householdKoinModule
+import com.opensplit.features.group.groupKoinModule
 import com.opensplit.features.sync.syncKoinModule
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -38,7 +38,7 @@ fun Application.configureDependencies(isTest: Boolean) {
           single { DatabaseInitializer(get()) }
         },
         authKoinModule(),
-        householdKoinModule(),
+        groupKoinModule(),
         expenseKoinModule(),
         syncKoinModule(),
     )

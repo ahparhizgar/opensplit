@@ -7,9 +7,9 @@ import com.opensplit.dto.expense.CreateExpenseRequest
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SplitMethod
-import com.opensplit.dto.household.CreateHouseholdRequest
-import com.opensplit.dto.household.HouseholdDto
-import com.opensplit.dto.household.JoinHouseholdRequest
+import com.opensplit.dto.group.CreateGroupRequest
+import com.opensplit.dto.group.GroupDto
+import com.opensplit.dto.group.JoinGroupRequest
 import com.opensplit.dto.sync.SyncResponse
 import com.opensplit.testOpenSplit
 import io.ktor.client.call.body
@@ -27,12 +27,11 @@ class SyncRoutesTest {
 
   @Test
   fun syncExpenses_twoUsers_createUpdateDeleteFlow() = testOpenSplit {
-    // 1. User A creates household
-    val household =
-        client.post("/households") { setBody(CreateHouseholdRequest("Home")) }.body<HouseholdDto>()
-    val userAId = household.members[0].userId
+    // 1. User A creates group
+    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
+    val userAId = group.members[0].userId
 
-    // 2. User B signs up and joins household
+    // 2. User B signs up and joins group
     val userBAuth =
         client
             .post("/users") { setBody(SignUpRequest("userB@example.com", "password123", "User B")) }
@@ -40,9 +39,7 @@ class SyncRoutesTest {
 
     val userBClient = createAuthenticatedClient(userBAuth.accessToken)
     val joinRes =
-        userBClient.post("/households/memberships") {
-          setBody(JoinHouseholdRequest(household.inviteLink))
-        }
+        userBClient.post("/groups/memberships") { setBody(JoinGroupRequest(group.inviteLink)) }
     assertEquals(HttpStatusCode.OK, joinRes.status)
 
     // Get initial sync version for User B
@@ -51,7 +48,7 @@ class SyncRoutesTest {
 
     // 3. User A creates an expense
     val createResponse =
-        client.post("/households/${household.id}/expenses") {
+        client.post("/groups/${group.id}/expenses") {
           setBody(
               CreateExpenseRequest(
                   title = "Pizza",
@@ -84,7 +81,7 @@ class SyncRoutesTest {
 
     // 5. User A updates the expense
     val updateResponse =
-        client.put("/households/${household.id}/expenses/${createdExpense.id}") {
+        client.put("/groups/${group.id}/expenses/${createdExpense.id}") {
           setBody(
               CreateExpenseRequest(
                   title = "Fancy Pizza",
@@ -115,7 +112,7 @@ class SyncRoutesTest {
     assertEquals(70.0, syncedExpense2.amount)
 
     // 7. User A deletes the expense
-    val deleteResponse = client.delete("/households/${household.id}/expenses/${createdExpense.id}")
+    val deleteResponse = client.delete("/groups/${group.id}/expenses/${createdExpense.id}")
     assertEquals(HttpStatusCode.NoContent, deleteResponse.status)
 
     // 8. User B syncs changes since v2
@@ -133,13 +130,12 @@ class SyncRoutesTest {
   }
 
   @Test
-  fun syncExpenses_householdIsolation() = testOpenSplit {
-    // 1. User A creates household & expense
-    val household =
-        client.post("/households") { setBody(CreateHouseholdRequest("Home")) }.body<HouseholdDto>()
-    val userAId = household.members[0].userId
+  fun syncExpenses_groupIsolation() = testOpenSplit {
+    // 1. User A creates group & expense
+    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
+    val userAId = group.members[0].userId
 
-    client.post("/households/${household.id}/expenses") {
+    client.post("/groups/${group.id}/expenses") {
       setBody(
           CreateExpenseRequest(
               title = "Secret Expense",
@@ -162,7 +158,7 @@ class SyncRoutesTest {
     val userCClient = createAuthenticatedClient(userCAuth.accessToken)
     val syncResponse = userCClient.get("/sync?sinceVersion=0").body<SyncResponse>()
 
-    // User C should NOT see User A's household expenses
+    // User C should NOT see User A's group expenses
     assertEquals(0, syncResponse.changedEntities.expenses.size)
   }
 }

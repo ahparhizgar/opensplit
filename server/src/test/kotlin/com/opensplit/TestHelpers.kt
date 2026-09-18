@@ -31,7 +31,7 @@ fun testOpenSplit(block: suspend ApplicationTestBuilder.() -> Unit) = testApplic
       ExpenseParticipants.deleteAll()
       Expenses.deleteAll()
       Memberships.deleteAll()
-      Households.deleteAll()
+      Groups.deleteAll()
       Users.deleteAll()
       ChangeLog.deleteAll()
     }

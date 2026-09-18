@@ -6,17 +6,17 @@ import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SyncStatus
-import com.opensplit.dto.household.FakeHouseholdDtoFactory
+import com.opensplit.dto.group.FakeGroupDtoFactory
 import com.opensplit.fake.FakeExpenseApi
-import com.opensplit.fake.FakeHouseholdApi
+import com.opensplit.fake.FakeGroupApi
 import com.opensplit.fake.FakeSyncApi
 import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.AddExpenseComponentFactory
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.expense.ExpenseDetailsComponentFactory
-import com.opensplit.features.household.details.HouseholdDetailsComponent
-import com.opensplit.features.household.details.HouseholdDetailsComponentFactory
-import com.opensplit.repository.HouseholdRepository
+import com.opensplit.features.group.details.GroupDetailsComponent
+import com.opensplit.features.group.details.GroupDetailsComponentFactory
+import com.opensplit.repository.GroupRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.sync.SyncManager
 import com.opensplit.util.MainDispatcherExtension
@@ -34,28 +34,28 @@ class E2EExpenseSyncTest : BehaviorSpec() {
     extensions(MainDispatcherExtension())
     val koin by integrationKoin()
 
-    Given("a household details screen for client to server sync") {
+    Given("a group details screen for client to server sync") {
       val profileRepo by testValue { koin.get<ProfileRepository>() }
-      val fakeHouseholdApi by testValue { koin.get<FakeHouseholdApi>() }
-      val householdRepo by testValue { koin.get<HouseholdRepository>() }
+      val fakeGroupApi by testValue { koin.get<FakeGroupApi>() }
+      val groupRepo by testValue { koin.get<GroupRepository>() }
       val fakeExpenseApi by testValue { koin.get<FakeExpenseApi>() }
 
-      val householdDetailsComponent by testValue {
+      val groupDetailsComponent by testValue {
         koin
-            .get<HouseholdDetailsComponentFactory>()
-            .create(TestCContext().resumed(), HouseholdDetailsComponent.Config("household-1"))
+            .get<GroupDetailsComponentFactory>()
+            .create(TestCContext().resumed(), GroupDetailsComponent.Config("group-1"))
       }
 
       beforeEach {
         profileRepo.setProfile(UserProfile("user-1", "User 1", "user-1@example.com"))
-        fakeHouseholdApi.households =
-            listOf(FakeHouseholdDtoFactory.create(id = "household-1", name = "Test House"))
-        householdRepo.refresh()
+        fakeGroupApi.groups =
+            listOf(FakeGroupDtoFactory.create(id = "group-1", name = "Test House"))
+        groupRepo.refresh()
         testCoroutineScheduler.advanceUntilIdle()
       }
 
       Then("initial state has no expenses") {
-        householdDetailsComponent.uiState.value.expenses.shouldBeEmpty()
+        groupDetailsComponent.uiState.value.expenses.shouldBeEmpty()
       }
 
       When("adding an expense via AddExpenseComponent") {
@@ -65,7 +65,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
               .get<AddExpenseComponentFactory>()
               .create(
                   TestCContext().resumed(),
-                  AddExpenseComponent.Config("household-1"),
+                  AddExpenseComponent.Config("group-1"),
                   onFinished = { addFinished = true },
               )
         }
@@ -80,7 +80,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
         Then("optimistic UI shows updated state immediately") {
           addFinished shouldBe true
-          val expenses = householdDetailsComponent.uiState.value.expenses
+          val expenses = groupDetailsComponent.uiState.value.expenses
           expenses shouldHaveSize 1
           expenses.first().title shouldBe "Pizza"
           expenses.first().amount shouldBe 30.0
@@ -92,12 +92,12 @@ class E2EExpenseSyncTest : BehaviorSpec() {
           Then("proper API call is executed and UI is still correct") {
             fakeExpenseApi.createdExpenses shouldHaveSize 1
             fakeExpenseApi.createdExpenses.first().let {
-              it.householdId shouldBe "household-1"
+              it.groupId shouldBe "group-1"
               it.title shouldBe "Pizza"
               it.amount shouldBe 30.0
             }
 
-            val expenses = householdDetailsComponent.uiState.value.expenses
+            val expenses = groupDetailsComponent.uiState.value.expenses
             expenses shouldHaveSize 1
             expenses.first().title shouldBe "Pizza"
             expenses.first().amount shouldBe 30.0
@@ -108,13 +108,13 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
             beforeEach {
               editFinished = false
-              val targetExpenseId = householdDetailsComponent.uiState.value.expenses.first().id
+              val targetExpenseId = groupDetailsComponent.uiState.value.expenses.first().id
               val editExpenseComponent =
                   koin
                       .get<AddExpenseComponentFactory>()
                       .create(
                           TestCContext().resumed(),
-                          AddExpenseComponent.Config("household-1", targetExpenseId),
+                          AddExpenseComponent.Config("group-1", targetExpenseId),
                           onFinished = { editFinished = true },
                       )
 
@@ -127,7 +127,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
             Then("optimistic UI shows edited state immediately") {
               editFinished shouldBe true
-              val expenses = householdDetailsComponent.uiState.value.expenses
+              val expenses = groupDetailsComponent.uiState.value.expenses
               expenses shouldHaveSize 1
               expenses.first().title shouldBe "Fancy Pizza"
               expenses.first().amount shouldBe 45.0
@@ -137,7 +137,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
               beforeEach { testCoroutineScheduler.advanceUntilIdle() }
 
               Then("UI remains correct after sync") {
-                val expenses = householdDetailsComponent.uiState.value.expenses
+                val expenses = groupDetailsComponent.uiState.value.expenses
                 expenses shouldHaveSize 1
                 expenses.first().title shouldBe "Fancy Pizza"
                 expenses.first().amount shouldBe 45.0
@@ -149,13 +149,13 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
                 beforeEach {
                   backCalled = false
-                  deleteTargetId = householdDetailsComponent.uiState.value.expenses.first().id
+                  deleteTargetId = groupDetailsComponent.uiState.value.expenses.first().id
                   val expenseDetailsComponent =
                       koin
                           .get<ExpenseDetailsComponentFactory>()
                           .create(
                               TestCContext().resumed(),
-                              ExpenseDetailsComponent.Config("household-1", deleteTargetId),
+                              ExpenseDetailsComponent.Config("group-1", deleteTargetId),
                               onBack = { backCalled = true },
                           )
 
@@ -166,7 +166,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
                 Then("optimistic UI shows expense deleted immediately") {
                   backCalled shouldBe true
-                  householdDetailsComponent.uiState.value.expenses.shouldBeEmpty()
+                  groupDetailsComponent.uiState.value.expenses.shouldBeEmpty()
                 }
 
                 And("sync daemon processes deletion") {
@@ -174,8 +174,8 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
                   Then("delete API call is executed and UI remains empty") {
                     fakeExpenseApi.deletedCalls shouldHaveSize 1
-                    fakeExpenseApi.deletedCalls.first() shouldBe Pair("household-1", deleteTargetId)
-                    householdDetailsComponent.uiState.value.expenses.shouldBeEmpty()
+                    fakeExpenseApi.deletedCalls.first() shouldBe Pair("group-1", deleteTargetId)
+                    groupDetailsComponent.uiState.value.expenses.shouldBeEmpty()
                   }
                 }
               }
@@ -185,38 +185,38 @@ class E2EExpenseSyncTest : BehaviorSpec() {
       }
     }
 
-    Given("a household details screen for server to client sync") {
+    Given("a group details screen for server to client sync") {
       val profileRepo by testValue { koin.get<ProfileRepository>() }
-      val fakeHouseholdApi by testValue { koin.get<FakeHouseholdApi>() }
-      val householdRepo by testValue { koin.get<HouseholdRepository>() }
+      val fakeGroupApi by testValue { koin.get<FakeGroupApi>() }
+      val groupRepo by testValue { koin.get<GroupRepository>() }
       val fakeSyncApi by testValue { koin.get<FakeSyncApi>() }
       val syncManager by testValue { koin.get<SyncManager>() }
 
-      val householdDetailsComponent by testValue {
+      val groupDetailsComponent by testValue {
         koin
-            .get<HouseholdDetailsComponentFactory>()
-            .create(TestCContext().resumed(), HouseholdDetailsComponent.Config("household-1"))
+            .get<GroupDetailsComponentFactory>()
+            .create(TestCContext().resumed(), GroupDetailsComponent.Config("group-1"))
       }
 
       beforeEach {
         profileRepo.setProfile(UserProfile("user-1", "User 1", "user-1@example.com"))
-        fakeHouseholdApi.households =
-            listOf(FakeHouseholdDtoFactory.create(id = "household-1", name = "Test House"))
+        fakeGroupApi.groups =
+            listOf(FakeGroupDtoFactory.create(id = "group-1", name = "Test House"))
         fakeSyncApi.expenses = emptyList()
         fakeSyncApi.deletedExpenseIds = emptyList()
-        householdRepo.refresh()
+        groupRepo.refresh()
         testCoroutineScheduler.advanceUntilIdle()
       }
 
       Then("initial state has no expenses") {
-        householdDetailsComponent.uiState.value.expenses.shouldBeEmpty()
+        groupDetailsComponent.uiState.value.expenses.shouldBeEmpty()
       }
 
       When("a new expense is created on the server by another member") {
         val serverExpense =
             ExpenseDto(
                 id = "server-expense-1",
-                householdId = "household-1",
+                groupId = "group-1",
                 title = "Sushi Dinner",
                 amount = 60.0,
                 creator = "user-2",
@@ -237,7 +237,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
         }
 
         Then("UI state is updated with the new expense from the server") {
-          val expenses = householdDetailsComponent.uiState.value.expenses
+          val expenses = groupDetailsComponent.uiState.value.expenses
           expenses shouldHaveSize 1
           expenses.first().let {
             it.id shouldBe "server-expense-1"
@@ -249,7 +249,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
         And("member balances are updated according to server shares") {
           Then("user-1 owes 30.0 and user-2 is owed 30.0") {
-            val members = householdDetailsComponent.uiState.value.household?.members
+            val members = groupDetailsComponent.uiState.value.group?.members
             members?.first { it.userId == "user-1" }?.balance shouldBe -30.0
             members?.first { it.userId == "user-2" }?.balance shouldBe 30.0
           }
@@ -274,7 +274,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
           }
 
           Then("UI state reflects the updated title and amount") {
-            val expenses = householdDetailsComponent.uiState.value.expenses
+            val expenses = groupDetailsComponent.uiState.value.expenses
             expenses shouldHaveSize 1
             expenses.first().let {
               it.id shouldBe "server-expense-1"
@@ -285,7 +285,7 @@ class E2EExpenseSyncTest : BehaviorSpec() {
 
           And("member balances reflect the updated shares") {
             Then("user-1 owes 50.0 and user-2 is owed 50.0") {
-              val members = householdDetailsComponent.uiState.value.household?.members
+              val members = groupDetailsComponent.uiState.value.group?.members
               members?.first { it.userId == "user-1" }?.balance shouldBe -50.0
               members?.first { it.userId == "user-2" }?.balance shouldBe 50.0
             }
@@ -300,12 +300,12 @@ class E2EExpenseSyncTest : BehaviorSpec() {
             }
 
             Then("UI state is empty and expense is removed") {
-              householdDetailsComponent.uiState.value.expenses.shouldBeEmpty()
+              groupDetailsComponent.uiState.value.expenses.shouldBeEmpty()
             }
 
             And("member balances revert back to zero") {
               Then("balances are reset to 0.0") {
-                val members = householdDetailsComponent.uiState.value.household?.members
+                val members = groupDetailsComponent.uiState.value.group?.members
                 members?.first { it.userId == "user-1" }?.balance shouldBe 0.0
                 members?.first { it.userId == "user-2" }?.balance shouldBe 0.0
               }

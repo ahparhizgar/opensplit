@@ -13,7 +13,7 @@ import io.ktor.client.request.setBody
 
 interface ExpenseApi {
   suspend fun createExpense(
-      householdId: String,
+      groupId: String,
       title: String,
       amount: Double,
       creator: String,
@@ -21,13 +21,13 @@ interface ExpenseApi {
       splitMethod: SplitMethod,
   ): ExpenseDto
 
-  suspend fun deleteExpense(householdId: String, expenseId: String)
+  suspend fun deleteExpense(groupId: String, expenseId: String)
 }
 
 class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
 
   override suspend fun createExpense(
-      householdId: String,
+      groupId: String,
       title: String,
       amount: Double,
       creator: String,
@@ -35,7 +35,7 @@ class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
       splitMethod: SplitMethod,
   ): ExpenseDto {
     val response =
-        client.post("households/$householdId/expenses") {
+        client.post("groups/$groupId/expenses") {
           setBody(
               CreateExpenseRequest(
                   title = title,
@@ -48,7 +48,7 @@ class KtorExpenseApi(private val client: HttpClient) : ExpenseApi {
     return response.body<ExpenseDto>()
   }
 
-  override suspend fun deleteExpense(householdId: String, expenseId: String) {
-    client.delete("households/$householdId/expenses/$expenseId")
+  override suspend fun deleteExpense(groupId: String, expenseId: String) {
+    client.delete("groups/$groupId/expenses/$expenseId")
   }
 }

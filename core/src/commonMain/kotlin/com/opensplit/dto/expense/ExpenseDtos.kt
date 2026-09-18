@@ -13,7 +13,7 @@ data class ParticipantShareDto(
 @Serializable
 data class ExpenseDto(
     val id: String,
-    val householdId: String,
+    val groupId: String,
     val title: String,
     val amount: Double,
     val creator: String,

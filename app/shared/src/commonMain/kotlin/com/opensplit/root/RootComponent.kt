@@ -19,21 +19,21 @@ import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.AddExpenseComponentFactory
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.expense.ExpenseDetailsComponentFactory
-import com.opensplit.features.household.createjoin.CreateHouseholdComponent
-import com.opensplit.features.household.createjoin.CreateHouseholdComponentFactory
-import com.opensplit.features.household.createjoin.HouseholdSelectionComponent
-import com.opensplit.features.household.createjoin.HouseholdSelectionComponentFactory
-import com.opensplit.features.household.createjoin.JoinHouseholdComponent
-import com.opensplit.features.household.createjoin.JoinHouseholdComponentFactory
-import com.opensplit.features.household.details.HouseholdDetailsComponent
-import com.opensplit.features.household.details.HouseholdDetailsComponentFactory
-import com.opensplit.features.household.my.MyHouseholdsListComponent
-import com.opensplit.features.household.my.MyHouseholdsListComponentFactory
-import com.opensplit.features.household.settings.HouseholdSettingsComponent
-import com.opensplit.features.household.settings.HouseholdSettingsComponentFactory
+import com.opensplit.features.group.createjoin.CreateGroupComponent
+import com.opensplit.features.group.createjoin.CreateGroupComponentFactory
+import com.opensplit.features.group.createjoin.GroupSelectionComponent
+import com.opensplit.features.group.createjoin.GroupSelectionComponentFactory
+import com.opensplit.features.group.createjoin.JoinGroupComponent
+import com.opensplit.features.group.createjoin.JoinGroupComponentFactory
+import com.opensplit.features.group.details.GroupDetailsComponent
+import com.opensplit.features.group.details.GroupDetailsComponentFactory
+import com.opensplit.features.group.my.MyGroupsListComponent
+import com.opensplit.features.group.my.MyGroupsListComponentFactory
+import com.opensplit.features.group.settings.GroupSettingsComponent
+import com.opensplit.features.group.settings.GroupSettingsComponentFactory
 import com.opensplit.features.profile.ProfileComponent
 import com.opensplit.features.profile.ProfileComponentFactory
-import com.opensplit.repository.HouseholdRepository
+import com.opensplit.repository.GroupRepository
 import com.opensplit.splash.SplashDestination
 import com.opensplit.sync.SyncDaemon
 import com.opensplit.usermessage.MessageHolder
@@ -58,7 +58,7 @@ class DefaultRootComponent(
     private val componentProvider: ComponentProvider,
     private val tokenStorage: TokenStorage,
     syncDaemon: SyncDaemon,
-    householdRepository: HouseholdRepository,
+    groupRepository: GroupRepository,
 ) : RootComponent, CContext by cContext {
   val scope = componentScope()
 
@@ -75,13 +75,13 @@ class DefaultRootComponent(
     cContext.navigation = rootNavigation as StackNavigation<Any>
     messageShower = messageHolder
     syncDaemon.start()
-    householdRepository.refresh()
+    groupRepository.refresh()
 
     scope.launch {
       try {
         val token = tokenStorage.getAccessToken()
         if (!token.isNullOrEmpty()) {
-          rootNavigation.replaceAll(MyHouseholdsListComponent.Config)
+          rootNavigation.replaceAll(MyGroupsListComponent.Config)
         } else {
           rootNavigation.replaceAll(AuthComponent.Config)
         }
@@ -106,27 +106,23 @@ class DefaultRootComponent(
       is AuthComponent.Config ->
           componentProvider.provide(AuthComponentFactory::class).create(cContext)
 
-      is HouseholdSelectionComponent.Config ->
-          componentProvider.provide(HouseholdSelectionComponentFactory::class).create(cContext)
+      is GroupSelectionComponent.Config ->
+          componentProvider.provide(GroupSelectionComponentFactory::class).create(cContext)
 
-      is CreateHouseholdComponent.Config ->
-          componentProvider.provide(CreateHouseholdComponentFactory::class).create(cContext)
+      is CreateGroupComponent.Config ->
+          componentProvider.provide(CreateGroupComponentFactory::class).create(cContext)
 
-      is JoinHouseholdComponent.Config ->
-          componentProvider.provide(JoinHouseholdComponentFactory::class).create(cContext)
+      is JoinGroupComponent.Config ->
+          componentProvider.provide(JoinGroupComponentFactory::class).create(cContext)
 
-      is MyHouseholdsListComponent.Config ->
-          componentProvider.provide(MyHouseholdsListComponentFactory::class).create(cContext)
+      is MyGroupsListComponent.Config ->
+          componentProvider.provide(MyGroupsListComponentFactory::class).create(cContext)
 
-      is HouseholdDetailsComponent.Config ->
-          componentProvider
-              .provide(HouseholdDetailsComponentFactory::class)
-              .create(cContext, config)
+      is GroupDetailsComponent.Config ->
+          componentProvider.provide(GroupDetailsComponentFactory::class).create(cContext, config)
 
-      is HouseholdSettingsComponent.Config ->
-          componentProvider
-              .provide(HouseholdSettingsComponentFactory::class)
-              .create(cContext, config)
+      is GroupSettingsComponent.Config ->
+          componentProvider.provide(GroupSettingsComponentFactory::class).create(cContext, config)
 
       is AddExpenseComponent.Config ->
           componentProvider
@@ -147,9 +143,7 @@ class DefaultRootComponent(
               )
 
       is ProfileComponent.Config ->
-          componentProvider
-              .provide(ProfileComponentFactory::class)
-              .create(cContext)
+          componentProvider.provide(ProfileComponentFactory::class).create(cContext)
 
       else -> error("Destination not defined in createChild")
     }
@@ -159,7 +153,7 @@ class DefaultRootComponent(
 class DefaultRootComponentFactory(
     private val componentProvider: ComponentProvider,
     private val tokenStorage: TokenStorage,
-    private val householdRepository: HouseholdRepository,
+    private val groupRepository: GroupRepository,
     private val syncDaemon: SyncDaemon,
 ) : RootComponentFactory {
   override fun create(context: CContext): RootComponent =
@@ -167,7 +161,7 @@ class DefaultRootComponentFactory(
           cContext = context,
           componentProvider = componentProvider,
           tokenStorage = tokenStorage,
-          householdRepository = householdRepository,
+          groupRepository = groupRepository,
           syncDaemon = syncDaemon,
       )
 }

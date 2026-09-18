@@ -34,6 +34,6 @@ class AuthUiTest {
     onNode(isRoot()).performKeyInput { pressKey(Key.Tab) }
     onNode(isFocused()).performTextInput("password1234")
     onNode(isRoot()).performKeyInput { pressKey(Key.Enter) }
-    onNode(hasTestTag("household-list")).waitForExistence().assertExists()
+    onNode(hasTestTag("group-list")).waitForExistence().assertExists()
   }
 }

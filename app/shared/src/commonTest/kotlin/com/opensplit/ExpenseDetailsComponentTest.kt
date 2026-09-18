@@ -6,8 +6,8 @@ import com.opensplit.dto.expense.SplitMethod.Equally
 import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.expense.ExpenseDetailsComponentFactory
-import com.opensplit.features.household.details.HouseholdDetailsComponent
-import com.opensplit.features.household.details.HouseholdDetailsComponentFactory
+import com.opensplit.features.group.details.GroupDetailsComponent
+import com.opensplit.features.group.details.GroupDetailsComponentFactory
 import com.opensplit.repository.ExpenseRepository
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.integrationKoin
@@ -23,21 +23,21 @@ class ExpenseDetailsComponentTest : BehaviorSpec() {
     extensions(MainDispatcherExtension())
     val koin by integrationKoin()
 
-    Given("a HouseholdDetailsComponent") {
+    Given("a GroupDetailsComponent") {
       val cContext by testValue { TestCContext().resumed() }
       val detailsComponent by testValue {
         koin
-            .get<HouseholdDetailsComponentFactory>()
+            .get<GroupDetailsComponentFactory>()
             .create(
                 cContext,
-                HouseholdDetailsComponent.Config("household-1"),
+                GroupDetailsComponent.Config("group-1"),
             )
       }
       beforeEach {
         koin
             .get<ExpenseRepository>()
             .createExpense(
-                householdId = "household-1",
+                groupId = "group-1",
                 title = "Pizza",
                 amount = 20.0,
                 creator = "user-1",
@@ -65,7 +65,7 @@ class ExpenseDetailsComponentTest : BehaviorSpec() {
             .get<ExpenseDetailsComponentFactory>()
             .create(
                 cContext,
-                ExpenseDetailsComponent.Config("household-1", "expense-1"),
+                ExpenseDetailsComponent.Config("group-1", "expense-1"),
                 onBack = {},
             )
       }
@@ -78,7 +78,7 @@ class ExpenseDetailsComponentTest : BehaviorSpec() {
           lastConfig.shouldBeInstanceOf<AddExpenseComponent.Config>()
           val editConfig = lastConfig as AddExpenseComponent.Config
           editConfig.expenseId shouldBe "expense-1"
-          editConfig.householdId shouldBe "household-1"
+          editConfig.groupId shouldBe "group-1"
         }
       }
     }

@@ -6,13 +6,13 @@ import com.opensplit.db.getRoomDatabase
 import com.opensplit.di.appModule
 import com.opensplit.fake.FakeAuthApi
 import com.opensplit.fake.FakeExpenseApi
-import com.opensplit.fake.FakeHouseholdApi
+import com.opensplit.fake.FakeGroupApi
 import com.opensplit.fake.FakeSyncApi
 import com.opensplit.features.auth.AuthApi
 import com.opensplit.features.auth.NoOpTokenStorage
 import com.opensplit.features.auth.TokenStorage
 import com.opensplit.features.expense.ExpenseApi
-import com.opensplit.features.household.HouseholdApi
+import com.opensplit.features.group.GroupApi
 import com.opensplit.repository.InMemoryProfileRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.sync.NoopSyncDaemon
@@ -62,7 +62,7 @@ fun integrationTestModule() = module {
   single { FakeAuthApi() }.bind<AuthApi>()
   single { NoOpTokenStorage() }.bind<TokenStorage>()
   single { InMemoryProfileRepository() }.bind<ProfileRepository>()
-  single { FakeHouseholdApi() }.bind<HouseholdApi>()
+  single { FakeGroupApi() }.bind<GroupApi>()
   single { FakeExpenseApi() }.bind<ExpenseApi>()
   single { FakeSyncApi() }.bind<SyncApi>()
 

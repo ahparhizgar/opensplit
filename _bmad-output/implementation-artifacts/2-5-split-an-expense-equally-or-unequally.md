@@ -4,7 +4,7 @@ Status: review
 
 ## Story
 
-As a household member,
+As a group member,
 I want to split an expense equally or with custom shares (unequally, percentages, shares, adjustments),
 So that the debt matches the real arrangement.
 
@@ -27,7 +27,7 @@ So that the debt matches the real arrangement.
   - Update `ExpenseRepository` to save and fetch participants.
   - Update `ExpenseService` to handle complex split persistence.
 - [x] **API Update:**
-  - Update `POST /households/{id}/expenses` to accept participant shares.
+  - Update `POST /groups/{id}/expenses` to accept participant shares.
   - Ensure `ExpenseDto` returns the list of participants with their shares.
 
 ### Core (Shared) Implementation
@@ -119,7 +119,7 @@ So that the debt matches the real arrangement.
 - `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/AddExpenseComponent.kt`
 - `app/shared/src/commonMain/kotlin/com/opensplit/features/expense/AddExpenseScreen.kt`
 - `app/shared/src/commonTest/kotlin/com/opensplit/fake/FakeExpenseApi.kt`
-- `app/shared/src/commonTest/kotlin/com/opensplit/fake/FakeHouseholdApi.kt`
+- `app/shared/src/commonTest/kotlin/com/opensplit/fake/FakeGroupApi.kt`
 - `app/shared/src/commonTest/kotlin/com/opensplit/AddExpenseComponentTest.kt`
 
 ## Change Log

@@ -9,7 +9,6 @@ import com.arkivanov.essenty.lifecycle.resume
 import com.arkivanov.essenty.lifecycle.stop
 import com.opensplit.component.DefaultCContext
 import com.opensplit.di.appModule
-import com.opensplit.root.RootComponent
 import com.opensplit.root.RootComponentFactory
 import kotlinx.browser.document
 import org.koin.core.context.startKoin
@@ -20,17 +19,12 @@ import org.w3c.dom.events.Event
 fun main() {
   val lifecycle = LifecycleRegistry()
 
-  val koin = startKoin {
-    modules(
-        module {
-          single {
-            DataDir(DataDir.DEFAULT)
+  val koin =
+      startKoin {
+            modules(module { single { DataDir(DataDir.DEFAULT) } })
+            modules(appModule())
           }
-        }
-    )
-    modules(appModule())
-  }
-      .koin
+          .koin
 
   val backDispatcher = BackDispatcher()
   val context = DefaultCContext(lifecycle = lifecycle, backHandler = backDispatcher)
@@ -59,7 +53,5 @@ private fun LifecycleRegistry.attachToDocument() {
 
   updateVisibility()
 
-  document.addEventListener("visibilitychange") { _: Event ->
-    updateVisibility()
-  }
+  document.addEventListener("visibilitychange") { _: Event -> updateVisibility() }
 }

@@ -14,14 +14,14 @@ import com.arkivanov.decompose.value.operator.map
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
-import com.opensplit.domain.Household
+import com.opensplit.domain.Group
 import com.opensplit.domain.Member
 import com.opensplit.domain.ParticipantShare
 import com.opensplit.dto.expense.ParticipantAmount
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.remote.fieldErrors
 import com.opensplit.repository.ExpenseRepository
-import com.opensplit.repository.HouseholdRepository
+import com.opensplit.repository.GroupRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.root.TopLevelDestinationConfig
 import com.opensplit.util.formatAmount
@@ -61,7 +61,7 @@ interface AddExpenseComponent {
 
   @Serializable
   data class Config(
-      val householdId: String,
+      val groupId: String,
       val expenseId: String? = null,
   ) : TopLevelDestinationConfig
 
@@ -127,7 +127,7 @@ sealed interface PayAmounts {
 }
 
 data class AddExpenseUiState(
-    val householdName: String = "",
+    val groupName: String = "",
     val allParticipants: List<String>,
     val participants: List<Member> = emptyList(),
     val payAmounts: PayAmountsUiState,
@@ -187,16 +187,16 @@ class DefaultAddExpenseComponent(
     context: CContext,
     config: AddExpenseComponent.Config,
     private val expenseRepository: ExpenseRepository,
-    private val householdRepository: HouseholdRepository,
+    private val groupRepository: GroupRepository,
     private val profileRepository: ProfileRepository,
     private val moreSplitOptionsComponentFactory: MoreSplitOptionsComponentFactory,
     private val whoPaidComponentFactory: WhoPaidComponentFactory,
     private val quickSplitComponentFactory: QuickSplitComponentFactory,
     private val onFinished: () -> Unit,
 ) : AddExpenseComponent, CContext by context {
-  private val householdId = config.householdId
+  private val groupId = config.groupId
   private val expenseId = config.expenseId
-  private var loadedHousehold: Household? = null
+  private var loadedGroup: Group? = null
   private val _uiState =
       MutableValue(
           AddExpenseUiState(
@@ -242,7 +242,7 @@ class DefaultAddExpenseComponent(
                       DefaultPaidAmountsComponentFactory()
                           .create(
                               initial = _uiState.value.payAmountsDomain,
-                              household = loadedHousehold!!,
+                              group = loadedGroup!!,
                               onDone = { amounts ->
                                 setPaidAmounts(amounts)
                                 stackNavigation.navigate { configs ->
@@ -269,7 +269,7 @@ class DefaultAddExpenseComponent(
                         allParticipants = state.allParticipants,
                         amountText = amountText,
                         amountSum = state.amountSum,
-                        householdId = householdId,
+                        groupId = groupId,
                         initialOption =
                             QuickSplitComponent.getOption(
                                 payAmounts = state.payAmounts,
@@ -359,26 +359,24 @@ class DefaultAddExpenseComponent(
   private fun loadMembers() = scope.launch {
     _uiState.update { it.copy(isLoading = true) }
     try {
-      val household = householdRepository.getHousehold(householdId)
-      if (household != null) {
-        loadedHousehold = household
+      val group = groupRepository.getGroup(groupId)
+      if (group != null) {
+        loadedGroup = group
         val currentUserId = profileRepository.profile.value?.id
         val participants =
-            household.members.map { member ->
-              ParticipantAmount(userId = member.userId, amount = 0.0)
-            }
+            group.members.map { member -> ParticipantAmount(userId = member.userId, amount = 0.0) }
         _uiState.update { state ->
           state.copy(
-              householdName = household.name,
-              allParticipants = household.members.map { it.userId },
-              participants = household.members,
+              groupName = group.name,
+              allParticipants = group.members.map { it.userId },
+              participants = group.members,
               payAmounts =
                   if (
                       state.payAmounts is PayAmountsUiState.OnePerson &&
                           state.payAmounts.userId.isEmpty()
                   )
                       PayAmountsUiState.OnePerson(
-                          userId = currentUserId ?: household.members.first().userId,
+                          userId = currentUserId ?: group.members.first().userId,
                           amount = state.payAmounts.amount,
                       )
                   else state.payAmounts,
@@ -523,7 +521,7 @@ class DefaultAddExpenseComponent(
       if (expenseId != null) {
         // Update existing expense
         expenseRepository.updateExpense(
-            householdId = householdId,
+            groupId = groupId,
             expenseId = expenseId,
             title = title,
             amount = amount,
@@ -534,7 +532,7 @@ class DefaultAddExpenseComponent(
       } else {
         // Create new expense
         expenseRepository.createExpense(
-            householdId = householdId,
+            groupId = groupId,
             title = title,
             amount = amount,
             creator = participantsDomain.firstOrNull { it.paidShare > 0 }?.userId ?: "",
@@ -561,7 +559,7 @@ class DefaultAddExpenseComponent(
 
 class DefaultAddExpenseComponentFactory(
     private val expenseRepository: ExpenseRepository,
-    private val householdRepository: HouseholdRepository,
+    private val groupRepository: GroupRepository,
     private val profileRepository: ProfileRepository,
     private val moreSplitOptionsComponentFactory: MoreSplitOptionsComponentFactory,
     private val whoPaidComponentFactory: WhoPaidComponentFactory,
@@ -576,7 +574,7 @@ class DefaultAddExpenseComponentFactory(
           context = context,
           config = config,
           expenseRepository = expenseRepository,
-          householdRepository = householdRepository,
+          groupRepository = groupRepository,
           profileRepository = profileRepository,
           moreSplitOptionsComponentFactory = moreSplitOptionsComponentFactory,
           whoPaidComponentFactory = whoPaidComponentFactory,

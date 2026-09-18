@@ -13,7 +13,7 @@ data class ExpenseParticipantRecord(
 
 data class ExpenseRecord(
     val id: String,
-    val householdId: String,
+    val groupId: String,
     val title: String,
     val amount: Double,
     val creator: String,
@@ -25,7 +25,7 @@ data class ExpenseRecord(
 fun ExpenseRecord.toDto() =
     ExpenseDto(
         id = id,
-        householdId = householdId,
+        groupId = groupId,
         title = title,
         amount = amount,
         creator = creator,

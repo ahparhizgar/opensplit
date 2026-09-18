@@ -5,7 +5,7 @@
     "identityHash": "9da8d76f9f673ed43b65790ef1462b79",
     "entities": [
       {
-        "tableName": "households",
+        "tableName": "groups",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `inviteLink` TEXT NOT NULL, `isOwner` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
@@ -41,12 +41,12 @@
         }
       },
       {
-        "tableName": "household_members",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`householdId` TEXT NOT NULL, `userId` TEXT NOT NULL, `name` TEXT NOT NULL, `email` TEXT NOT NULL, `isOwner` INTEGER NOT NULL, `isCurrentUser` INTEGER NOT NULL, `balance` REAL NOT NULL, PRIMARY KEY(`householdId`, `userId`))",
+        "tableName": "group_members",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`groupId` TEXT NOT NULL, `userId` TEXT NOT NULL, `name` TEXT NOT NULL, `email` TEXT NOT NULL, `isOwner` INTEGER NOT NULL, `isCurrentUser` INTEGER NOT NULL, `balance` REAL NOT NULL, PRIMARY KEY(`groupId`, `userId`))",
         "fields": [
           {
-            "fieldPath": "householdId",
-            "columnName": "householdId",
+            "fieldPath": "groupId",
+            "columnName": "groupId",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -90,14 +90,14 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "householdId",
+            "groupId",
             "userId"
           ]
         }
       },
       {
         "tableName": "expenses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `householdId` TEXT NOT NULL, `title` TEXT NOT NULL, `amount` REAL NOT NULL, `creator` TEXT NOT NULL, `createdAtEpochMillis` INTEGER NOT NULL, `splitMethodJson` TEXT NOT NULL, `syncStatus` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `groupId` TEXT NOT NULL, `title` TEXT NOT NULL, `amount` REAL NOT NULL, `creator` TEXT NOT NULL, `createdAtEpochMillis` INTEGER NOT NULL, `splitMethodJson` TEXT NOT NULL, `syncStatus` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -106,8 +106,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "householdId",
-            "columnName": "householdId",
+            "fieldPath": "groupId",
+            "columnName": "groupId",
             "affinity": "TEXT",
             "notNull": true
           },

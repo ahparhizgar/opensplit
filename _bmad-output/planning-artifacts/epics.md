@@ -19,12 +19,12 @@ This document provides the complete epic and story breakdown for bmad-test, deco
 ### Functional Requirements
 
 FR1: Users can create an account to access OpenSplit.
-FR2: Users can create a household/group for shared expenses.
-FR3: Users can join a household/group.
-FR4: Users can view the household they belong to.
-FR5: Users can switch between households they have access to.
-FR6: Users can leave a household they belong to.
-FR7: Users can view household members.
+FR2: Users can create a group/group for shared expenses.
+FR3: Users can join a group/group.
+FR4: Users can view the group they belong to.
+FR5: Users can switch between groups they have access to.
+FR6: Users can leave a group they belong to.
+FR7: Users can view group members.
 FR8: Users can create a shared expense.
 FR9: Users can assign themselves or another user as the payer.
 FR10: Users can edit an existing expense.
@@ -34,12 +34,12 @@ FR13: Users can add an expense with unequal split.
 FR14: Users can assign specific participants to an expense split.
 FR15: Users can record an expense in its original currency.
 FR16: Users can view expense history.
-FR17: Users can view current balances within a household.
-FR18: Users can view who owes whom in a household.
+FR17: Users can view current balances within a group.
+FR18: Users can view who owes whom in a group.
 FR19: Users can record a full settlement.
 FR20: Users can record a partial settlement.
 FR21: Users can view settlement history.
-FR22: Users can see settlement status for each household member.
+FR22: Users can see settlement status for each group member.
 FR23: Users can settle an outstanding balance between members.
 FR24: Users can create expenses while offline.
 FR25: Users can edit expenses while offline.
@@ -50,7 +50,7 @@ FR29: The system can resolve sync conflicts in a way users can understand.
 FR30: Users can access OpenSplit on mobile.
 FR31: Users can access OpenSplit on web.
 FR32: Users can sign in securely.
-FR33: Users can keep their household and expense data private by default.
+FR33: Users can keep their group and expense data private by default.
 FR34: Users can choose only the information needed for expense tracking.
 FR35: The system can prefill common expense entry defaults.
 FR36: The system can support a minimal, streamlined expense-entry flow.
@@ -61,7 +61,7 @@ FR37: The system can display the most recent balances quickly.
 NFR1: Android app startup time on a Galaxy A50 should stay under 0.5 seconds.
 NFR2: Core expense entry, balance review, and settlement flows should feel immediate.
 NFR3: The app should stay responsive during offline use and sync recovery.
-NFR4: User and household data should be privacy-first by default.
+NFR4: User and group data should be privacy-first by default.
 NFR5: Only the minimum data needed for expense tracking should be collected.
 NFR6: Account access should be securely handled.
 NFR7: The app should maintain at least a 98% crash-free session rate.
@@ -81,7 +81,7 @@ NFR14: The first release should prioritize stability and speed over large-scale 
 - The project should be initialized with `client`, `server`, and `shared` modules.
 - REST is the API pattern for client-server communication.
 - Email/password authentication and secure session handling are the initial auth approach.
-- Authorization is household-scoped and must be enforced consistently.
+- Authorization is group-scoped and must be enforced consistently.
 - Shared DTOs should reduce drift between client and server models.
 - The backend is VPS-hosted with Docker Compose.
 - Monitoring, logs, and backups require explicit implementation.
@@ -91,26 +91,26 @@ NFR14: The first release should prioritize stability and speed over large-scale 
 
 UX-DR1: Use a themeable Material 3 based design system with a lightweight custom visual layer.
 UX-DR2: Define reusable design tokens for color, typography, spacing, and elevation.
-UX-DR3: Implement a Household Balance Card component for at-a-glance household balance status.
+UX-DR3: Implement a Group Balance Card component for at-a-glance group balance status.
 UX-DR4: Implement an Expense Entry Sheet component with strong defaults, inline validation, and offline states.
 UX-DR5: Implement a Settlement Summary component that clearly shows who owes whom and the next action.
 UX-DR6: Implement a Sync Status Banner component for synced, pending, reconnecting, and conflict states.
 UX-DR7: Maintain strong contrast, large touch targets, and avoid color-only meaning.
 UX-DR8: Support mobile-first layouts that scale to tablet and desktop without changing the core flow.
 UX-DR9: Support keyboard navigation, screen readers, and WCAG 2.1 AA accessibility.
-UX-DR10: Keep forms short, prefilling household, payer, and equal split where possible.
+UX-DR10: Keep forms short, prefilling group, payer, and equal split where possible.
 UX-DR11: Make balance feedback immediate after save and keep offline actions recoverable.
-UX-DR12: Keep navigation shallow and household-centered across mobile and web.
+UX-DR12: Keep navigation shallow and group-centered across mobile and web.
 
 ### FR Coverage Map
 
 FR1: Epic 1 - Secure account creation
-FR2: Epic 1 - Household setup
-FR3: Epic 1 - Join a household
-FR4: Epic 1 - View current household
-FR5: Epic 1 - Switch between households
-FR6: Epic 1 - Leave a household
-FR7: Epic 1 - View household members
+FR2: Epic 1 - Group setup
+FR3: Epic 1 - Join a group
+FR4: Epic 1 - View current group
+FR5: Epic 1 - Switch between groups
+FR6: Epic 1 - Leave a group
+FR7: Epic 1 - View group members
 FR8: Epic 2 - Create a shared expense
 FR9: Epic 2 - Choose the payer
 FR10: Epic 2 - Edit an expense
@@ -144,9 +144,9 @@ FR37: Epic 3 - Display recent balances quickly
 
 ## Epic List
 
-### Epic 1: Join Your Household Securely
+### Epic 1: Join Your Group Securely
 
-Users can create an account, sign in securely, access OpenSplit on mobile and web, create or join a household, and see household membership in a privacy-first way.
+Users can create an account, sign in securely, access OpenSplit on mobile and web, create or join a group, and see group membership in a privacy-first way.
 
 **FRs covered:** FR1, FR2, FR3, FR4, FR5, FR6, FR7, FR30, FR31, FR32, FR33, FR34
 
@@ -184,11 +184,11 @@ Users can create expenses and settlements while offline, preserve their work loc
 
 **UX-DRs addressed:** UX-DR6, UX-DR11
 
-**Dependencies:** Epic 1 establishes access and household context; Epic 2 and Epic 3 can function with online storage, while Epic 4 hardens the offline-first promise across both.
+**Dependencies:** Epic 1 establishes access and group context; Epic 2 and Epic 3 can function with online storage, while Epic 4 hardens the offline-first promise across both.
 
 ### Epic 5: Polish & Refinement Epic
 
-Refine household setup workflows, implement logout functionality, and improve UI consistency across household creation and join flows. Addresses technical debt and UX improvements discovered during Epic 1 and Epic 2 implementation.
+Refine group setup workflows, implement logout functionality, and improve UI consistency across group creation and join flows. Addresses technical debt and UX improvements discovered during Epic 1 and Epic 2 implementation.
 
 **FRs enhanced:** FR1, FR2, FR3, FR4, FR5, FR6, FR7 (improved UX and security)
 
@@ -196,9 +196,9 @@ Refine household setup workflows, implement logout functionality, and improve UI
 
 **Dependencies:** Improves Epic 1 workflows; must complete before Epic 3 begins
 
-## Epic 1: Join Your Household Securely
+## Epic 1: Join Your Group Securely
 
-Users can create an account, sign in securely, access OpenSplit on mobile and web, create or join a household, and see household membership in a privacy-first way.
+Users can create an account, sign in securely, access OpenSplit on mobile and web, create or join a group, and see group membership in a privacy-first way.
 
 **FRs covered:** FR1, FR2, FR3, FR4, FR5, FR6, FR7, FR30, FR31, FR32, FR33, FR34
 
@@ -230,7 +230,7 @@ So that the app has the agreed shared client/server structure before feature wor
 
 As a new or returning user,
 I want to create an account and sign in securely,
-So that I can access my households and expenses on mobile or web.
+So that I can access my groups and expenses on mobile or web.
 
 **Acceptance Criteria:**
 
@@ -241,59 +241,59 @@ So that I can access my households and expenses on mobile or web.
 
 **Given** a returning user is on the sign-in screen
 **When** they submit valid credentials
-**Then** the user is authenticated and routed to their household context
+**Then** the user is authenticated and routed to their group context
 
 **Given** the user enters invalid credentials or incomplete data
 **When** they submit the form
 **Then** inline validation or an error message is shown
 **And** no session is created
 
-### Story 1.3: Create or join a household
+### Story 1.3: Create or join a group
 
 As a signed-in user,
-I want to create a household or join an existing one,
+I want to create a group or join an existing one,
 So that I can start sharing expenses with the right group.
 
 **Acceptance Criteria:**
 
-**Given** a signed-in user starts household setup
-**When** they enter a valid household name and confirm creation
-**Then** a household is created and set as the active context
+**Given** a signed-in user starts group setup
+**When** they enter a valid group name and confirm creation
+**Then** a group is created and set as the active context
 
 **Given** a user has a valid join code or invite token
 **When** they submit it
-**Then** they are added to the household
-**And** the household becomes available in their household list
+**Then** they are added to the group
+**And** the group becomes available in their group list
 
 **Given** the setup form is incomplete or invalid
 **When** the user tries to continue
 **Then** the app prevents submission and shows a clear validation message
 
-### Story 1.4: View and manage household membership
+### Story 1.4: View and manage group membership
 
-As a household member,
-I want to see members, switch households, and leave a household,
+As a group member,
+I want to see members, switch groups, and leave a group,
 So that I can manage my shared-expense context without confusion.
 
 **Acceptance Criteria:**
 
-**Given** the user is viewing a household
+**Given** the user is viewing a group
 **When** the member list loads
-**Then** the current household members are visible
+**Then** the current group members are visible
 
-**Given** the user has access to multiple households
-**When** they choose another household
-**Then** the active context switches to that household
+**Given** the user has access to multiple groups
+**When** they choose another group
+**Then** the active context switches to that group
 
-**Given** the user chooses to leave a household
+**Given** the user chooses to leave a group
 **When** they confirm the action
-**Then** they are removed from that household and returned to a valid household or safe landing state
+**Then** they are removed from that group and returned to a valid group or safe landing state
 
-### Story 1.5: Use OpenSplit on mobile and web with clear household context
+### Story 1.5: Use OpenSplit on mobile and web with clear group context
 
 As a signed-in user,
 I want OpenSplit to work well on mobile and web,
-So that I can access the same household context quickly on either surface.
+So that I can access the same group context quickly on either surface.
 
 **Acceptance Criteria:**
 
@@ -303,11 +303,11 @@ So that I can access the same household context quickly on either surface.
 
 **Given** the user is signed in
 **When** the app renders navigation
-**Then** the current household context is visible and the core actions are easy to reach
+**Then** the current group context is visible and the core actions are easy to reach
 
 **Given** a user is not signed in
 **When** they open the app
-**Then** protected household data is not shown
+**Then** protected group data is not shown
 
 ### Story 1.6: Establish local development and CI baseline
 
@@ -351,18 +351,18 @@ so that my credentials and session are protected from compromise.
 
 ### Story 1.8: Invite code display and share
 
-As a household creator,
-I want to see my household's invite code and share it with others,
+As a group creator,
+I want to see my group's invite code and share it with others,
 so that my roommates can join without me having to copy-paste from logs or guess the code.
 
 **Acceptance Criteria:**
 
-**Given** a user has just created a household
+**Given** a user has just created a group
 **When** the creation succeeds
-**Then** the invite code is displayed on the active household screen
+**Then** the invite code is displayed on the active group screen
 
-**Given** the user is viewing an active household
-**When** they look at the household information
+**Given** the user is viewing an active group
+**When** they look at the group information
 **Then** the invite code is visible and distinguishable
 
 **Given** the user can see the invite code
@@ -371,23 +371,23 @@ so that my roommates can join without me having to copy-paste from logs or guess
 
 ### Story 1.9: Fix membership edge cases
 
-As a household member,
-I want the member list to correctly identify me and handle edge cases like leaving my last household,
+As a group member,
+I want the member list to correctly identify me and handle edge cases like leaving my last group,
 so that the membership experience is accurate and trustworthy.
 
 **Acceptance Criteria:**
 
-**Given** the user is viewing the household member list
+**Given** the user is viewing the group member list
 **When** the overview loads
 **Then** the current user is labeled "You" in the member list
 
-**Given** the user is the last member leaving a household
+**Given** the user is the last member leaving a group
 **When** they confirm the leave action
-**Then** they are returned to the household setup screen (safe landing state)
+**Then** they are returned to the group setup screen (safe landing state)
 
-**Given** the owner leaves a household
+**Given** the owner leaves a group
 **When** the leave is processed
-**Then** the household continues to exist and ownership transfers to another member
+**Then** the group continues to exist and ownership transfers to another member
 
 ## Epic 2: Log Shared Expenses Fast
 
@@ -401,23 +401,23 @@ Users can add, edit, delete, and review shared expenses with smart defaults, pay
 
 ### Story 2.1: Add a simple expense with minimal UI
 
-As a household member,
+As a group member,
 I want to add an expense using a minimal form,
 So that I can log shared costs without unnecessary complexity.
 
 **Acceptance Criteria:**
 
-**Given** the user is in a household
+**Given** the user is in a group
 **When** they navigate to the "Add Expense" screen
 **Then** they see a minimal form with fields for description and amount
 
 **Given** the user enters a valid description and amount
 **When** they save the expense
-**Then** the expense is recorded and appears in the household history
+**Then** the expense is recorded and appears in the group history
 
 ### Story 2.2: UI of add expense should have defaults
 
-As a household member,
+As a group member,
 I want the "Add Expense" form to have smart defaults,
 So that I can log expenses with minimal typing.
 
@@ -425,11 +425,11 @@ So that I can log expenses with minimal typing.
 
 **Given** the user opens the "Add Expense" flow
 **When** the form loads
-**Then** the current household, the current user as payer, and "equal split" are prefilled by default
+**Then** the current group, the current user as payer, and "equal split" are prefilled by default
 
 ### Story 2.3: Implement inline validations for required fields
 
-As a household member,
+As a group member,
 I want to see immediate feedback if I miss required fields,
 So that I can correct errors before submitting the form.
 
@@ -440,22 +440,22 @@ So that I can correct errors before submitting the form.
 **Then** an inline validation error is shown for the specific field
 **And** the save action is disabled or blocked
 
-### Story 2.4: Calculate balance in backend and show real balance in household-list and household details screen
+### Story 2.4: Calculate balance in backend and show real balance in group-list and group details screen
 
-As a household member,
-I want to see updated balances in the household list and details screens,
+As a group member,
+I want to see updated balances in the group list and details screens,
 So that I can immediately see the impact of my added expenses.
 
 **Acceptance Criteria:**
 
 **Given** an expense is successfully added
 **When** the backend calculates the new totals
-**Then** the updated balance is visible on the household list screen
-**And** the updated balance is visible on the household details screen
+**Then** the updated balance is visible on the group list screen
+**And** the updated balance is visible on the group details screen
 
 ### Story 2.5: Split an expense equally or unequally
 
-As a household member,
+As a group member,
 I want to split an expense equally or with custom shares,
 So that the debt matches the real arrangement.
 
@@ -475,7 +475,7 @@ So that the debt matches the real arrangement.
 
 ### Story 2.6: Edit an expense and restore split methods
 
-As a household member,
+As a group member,
 I want to edit an existing expense and have its split method restored,
 So that I can easily adjust details while maintaining the original intent.
 
@@ -491,13 +491,13 @@ So that I can easily adjust details while maintaining the original intent.
 
 ### Story 2.7: Review expense history
 
-As a household member,
+As a group member,
 I want to review expense history,
-So that I can verify what was logged and how the household total evolved.
+So that I can verify what was logged and how the group total evolved.
 
 **Acceptance Criteria:**
 
-**Given** the household has expense records
+**Given** the group has expense records
 **When** the history view loads
 **Then** expenses are shown in a clear, chronological list
 
@@ -505,7 +505,7 @@ So that I can verify what was logged and how the household total evolved.
 **When** the detail view opens
 **Then** the expense shows its amount, payer, split, and participants
 
-**Given** the household has no expenses
+**Given** the group has no expenses
 **When** the history view opens
 **Then** an empty state explains the next action
 
@@ -521,29 +521,29 @@ Users can quickly see balances, understand who owes whom, record full or partial
 
 ### Story 3.1: View current balances and owed relationships
 
-As a household member,
+As a group member,
 I want to see current balances and who owes whom,
-So that I can understand the household state at a glance.
+So that I can understand the group state at a glance.
 
 **Acceptance Criteria:**
 
 **Given** the user opens the balance view
 **When** data loads
-**Then** the current household balances are visible quickly
+**Then** the current group balances are visible quickly
 
-**Given** the household has outstanding debts
+**Given** the group has outstanding debts
 **When** the balance view renders
 **Then** it shows who owes whom in clear language
 
-**Given** the household has no outstanding balance
+**Given** the group has no outstanding balance
 **When** the balance view loads
-**Then** the screen clearly indicates that the household is settled
+**Then** the screen clearly indicates that the group is settled
 
 ### Story 3.2: Record a full or partial settlement
 
-As a household member,
+As a group member,
 I want to record a full or partial settlement,
-So that the household debt stays accurate after payment.
+So that the group debt stays accurate after payment.
 
 **Acceptance Criteria:**
 
@@ -561,17 +561,17 @@ So that the household debt stays accurate after payment.
 
 ### Story 3.3: Review settlement history and member status
 
-As a household member,
+As a group member,
 I want to see settlement history and each member's status,
 So that I can trust the repayment record.
 
 **Acceptance Criteria:**
 
-**Given** the household has settlement activity
+**Given** the group has settlement activity
 **When** the settlement history view loads
 **Then** the user can see prior settlements in reverse chronological order
 
-**Given** the user opens a household member record
+**Given** the user opens a group member record
 **When** the status view renders
 **Then** the current settlement status for that member is visible
 
@@ -591,7 +591,7 @@ Users can create expenses and settlements while offline, preserve their work loc
 
 ### Story 4.1: Save expenses and settlements while offline
 
-As a household member,
+As a group member,
 I want to create and edit expenses and record settlements while offline,
 So that I can capture shared costs immediately without waiting for a connection.
 
@@ -611,7 +611,7 @@ So that I can capture shared costs immediately without waiting for a connection.
 
 ### Story 4.2: Sync offline changes after reconnecting
 
-As a household member,
+As a group member,
 I want offline changes to sync automatically after reconnecting,
 So that my data stays current without re-entering it.
 
@@ -631,7 +631,7 @@ So that my data stays current without re-entering it.
 
 ### Story 4.3: Resolve sync conflicts clearly
 
-As a household member,
+As a group member,
 I want sync conflicts explained in plain language,
 So that I can trust the final result and understand what changed.
 
@@ -651,9 +651,9 @@ So that I can trust the final result and understand what changed.
 
 ## Epic 5: Polish & Refinement Epic
 
-Refine household setup workflows, implement logout functionality, and improve UI consistency across household creation and join flows. Addresses technical debt and UX improvements discovered during Epic 1 and Epic 2 implementation.
+Refine group setup workflows, implement logout functionality, and improve UI consistency across group creation and join flows. Addresses technical debt and UX improvements discovered during Epic 1 and Epic 2 implementation.
 
-**FRs enhanced:** FR1 (secure logout), FR2 (improved create household UX), FR3 (improved join household UX), FR4-7 (better membership UX)
+**FRs enhanced:** FR1 (secure logout), FR2 (improved create group UX), FR3 (improved join group UX), FR4-7 (better membership UX)
 
 **Relevant NFRs:** NFR4, NFR5, NFR6, NFR10, NFR11, NFR12
 
@@ -686,7 +686,7 @@ So that I can leave the app in a logged-out state on shared devices.
 **Given** a user chooses to sign out
 **When** the logout action is processed
 **Then** all local data is cleared:
-  - Room database is cleared (expenses, households, members)
+  - Room database is cleared (expenses, groups, members)
   - DataStore preferences are cleared (JWT token, user preferences)
   - App state is reset to unauthenticated
 
@@ -695,15 +695,15 @@ So that I can leave the app in a logged-out state on shared devices.
 **Then** a warning is shown about unsync'd changes
 **And** they must confirm before local data is deleted
 
-### Story 5.2: Remove Create or Join Component & Refactor Household Setup
+### Story 5.2: Remove Create or Join Component & Refactor Group Setup
 
-As a signed-in user with no active household,
-I want a clear, linear household setup flow,
-So that I understand whether I'm creating a new household or joining an existing one.
+As a signed-in user with no active group,
+I want a clear, linear group setup flow,
+So that I understand whether I'm creating a new group or joining an existing one.
 
 **Acceptance Criteria:**
 
-**Given** a user is viewing the households list screen
+**Given** a user is viewing the groups list screen
 **When** they look at the action buttons
 **Then** they see:
   - "Start a New Group" button (existing)
@@ -712,28 +712,28 @@ So that I understand whether I'm creating a new household or joining an existing
 **Given** the user taps "Join an Existing Group"
 **When** the join flow opens
 **Then** the old combined create/join component is NOT shown
-**And** a clear "join household" form appears with:
+**And** a clear "join group" form appears with:
   - Text input for invite code
   - Submit button
-  - Back button in app bar to return to household list
+  - Back button in app bar to return to group list
 
 **Given** the user enters a valid invite code
 **When** they submit
-**Then** they are added to that household
-**And** they are returned to the household list with the new household now visible
+**Then** they are added to that group
+**And** they are returned to the group list with the new group now visible
 
 **Given** the user enters an invalid invite code
 **When** they submit
 **Then** an error message is shown
 **And** they can try again or cancel
 
-**Given** the user is back on the household list after joining
-**When** they view their households
-**Then** the newly-joined household appears in their list
+**Given** the user is back on the group list after joining
+**When** they view their groups
+**Then** the newly-joined group appears in their list
 
-### Story 5.3: Implement Join Household Button and Form UI
+### Story 5.3: Implement Join Group Button and Form UI
 
-As a user viewing the join household form,
+As a user viewing the join group form,
 I want the form to match the app's visual style and provide clear feedback,
 So that the experience feels consistent with the rest of OpenSplit.
 
@@ -743,7 +743,7 @@ So that the experience feels consistent with the rest of OpenSplit.
 **When** the join form screen opens
 **Then** the screen displays:
   - App bar with back button (existing navigation pattern)
-  - Title: "Join a Household"
+  - Title: "Join a Group"
   - Text input field with placeholder: "Enter invite code"
   - Submit button: "Join" (styled to match app buttons)
 
@@ -754,7 +754,7 @@ So that the experience feels consistent with the rest of OpenSplit.
 **Given** the user submits a valid code
 **When** the server confirms they've joined
 **Then** they see success feedback (toast, snackbar, or dialog) matching the app's existing feedback pattern
-**And** the screen navigates back to household list
+**And** the screen navigates back to group list
 
 **Given** the user submits an invalid code
 **When** the server responds with an error
@@ -771,35 +771,35 @@ So that the experience feels consistent with the rest of OpenSplit.
 **Then** they see the app's standard offline message
 **And** submission is prevented until online
 
-### Story 5.4: Polish Create Household UI and Workflow
+### Story 5.4: Polish Create Group UI and Workflow
 
-As a user creating a new household,
+As a user creating a new group,
 I want the form to match the app's visual style and provide clear feedback,
-So that creating a household feels polished and consistent.
+So that creating a group feels polished and consistent.
 
 **Acceptance Criteria:**
 
 **Given** the user taps "Start a New Group"
-**When** the create household screen opens
+**When** the create group screen opens
 **Then** the screen displays:
   - App bar with back button
-  - Title: "Create a Household"
-  - Text input for household name with placeholder text
+  - Title: "Create a Group"
+  - Text input for group name with placeholder text
   - Submit button: "Create" (styled to match app buttons)
 
 **Given** the user is viewing the input field
 **When** they focus it
 **Then** styling matches other input fields in the app (Material Design, ThemeExtended colors)
 
-**Given** the user enters a household name
+**Given** the user enters a group name
 **When** they submit the form
 **Then** the name is validated (not empty, reasonable length)
 **And** appropriate error feedback is shown if invalid
 
-**Given** the user successfully creates a household
+**Given** the user successfully creates a group
 **When** the form submits
 **Then** they see success feedback matching the app's feedback pattern
-**And** are taken to the household details screen
+**And** are taken to the group details screen
 **And** the invite code is displayed prominently for sharing
 
 **Given** the form is loading
@@ -807,6 +807,6 @@ So that creating a household feels polished and consistent.
 **Then** the submit button shows the app's standard loading state
 
 **Given** the user is offline
-**When** they try to create a household
+**When** they try to create a group
 **Then** they see the app's standard offline message
 **And** submission is prevented until online

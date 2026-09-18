@@ -1,26 +1,26 @@
 package com.opensplit.db
 
 import com.opensplit.domain.Expense
-import com.opensplit.domain.Household
+import com.opensplit.domain.Group
 import com.opensplit.domain.Member
 import com.opensplit.domain.ParticipantShare
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SyncStatus
-import com.opensplit.dto.household.HouseholdDto
-import com.opensplit.dto.household.HouseholdMemberDto
+import com.opensplit.dto.group.GroupDto
+import com.opensplit.dto.group.GroupMemberDto
 import kotlinx.serialization.json.Json
 
-fun HouseholdDto.toEntity() =
-    HouseholdEntity(
+fun GroupDto.toEntity() =
+    GroupEntity(
         id = id,
         name = name,
         inviteLink = inviteLink,
         isOwner = isOwner,
     )
 
-fun HouseholdEntity.toDto(members: List<HouseholdMemberDto>) =
-    HouseholdDto(
+fun GroupEntity.toDto(members: List<GroupMemberDto>) =
+    GroupDto(
         id = id,
         name = name,
         members = members,
@@ -28,23 +28,23 @@ fun HouseholdEntity.toDto(members: List<HouseholdMemberDto>) =
         isOwner = isOwner,
     )
 
-fun HouseholdWithMembers.toDto() = household.toDto(members.map { it.toDto() })
+fun GroupWithMembers.toDto() = group.toDto(members.map { it.toDto() })
 
-fun HouseholdWithMembers.toDomain(): Household {
+fun GroupWithMembers.toDomain(): Group {
   val memberList = members.map { it.toDomain() }
-  return Household(
-      id = household.id,
-      name = household.name,
+  return Group(
+      id = group.id,
+      name = group.name,
       members = memberList,
-      isOwner = household.isOwner,
-      inviteLink = household.inviteLink,
+      isOwner = group.isOwner,
+      inviteLink = group.inviteLink,
       balance = memberList.find { it.isCurrentUser }?.balance ?: 0.0,
   )
 }
 
-fun HouseholdDto.toDomain(): Household {
+fun GroupDto.toDomain(): Group {
   val memberList = members.map { it.toDomain() }
-  return Household(
+  return Group(
       id = id,
       name = name,
       members = memberList,
@@ -54,9 +54,9 @@ fun HouseholdDto.toDomain(): Household {
   )
 }
 
-fun HouseholdMemberDto.toEntity(householdId: String) =
+fun GroupMemberDto.toEntity(groupId: String) =
     MemberEntity(
-        householdId = householdId,
+        groupId = groupId,
         userId = userId,
         name = name,
         email = email,
@@ -66,7 +66,7 @@ fun HouseholdMemberDto.toEntity(householdId: String) =
     )
 
 fun MemberEntity.toDto() =
-    HouseholdMemberDto(
+    GroupMemberDto(
         userId = userId,
         name = name,
         email = email,
@@ -84,7 +84,7 @@ fun MemberEntity.toDomain() =
         balance = balance,
     )
 
-fun HouseholdMemberDto.toDomain() =
+fun GroupMemberDto.toDomain() =
     Member(
         userId = userId,
         name = name,
@@ -97,7 +97,7 @@ fun HouseholdMemberDto.toDomain() =
 fun ExpenseDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED) =
     ExpenseEntity(
         id = id,
-        householdId = householdId,
+        groupId = groupId,
         title = title,
         amount = amount,
         creator = creator,
@@ -109,7 +109,7 @@ fun ExpenseDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED) =
 fun ExpenseEntity.toDto(participants: List<ParticipantShareDto>) =
     ExpenseDto(
         id = id,
-        householdId = householdId,
+        groupId = groupId,
         title = title,
         amount = amount,
         creator = creator,
@@ -122,7 +122,7 @@ fun ExpenseEntity.toDto(participants: List<ParticipantShareDto>) =
 fun ExpenseEntity.toDomain(participants: List<ParticipantShare>) =
     Expense(
         id = id,
-        householdId = householdId,
+        groupId = groupId,
         title = title,
         amount = amount,
         creator = creator,
@@ -135,7 +135,7 @@ fun ExpenseEntity.toDomain(participants: List<ParticipantShare>) =
 fun ExpenseDto.toDomain() =
     Expense(
         id = id,
-        householdId = householdId,
+        groupId = groupId,
         title = title,
         amount = amount,
         creator = creator,

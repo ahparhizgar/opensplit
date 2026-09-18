@@ -3,8 +3,8 @@ package com.opensplit
 import com.opensplit.database.DatabaseInitializer
 import com.opensplit.features.auth.authModule
 import com.opensplit.features.expense.expenseModule
+import com.opensplit.features.group.groupModule
 import com.opensplit.features.health.healthModule
-import com.opensplit.features.household.householdModule
 import com.opensplit.features.sync.syncModule
 import com.opensplit.plugins.configureDependencies
 import com.opensplit.plugins.configureHTTP
@@ -30,7 +30,7 @@ fun Application.openSplit(isTest: Boolean = false) {
   initializer.init()
 
   authModule()
-  householdModule()
+  groupModule()
   expenseModule()
   syncModule()
   healthModule()

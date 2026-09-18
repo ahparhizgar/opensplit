@@ -4,7 +4,7 @@ import com.opensplit.assertLogin
 import com.opensplit.assertWelcome
 import com.opensplit.component.TestCContext
 import com.opensplit.features.auth.AuthComponent
-import com.opensplit.features.household.my.MyHouseholdsListComponent
+import com.opensplit.features.group.my.MyGroupsListComponent
 import com.opensplit.root.RootComponent
 import com.opensplit.root.RootComponentFactory
 import com.opensplit.splash.SplashDestination
@@ -38,7 +38,7 @@ class E2EAuthTest : BehaviorSpec() {
               }
               testCoroutineScheduler.advanceUntilIdle()
             }
-            Then("navigates to MyHouseholdsListComponent") { root.assertMyHouseholdsList() }
+            Then("navigates to MyGroupsListComponent") { root.assertMyGroupsList() }
           }
         }
       }
@@ -52,5 +52,5 @@ fun RootComponent.assertSplash() = activeInstance().shouldBeInstanceOf<SplashDes
 
 fun RootComponent.assertAuth() = activeInstance().shouldBeInstanceOf<AuthComponent>()
 
-fun RootComponent.assertMyHouseholdsList() =
-    activeInstance().shouldBeInstanceOf<MyHouseholdsListComponent>()
+fun RootComponent.assertMyGroupsList() =
+    activeInstance().shouldBeInstanceOf<MyGroupsListComponent>()

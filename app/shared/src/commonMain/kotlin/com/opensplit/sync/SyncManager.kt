@@ -35,7 +35,7 @@ class SyncManager(
   private val syncQueueDao = database.syncQueueDao()
   private val expenseDao = database.expenseDao()
   private val syncMetadataDao = database.syncMetadataDao()
-  private val householdDao = database.householdDao()
+  private val groupDao = database.groupDao()
   private val syncMutex = Mutex()
 
   fun triggerSync() = scope.launch { sync() }
@@ -76,7 +76,7 @@ class SyncManager(
         if (expense != null) {
           val result =
               expenseApi.createExpense(
-                  householdId = expense.householdId,
+                  groupId = expense.groupId,
                   title = expense.title,
                   amount = expense.amount,
                   creator = expense.creator,
@@ -88,7 +88,7 @@ class SyncManager(
             connection.immediateTransaction {
               // Reconcile balance in case server adjusted shares
               val oldParticipants = expenseDao.getParticipants(entry.entityId)
-              updateBalances(expense.householdId, oldParticipants, result.shares)
+              updateBalances(expense.groupId, oldParticipants, result.shares)
 
               expenseDao.deleteExpense(entry.entityId)
               expenseDao.deleteParticipants(entry.entityId)
@@ -105,9 +105,9 @@ class SyncManager(
         }
       }
       OperationType.DELETE -> {
-        val householdId = entry.metadata
-        if (householdId != null) {
-          expenseApi.deleteExpense(householdId, entry.entityId)
+        val groupId = entry.metadata
+        if (groupId != null) {
+          expenseApi.deleteExpense(groupId, entry.entityId)
         }
         syncQueueDao.dequeue(entry)
       }
@@ -123,7 +123,7 @@ class SyncManager(
       connection.immediateTransaction {
         response.changedEntities.expenses.forEach { dto ->
           val oldParticipants = expenseDao.getParticipants(dto.id)
-          updateBalances(dto.householdId, oldParticipants, dto.shares)
+          updateBalances(dto.groupId, oldParticipants, dto.shares)
 
           val entity = dto.toEntity(SyncStatus.SYNCED)
           val participants = dto.shares.map { it.toEntity(dto.id) }
@@ -133,7 +133,7 @@ class SyncManager(
         response.deletedEntities.expenses.forEach { id ->
           val expense = expenseDao.getExpense(id) ?: return@forEach
           val oldParticipants = expenseDao.getParticipants(id)
-          updateBalances(expense.householdId, oldParticipants, emptyList())
+          updateBalances(expense.groupId, oldParticipants, emptyList())
 
           expenseDao.deleteExpense(id)
           expenseDao.deleteParticipants(id)
@@ -147,7 +147,7 @@ class SyncManager(
   }
 
   private suspend fun updateBalances(
-      householdId: String,
+      groupId: String,
       oldParticipants: List<ParticipantEntity>,
       newShares: List<ParticipantShareDto>,
   ) {
@@ -168,7 +168,7 @@ class SyncManager(
     // Apply deltas to DB
     memberDeltas.forEach { (userId, delta) ->
       if (delta != 0.0) {
-        householdDao.updateMemberBalance(householdId, userId, delta)
+        groupDao.updateMemberBalance(groupId, userId, delta)
       }
     }
   }

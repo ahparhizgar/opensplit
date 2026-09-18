@@ -37,9 +37,9 @@ class AddExpenseUiTest {
     onNode(isRoot()).performKeyInput { pressKey(Key.Tab) }
     onNode(isFocused()).performTextInput("password1234")
     onNode(isRoot()).performKeyInput { pressKey(Key.Enter) }
-    onNode(hasTestTag("household-list")).waitForExistence().assertExists()
+    onNode(hasTestTag("group-list")).waitForExistence().assertExists()
 
-    // Click on the first household
+    // Click on the first group
     onNode(hasTestTag("show-settled-btn")).waitForExistence().performClick()
     onNode(hasText("Maple House")).waitForExistence().performClick()
 

@@ -24,18 +24,18 @@ import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.AddExpenseScreen
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.expense.ExpenseDetailsScreen
-import com.opensplit.features.household.createjoin.CreateHouseholdComponent
-import com.opensplit.features.household.createjoin.CreateHouseholdScreen
-import com.opensplit.features.household.createjoin.HouseholdSelectionComponent
-import com.opensplit.features.household.createjoin.HouseholdSelectionScreen
-import com.opensplit.features.household.createjoin.JoinHouseholdComponent
-import com.opensplit.features.household.createjoin.JoinHouseholdScreen
-import com.opensplit.features.household.details.HouseholdDetailsComponent
-import com.opensplit.features.household.details.HouseholdDetailsScreen
-import com.opensplit.features.household.my.MyHouseholdsListComponent
-import com.opensplit.features.household.my.MyHouseholdsListScreen
-import com.opensplit.features.household.settings.HouseholdSettingsComponent
-import com.opensplit.features.household.settings.HouseholdSettingsScreen
+import com.opensplit.features.group.createjoin.CreateGroupComponent
+import com.opensplit.features.group.createjoin.CreateGroupScreen
+import com.opensplit.features.group.createjoin.GroupSelectionComponent
+import com.opensplit.features.group.createjoin.GroupSelectionScreen
+import com.opensplit.features.group.createjoin.JoinGroupComponent
+import com.opensplit.features.group.createjoin.JoinGroupScreen
+import com.opensplit.features.group.details.GroupDetailsComponent
+import com.opensplit.features.group.details.GroupDetailsScreen
+import com.opensplit.features.group.my.MyGroupsListComponent
+import com.opensplit.features.group.my.MyGroupsListScreen
+import com.opensplit.features.group.settings.GroupSettingsComponent
+import com.opensplit.features.group.settings.GroupSettingsScreen
 import com.opensplit.features.profile.ProfileComponent
 import com.opensplit.features.profile.ProfileScreen
 import com.opensplit.root.FakeRootComponent
@@ -80,43 +80,43 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
           )
         }
 
-        is HouseholdSelectionComponent -> {
-          HouseholdSelectionScreen(
+        is GroupSelectionComponent -> {
+          GroupSelectionScreen(
               component = child,
               modifier = Modifier.fillMaxSize(),
           )
         }
 
-        is CreateHouseholdComponent -> {
-          CreateHouseholdScreen(
+        is CreateGroupComponent -> {
+          CreateGroupScreen(
               component = child,
               modifier = Modifier.fillMaxSize(),
           )
         }
 
-        is JoinHouseholdComponent -> {
-          JoinHouseholdScreen(
+        is JoinGroupComponent -> {
+          JoinGroupScreen(
               component = child,
               modifier = Modifier.fillMaxSize(),
           )
         }
 
-        is HouseholdSettingsComponent -> {
-          HouseholdSettingsScreen(
+        is GroupSettingsComponent -> {
+          GroupSettingsScreen(
               component = child,
               modifier = Modifier.fillMaxSize(),
           )
         }
 
-        is MyHouseholdsListComponent -> {
-          MyHouseholdsListScreen(
-              modifier = Modifier.fillMaxSize().testTag("household-list"),
+        is MyGroupsListComponent -> {
+          MyGroupsListScreen(
+              modifier = Modifier.fillMaxSize().testTag("group-list"),
               component = child,
           )
         }
 
-        is HouseholdDetailsComponent -> {
-          HouseholdDetailsScreen(
+        is GroupDetailsComponent -> {
+          GroupDetailsScreen(
               component = child,
               modifier = Modifier.fillMaxSize(),
           )

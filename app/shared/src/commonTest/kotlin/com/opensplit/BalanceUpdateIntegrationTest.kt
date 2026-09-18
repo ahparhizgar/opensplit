@@ -6,11 +6,11 @@ import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SyncStatus
-import com.opensplit.dto.household.FakeHouseholdDtoFactory
-import com.opensplit.fake.FakeHouseholdApi
+import com.opensplit.dto.group.FakeGroupDtoFactory
+import com.opensplit.fake.FakeGroupApi
 import com.opensplit.fake.FakeSyncApi
 import com.opensplit.repository.ExpenseRepository
-import com.opensplit.repository.HouseholdRepository
+import com.opensplit.repository.GroupRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.sync.SyncManager
 import com.opensplit.util.MainDispatcherExtension
@@ -25,44 +25,41 @@ class BalanceUpdateIntegrationTest : BehaviorSpec() {
   init {
     extension(MainDispatcherExtension())
     val koin by integrationKoin()
-    Given("a household with balance of zero") {
+    Given("a group with balance of zero") {
       val expenseRepo by testValue { koin.get<ExpenseRepository>() }
-      val householdRepo by testValue { koin.get<HouseholdRepository>() }
+      val groupRepo by testValue { koin.get<GroupRepository>() }
       val profileRepo by testValue { koin.get<ProfileRepository>() }
-      val fakeHouseholdApi by testValue { koin.get<FakeHouseholdApi>() }
-      val household1 by testValue {
-        FakeHouseholdDtoFactory.create(
-            id = "household-1",
+      val fakeGroupApi by testValue { koin.get<FakeGroupApi>() }
+      val group1 by testValue {
+        FakeGroupDtoFactory.create(
+            id = "group-1",
             name = "Maple House",
         )
       }
       beforeEach {
         profileRepo.setProfile(UserProfile("user-1", "User 1", "user-1@example.com"))
-        fakeHouseholdApi.households = listOf(household1)
-        householdRepo.refresh()
+        fakeGroupApi.groups = listOf(group1)
+        groupRepo.refresh()
         testCoroutineScheduler.advanceUntilIdle()
       }
       When("adding an expense") {
         beforeEach {
           expenseRepo.createExpense(
-              householdId = "household-1",
+              groupId = "group-1",
               title = "Dinner",
               amount = 50.0,
-              creator = household1.members.first().userId,
+              creator = group1.members.first().userId,
               shares =
                   listOf(
                       ParticipantShare("user-1", 50.0, 25.0),
                       ParticipantShare("user-2", 0.0, 25.0),
                   ),
-              splitMethod = SplitMethod.Equally(household1.members.map { it.userId }),
+              splitMethod = SplitMethod.Equally(group1.members.map { it.userId }),
           )
         }
         Then("the balance should update accordingly") {
-          householdRepo
-              .getHousehold("household-1")!!
-              .members
-              .first { it.userId == "user-1" }
-              .balance shouldBe 25.0
+          groupRepo.getGroup("group-1")!!.members.first { it.userId == "user-1" }.balance shouldBe
+              25.0
         }
         And("synchronization occurs with edited shares from server") {
           beforeEach {
@@ -70,16 +67,16 @@ class BalanceUpdateIntegrationTest : BehaviorSpec() {
                 listOf(
                     ExpenseDto(
                         id = "expense-1",
-                        householdId = "household-1",
+                        groupId = "group-1",
                         title = "Dinner",
                         amount = 50.0,
-                        creator = household1.members.first().userId,
+                        creator = group1.members.first().userId,
                         shares =
                             listOf(
                                 ParticipantShareDto("user-1", 50.0, 10.0),
                                 ParticipantShareDto("user-2", 0.0, 40.0),
                             ),
-                        splitMethod = SplitMethod.Equally(household1.members.map { it.userId }),
+                        splitMethod = SplitMethod.Equally(group1.members.map { it.userId }),
                         createdAt = Clock.System.now(),
                         syncStatus = SyncStatus.SYNCED,
                     )
@@ -89,11 +86,8 @@ class BalanceUpdateIntegrationTest : BehaviorSpec() {
             testCoroutineScheduler.advanceUntilIdle()
           }
           Then("the balance should be changed accordingly") {
-            householdRepo
-                .getHousehold("household-1")!!
-                .members
-                .first { it.userId == "user-1" }
-                .balance shouldBe 40.0
+            groupRepo.getGroup("group-1")!!.members.first { it.userId == "user-1" }.balance shouldBe
+                40.0
           }
         }
       }
@@ -101,30 +95,27 @@ class BalanceUpdateIntegrationTest : BehaviorSpec() {
       When("a local transaction is added") {
         beforeEach {
           expenseRepo.createExpense(
-              householdId = "household-1",
+              groupId = "group-1",
               title = "Groceries",
               amount = 20.0,
-              creator = household1.members.first().userId,
+              creator = group1.members.first().userId,
               shares =
                   listOf(
                       ParticipantShare("user-1", 20.0, 10.0),
                       ParticipantShare("user-2", 0.0, 10.0),
                   ),
-              splitMethod = SplitMethod.Equally(household1.members.map { it.userId }),
+              splitMethod = SplitMethod.Equally(group1.members.map { it.userId }),
           )
         }
-        And("households are refreshed") {
+        And("groups are refreshed") {
           beforeEach {
-            fakeHouseholdApi
-            householdRepo.refresh()
+            fakeGroupApi
+            groupRepo.refresh()
             testCoroutineScheduler.advanceUntilIdle()
           }
           Then("the balance should not be changed") {
-            householdRepo
-                .getHousehold("household-1")!!
-                .members
-                .first { it.userId == "user-1" }
-                .balance shouldBe 10.0
+            groupRepo.getGroup("group-1")!!.members.first { it.userId == "user-1" }.balance shouldBe
+                10.0
           }
         }
       }

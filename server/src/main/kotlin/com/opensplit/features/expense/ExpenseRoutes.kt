@@ -22,13 +22,13 @@ fun Application.configureExpenseRoutes() {
 
   routing {
     authenticateUser {
-      route("/households/{householdId}/expenses") {
+      route("/groups/{groupId}/expenses") {
         post {
-          val householdId = call.parameters["householdId"]
-          if (householdId.isNullOrBlank()) {
+          val groupId = call.parameters["groupId"]
+          if (groupId.isNullOrBlank()) {
             call.respond(
                 HttpStatusCode.BadRequest,
-                ErrorResponse(generalError = "Household id is required"),
+                ErrorResponse(generalError = "Group id is required"),
             )
             return@post
           }
@@ -47,14 +47,14 @@ fun Application.configureExpenseRoutes() {
           val expense =
               try {
                 expenseService.createExpense(
-                    householdId = householdId,
+                    groupId = groupId,
                     request = request,
                     creator = user.userId,
                 )
               } catch (_: NotAMemberException) {
                 call.respond(
                     HttpStatusCode.Forbidden,
-                    ErrorResponse(generalError = "You are not a member of this household"),
+                    ErrorResponse(generalError = "You are not a member of this group"),
                 )
                 return@post
               }
@@ -62,39 +62,39 @@ fun Application.configureExpenseRoutes() {
         }
 
         get {
-          val householdId = call.parameters["householdId"]
-          if (householdId.isNullOrBlank()) {
+          val groupId = call.parameters["groupId"]
+          if (groupId.isNullOrBlank()) {
             call.respond(
                 HttpStatusCode.BadRequest,
-                ErrorResponse(generalError = "Household id is required"),
+                ErrorResponse(generalError = "Group id is required"),
             )
             return@get
           }
-          val expenses = expenseService.getExpenses(householdId)
+          val expenses = expenseService.getExpenses(groupId)
           call.respond(expenses)
         }
 
         delete("/{expenseId}") {
-          val householdId = call.parameters["householdId"] ?: return@delete
+          val groupId = call.parameters["groupId"] ?: return@delete
           val expenseId = call.parameters["expenseId"] ?: return@delete
           val user = call.user()
           try {
-            expenseService.deleteExpense(user, householdId, expenseId)
+            expenseService.deleteExpense(user, groupId, expenseId)
             call.respond(HttpStatusCode.NoContent)
           } catch (_: NotAMemberException) {
             call.respond(
                 HttpStatusCode.Forbidden,
-                ErrorResponse(generalError = "You are not a member of this household"),
+                ErrorResponse(generalError = "You are not a member of this group"),
             )
           }
         }
 
         put("/{expenseId}") {
-          val householdId = call.parameters["householdId"]
-          if (householdId.isNullOrBlank()) {
+          val groupId = call.parameters["groupId"]
+          if (groupId.isNullOrBlank()) {
             call.respond(
                 HttpStatusCode.BadRequest,
-                ErrorResponse(generalError = "Household id is required"),
+                ErrorResponse(generalError = "Group id is required"),
             )
             return@put
           }
@@ -120,12 +120,12 @@ fun Application.configureExpenseRoutes() {
 
           val user = call.user()
           try {
-            val expense = expenseService.updateExpense(user, householdId, expenseId, request)
+            val expense = expenseService.updateExpense(user, groupId, expenseId, request)
             call.respond(HttpStatusCode.OK, expense)
           } catch (_: NotAMemberException) {
             call.respond(
                 HttpStatusCode.Forbidden,
-                ErrorResponse(generalError = "You are not a member of this household"),
+                ErrorResponse(generalError = "You are not a member of this group"),
             )
           } catch (_: ExpenseNotFoundException) {
             call.respond(

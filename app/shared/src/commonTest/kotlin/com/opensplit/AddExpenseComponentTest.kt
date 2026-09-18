@@ -10,7 +10,7 @@ import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.AddExpenseComponentFactory
 import com.opensplit.features.expense.PayAmountsUiState
 import com.opensplit.repository.ExpenseRepository
-import com.opensplit.repository.HouseholdRepository
+import com.opensplit.repository.GroupRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.integrationKoin
@@ -92,7 +92,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
         }
         Then("it's added to DB") {
           onFinishedCalled shouldBe true
-          koin.get<ExpenseDao>().getExpenses(householdId = "h1").first().let {
+          koin.get<ExpenseDao>().getExpenses(groupId = "h1").first().let {
             it shouldHaveSize 1
             it.first().title shouldBe "Pizza"
           }
@@ -105,17 +105,17 @@ class AddExpenseComponentTest : BehaviorSpec() {
     }
 
     Given("an AddExpenseComponent in Edit Mode") {
-      val householdId = "household-1"
+      val groupId = "group-1"
       val u1 = "user-1"
       val u2 = "user-2"
 
       val profileRepository by testValue { koin.get<ProfileRepository>() }
-      val householdRepository by testValue { koin.get<HouseholdRepository>() }
+      val groupRepository by testValue { koin.get<GroupRepository>() }
       val expenseRepository by testValue { koin.get<ExpenseRepository>() }
 
       beforeEach {
         profileRepository.setProfile(UserProfile(u1, "Amir", "amir@example.com"))
-        householdRepository.refresh()
+        groupRepository.refresh()
         testCoroutineScheduler.advanceUntilIdle()
       }
 
@@ -123,7 +123,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
         val method = SplitMethod.Percentage(mapOf(u1 to 70.0, u2 to 30.0))
         beforeEach {
           expenseRepository.createExpense(
-              householdId = householdId,
+              groupId = groupId,
               title = "Dinner",
               amount = 100.0,
               creator = u1,
@@ -138,13 +138,13 @@ class AddExpenseComponentTest : BehaviorSpec() {
         }
 
         Then("it restores the percentage method and values") {
-          val createdExpense = koin.get<ExpenseDao>().getExpenses(householdId).first().first()
+          val createdExpense = koin.get<ExpenseDao>().getExpenses(groupId).first().first()
           val component =
               koin
                   .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
-                      AddExpenseComponent.Config(householdId, createdExpense.id),
+                      AddExpenseComponent.Config(groupId, createdExpense.id),
                       onFinished = {},
                   )
           testCoroutineScheduler.advanceUntilIdle()
@@ -159,7 +159,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
         val method = SplitMethod.Shares(mapOf(u1 to 2, u2 to 1))
         beforeEach {
           expenseRepository.createExpense(
-              householdId = householdId,
+              groupId = groupId,
               title = "Lunch",
               amount = 90.0,
               creator = u1,
@@ -173,13 +173,13 @@ class AddExpenseComponentTest : BehaviorSpec() {
           testCoroutineScheduler.advanceUntilIdle()
         }
         Then("it restores the shares method") {
-          val createdExpense = koin.get<ExpenseDao>().getExpenses(householdId).first().last()
+          val createdExpense = koin.get<ExpenseDao>().getExpenses(groupId).first().last()
           val component =
               koin
                   .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
-                      AddExpenseComponent.Config(householdId, createdExpense.id),
+                      AddExpenseComponent.Config(groupId, createdExpense.id),
                       onFinished = {},
                   )
           testCoroutineScheduler.advanceUntilIdle()
@@ -191,7 +191,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
         val method = SplitMethod.Adjustment(mapOf(u1 to 10.0))
         beforeEach {
           expenseRepository.createExpense(
-              householdId = householdId,
+              groupId = groupId,
               title = "Taxi",
               amount = 50.0,
               creator = u1,
@@ -205,13 +205,13 @@ class AddExpenseComponentTest : BehaviorSpec() {
           testCoroutineScheduler.advanceUntilIdle()
         }
         Then("it restores the adjustment method") {
-          val createdExpense = koin.get<ExpenseDao>().getExpenses(householdId).first().last()
+          val createdExpense = koin.get<ExpenseDao>().getExpenses(groupId).first().last()
           val component =
               koin
                   .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
-                      AddExpenseComponent.Config(householdId, createdExpense.id),
+                      AddExpenseComponent.Config(groupId, createdExpense.id),
                       onFinished = {},
                   )
           testCoroutineScheduler.advanceUntilIdle()
@@ -223,7 +223,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
         val method = SplitMethod.Percentage(mapOf(u1 to 50.0, u2 to 50.0))
         beforeEach {
           expenseRepository.createExpense(
-              householdId = householdId,
+              groupId = groupId,
               title = "Split",
               amount = 100.0,
               creator = u1,
@@ -238,13 +238,13 @@ class AddExpenseComponentTest : BehaviorSpec() {
         }
 
         Then("recalculates amounts correctly") {
-          val createdExpense = koin.get<ExpenseDao>().getExpenses(householdId).first().last()
+          val createdExpense = koin.get<ExpenseDao>().getExpenses(groupId).first().last()
           val component =
               koin
                   .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
-                      AddExpenseComponent.Config(householdId, createdExpense.id),
+                      AddExpenseComponent.Config(groupId, createdExpense.id),
                       onFinished = {},
                   )
           testCoroutineScheduler.advanceUntilIdle()
@@ -265,7 +265,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
         val method = SplitMethod.Unequally(mapOf(u1 to 40.0, u2 to 60.0))
         beforeEach {
           expenseRepository.createExpense(
-              householdId = householdId,
+              groupId = groupId,
               title = "Fixed Split",
               amount = 100.0,
               creator = u1,
@@ -280,13 +280,13 @@ class AddExpenseComponentTest : BehaviorSpec() {
         }
 
         Then("keeps the fixed amounts and shows validation error") {
-          val createdExpense = koin.get<ExpenseDao>().getExpenses(householdId).first().last()
+          val createdExpense = koin.get<ExpenseDao>().getExpenses(groupId).first().last()
           val component =
               koin
                   .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
-                      AddExpenseComponent.Config(householdId, createdExpense.id),
+                      AddExpenseComponent.Config(groupId, createdExpense.id),
                       onFinished = {},
                   )
           testCoroutineScheduler.advanceUntilIdle()
@@ -306,7 +306,7 @@ class AddExpenseComponentTest : BehaviorSpec() {
               .get<AddExpenseComponentFactory>()
               .create(
                   TestCContext(),
-                  AddExpenseComponent.Config(householdId),
+                  AddExpenseComponent.Config(groupId),
                   onFinished = {},
               )
         }

@@ -6,13 +6,13 @@ source: _bmad-output/planning-artifacts/ux-design-specification.md
 
 # OpenSplit Wireframes
 
-## 1. Home / Household Balance
+## 1. Home / Group Balance
 
 ```text
 --------------------------------------------------
  OpenSplit                         [Profile]
 --------------------------------------------------
- Household: Maple House
+ Group: Maple House
 
  [You are owed]                [Total balance]
         $42.50                     +$18.25
@@ -27,7 +27,7 @@ source: _bmad-output/planning-artifacts/ux-design-specification.md
 --------------------------------------------------
 ```
 
-Purpose: make the household status obvious at a glance and give fast access to the two core actions.
+Purpose: make the group status obvious at a glance and give fast access to the two core actions.
 
 ## 2. Add Expense
 
@@ -84,17 +84,17 @@ Purpose: show owed relationships clearly and make the next action unmissable.
 
 Purpose: reassure users that work is safe even when connectivity is lost.
 
-## 5. Household Membership Desktop View
+## 5. Group Membership Desktop View
 
 ```text
 ------------------------------------------------------------------------------------------------
- OpenSplit                              Household membership                   [Refresh] [Profile]
+ OpenSplit                              Group membership                   [Refresh] [Profile]
                                         Active: Maple House
 ------------------------------------------------------------------------------------------------
 
   ---------------------------------------------------    --------------------------------------
-  Maple House                                          |    Your households                     |
-  Active household • 4 members • You are owner         |    Change which household you view    |
+  Maple House                                          |    Your groups                     |
+  Active group • 4 members • You are owner         |    Change which group you view    |
                                                         |                                      |
   Members                                               |    Maple House       4 members        |
   Everyone who can currently share expenses here        |    [Current]              [Leave]     |
@@ -104,17 +104,17 @@ Purpose: reassure users that work is safe even when connectivity is lost.
   leo@example.com                                        |                                      |
   nina@example.com                                       |    River House      5 members         |
                                                         |    [Switch]               [Leave]     |
-  Switching households changes what you are viewing,    |                                      |
+  Switching groups changes what you are viewing,    |                                      |
   not which expenses belong to you.                     |                                      |
   ---------------------------------------------------    --------------------------------------
 ```
 
-Purpose: use desktop width to show members and household actions together, while keeping the current household obvious and destructive actions deliberate.
+Purpose: use desktop width to show members and group actions together, while keeping the current group obvious and destructive actions deliberate.
 
 ## Wireframe Notes
 
 - Mobile-first layouts keep one primary action visible at all times.
-- Household context stays pinned to reduce confusion.
+- Group context stays pinned to reduce confusion.
 - Empty and offline states should explain the next step in plain language.
 - Desktop can expand recent activity and balance detail into a two-column view.
-- Desktop household management should use side-by-side member and household panels rather than a narrow stacked card layout.
+- Desktop group management should use side-by-side member and group panels rather than a narrow stacked card layout.

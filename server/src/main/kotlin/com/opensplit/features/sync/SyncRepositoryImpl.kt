@@ -24,7 +24,7 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
                 }[ChangeLog.id]
 
         when (entityType) {
-          "HOUSEHOLD" -> Households.update({ Households.id eq entityId }) { it[version] = logId }
+          "HOUSEHOLD" -> Groups.update({ Groups.id eq entityId }) { it[version] = logId }
           "EXPENSE" -> Expenses.update({ Expenses.id eq entityId }) { it[version] = logId }
           "MEMBERSHIP" -> Memberships.update({ Memberships.id eq entityId }) { it[version] = logId }
         }
@@ -40,17 +40,16 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
                 .firstOrNull()
                 ?.get(ChangeLog.id) ?: sinceVersion
 
-        val userHouseholdIds =
+        val userGroupIds =
             Memberships.selectAll()
                 .where { Memberships.userId eq userId }
-                .map { it[Memberships.householdId] }
+                .map { it[Memberships.groupId] }
                 .toSet()
 
         val changedExpenses =
             Expenses.selectAll()
                 .where {
-                  (Expenses.version greater sinceVersion) and
-                      (Expenses.householdId inList userHouseholdIds)
+                  (Expenses.version greater sinceVersion) and (Expenses.groupId inList userGroupIds)
                 }
                 .map { row ->
                   val expenseId = row[Expenses.id]
@@ -82,7 +81,7 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
   ): ExpenseRecord =
       ExpenseRecord(
           id = get(Expenses.id),
-          householdId = get(Expenses.householdId),
+          groupId = get(Expenses.groupId),
           title = get(Expenses.title),
           amount = get(Expenses.amount),
           creator = get(Expenses.creator),

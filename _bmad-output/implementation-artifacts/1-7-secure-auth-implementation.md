@@ -27,7 +27,7 @@ so that my credentials and session are protected from compromise.
   - [x] Add a `JwtService` that creates signed JWTs with `exp`, `iat`, `sub` claims using `auth0/java-jwt`
   - [x] Set a configurable expiry (e.g. 24h default) via `JWT_EXPIRY_MS` environment variable
   - [x] `JwtTokenService.issue()` now produces a verifiable, signed JWT
-  - [x] `JwtService.verify(token)` implemented and used in `resolveUserIdFromToken` and `/household-context` route
+  - [x] `JwtService.verify(token)` implemented and used in `resolveUserIdFromToken` and `/group-context` route
 - [x] Obscure password field in the auth UI (AC: 3)
   - [x] Add `PasswordVisualTransformation` and `keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)` to the password `OutlinedTextField` in `AuthUi.kt`
 - [x] Externalize configuration (AC: 4)
@@ -43,7 +43,7 @@ so that my credentials and session are protected from compromise.
 
 - The existing auth flow and UX are complete and functional — this story only replaces the security primitives (hashing, JWT, password field, config) without changing the UI layout, validation, or navigation logic.
 - Current `AuthModels.kt` has `JwtTokenService` and `AuthService` — do not delete these files, only replace their internal implementations.
-- The `resolveUserIdFromToken` function in `HouseholdRoutes.kt:279-284` currently parses the fake JWT pattern `"jwt-$userId-$email"`. It must be updated to verify a real signed JWT.
+- The `resolveUserIdFromToken` function in `GroupRoutes.kt:279-284` currently parses the fake JWT pattern `"jwt-$userId-$email"`. It must be updated to verify a real signed JWT.
 - JWT secret should default to a known dev value but never default to a production-grade value — fail loud if not set in production.
 - Use the existing auth test patterns: `AuthRoutesTest.kt`, `AuthValidationTest.kt`, `AuthComponentTest`, and `AuthScenarios`.
 
@@ -51,10 +51,10 @@ so that my credentials and session are protected from compromise.
 
 - Touch points:
   - `server/src/main/kotlin/com/opensplit/features/auth/AuthModels.kt` — replace hashing and JWT logic
-  - `server/src/main/kotlin/com/opensplit/routes/HouseholdRoutes.kt` — update token resolution
+  - `server/src/main/kotlin/com/opensplit/routes/GroupRoutes.kt` — update token resolution
   - `app/shared/src/commonMain/kotlin/com/opensplit/features/auth/AuthUi.kt` — obscure password field
   - `app/shared/src/commonMain/kotlin/com/opensplit/features/auth/AuthGateway.kt` — configurable URL
-  - `app/shared/src/commonMain/kotlin/com/opensplit/features/household/HouseholdGateway.kt` — configurable URL
+  - `app/shared/src/commonMain/kotlin/com/opensplit/features/group/GroupGateway.kt` — configurable URL
 - No new module or package needed — all changes are within existing files.
 - Do not change the auth DTOs (`AuthDtos.kt`) or validation (`AuthValidation.kt`).
 
@@ -64,7 +64,7 @@ so that my credentials and session are protected from compromise.
 - [Source: `server/src/main/kotlin/com/opensplit/features/auth/AuthModels.kt`] — Fake JWT and SHA-256 hashing
 - [Source: `app/shared/src/commonMain/kotlin/com/opensplit/features/auth/AuthUi.kt:187-196`] — Unobscured password field
 - [Source: `app/shared/src/commonMain/kotlin/com/opensplit/features/auth/AuthGateway.kt:73`] — Hardcoded backend URL
-- [Source: `server/src/main/kotlin/com/opensplit/routes/HouseholdRoutes.kt:279-284`] — Fake JWT token resolution
+- [Source: `server/src/main/kotlin/com/opensplit/routes/GroupRoutes.kt:279-284`] — Fake JWT token resolution
 - [Source: `_bmad-output/planning-artifacts/prd.md#Success Criteria`] — NFR6: Account access securely handled
 - [Source: `_bmad-output/planning-artifacts/epics.md`] — FR32: Sign in securely, FR33: Data private by default
 
@@ -82,7 +82,7 @@ gpt-5.4-mini
 
 - Replaced SHA-256 password hashing with bcrypt (at.favre.lib:bcrypt) via new `PasswordHasher` interface and `BcryptPasswordHasher` implementation
 - Replaced fake JWT (`"jwt-$userId-$email"` string interpolation) with real signed JWTs using auth0/java-jwt library (`JwtService`)
-- Updated `resolveUserIdFromToken` in `HouseholdRoutes.kt` and `/household-context` route in `AuthRoutes.kt` to use `JwtTokenService.verify()`
+- Updated `resolveUserIdFromToken` in `GroupRoutes.kt` and `/group-context` route in `AuthRoutes.kt` to use `JwtTokenService.verify()`
 - JWT secret and expiry configurable via `JWT_SECRET` and `JWT_EXPIRY_MS` environment variables
 - Added `PasswordVisualTransformation` and password `KeyboardType` to password field in `AuthUi.kt`
 - Externalized base URL via `expect/actual getApiBaseUrl()` pattern — reads `API_BASE_URL` env var on JVM, defaults to `127.0.0.1:8080` (or `10.0.2.2:8080` for Android emulator)
@@ -97,14 +97,14 @@ gpt-5.4-mini
 - `server/src/main/kotlin/com/opensplit/features/auth/AuthModels.kt` — added `PasswordHasher` interface, `BcryptPasswordHasher`, `JwtService` class; updated `AuthService` to use bcrypt; replaced `JwtTokenService.issue()` with real signed JWT
 - `server/src/main/kotlin/com/opensplit/features/auth/AuthModule.kt` — simplified to use `factory { AuthService() }` with default constructor
 - `server/src/main/kotlin/com/opensplit/features/auth/AuthRoutes.kt` — replaced regex-based token parsing with `JwtTokenService.verify()`
-- `server/src/main/kotlin/com/opensplit/routes/HouseholdRoutes.kt` — replaced regex-based `resolveUserIdFromToken` with `JwtTokenService.verify()`
+- `server/src/main/kotlin/com/opensplit/routes/GroupRoutes.kt` — replaced regex-based `resolveUserIdFromToken` with `JwtTokenService.verify()`
 - `server/src/test/kotlin/com/opensplit/features/auth/PasswordHasherTest.kt` — NEW
 - `server/src/test/kotlin/com/opensplit/features/auth/JwtServiceTest.kt` — NEW
 - `app/shared/src/commonMain/kotlin/com/opensplit/features/auth/AuthUi.kt` — added `PasswordVisualTransformation` and password `KeyboardOptions`
 - `app/shared/src/commonMain/kotlin/com/opensplit/features/auth/AuthGateway.kt` — added `expect fun getApiBaseUrl()`; factory uses it
 - `app/shared/src/commonMain/kotlin/com/opensplit/features/auth/TokenStorage.kt` — added `clearAccessToken()` method
 - `app/shared/src/commonMain/kotlin/com/opensplit/features/auth/JwtUtils.kt` — NEW: JWT expiry check utility with platform-specific base64 and time
-- `app/shared/src/commonMain/kotlin/com/opensplit/features/household/HouseholdGateway.kt` — uses `getApiBaseUrl(); added token expiry check and 401 handling
+- `app/shared/src/commonMain/kotlin/com/opensplit/features/group/GroupGateway.kt` — uses `getApiBaseUrl(); added token expiry check and 401 handling
 - `app/shared/src/commonMain/kotlin/com/opensplit/datastore/TokenStorage.kt` — added `clearAccessToken()` implementation
 - `app/shared/src/jvmMain/kotlin/com/opensplit/features/auth/AuthHttpClient.jvm.kt` — added `actual fun getApiBaseUrl()`, `platformDecodeBase64`, `currentTimeSeconds`
 - `app/shared/src/androidMain/kotlin/com/opensplit/features/auth/AuthHttpClient.android.kt` — same additions

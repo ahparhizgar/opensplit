@@ -20,7 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
@@ -62,7 +61,7 @@ fun ExpenseDetailsScreen(
       modifier = modifier,
       topBar = {
         TopAppBar(
-            title = {Text("Expense details")},
+            title = { Text("Expense details") },
             navigationIcon = {
               IconButton(onClick = { component.onBackClicked() }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -79,30 +78,30 @@ fun ExpenseDetailsScreen(
         )
       },
       bottomBar = {
-          if (false)
-        Surface(tonalElevation = 2.dp) {
-          Row(
-              modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-              verticalAlignment = Alignment.CenterVertically,
-          ) {
-            TextField(
-                value = "",
-                onValueChange = {},
-                modifier = Modifier.weight(1f).heightIn(min = 48.dp),
-                placeholder = { Text("Add a comment") },
-                shape = RoundedCornerShape(24.dp),
-                colors =
-                    TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                    ),
-            )
-            Spacer(Modifier.width(8.dp))
-            IconButton(onClick = { /* TODO */ }) {
-              Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send")
+        if (false)
+            Surface(tonalElevation = 2.dp) {
+              Row(
+                  modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                  verticalAlignment = Alignment.CenterVertically,
+              ) {
+                TextField(
+                    value = "",
+                    onValueChange = {},
+                    modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                    placeholder = { Text("Add a comment") },
+                    shape = RoundedCornerShape(24.dp),
+                    colors =
+                        TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                        ),
+                )
+                Spacer(Modifier.width(8.dp))
+                IconButton(onClick = { /* TODO */ }) {
+                  Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send")
+                }
+              }
             }
-          }
-        }
       },
   ) { padding ->
     if (expense != null) {
@@ -147,7 +146,7 @@ fun ExpenseDetailsScreen(
             Spacer(Modifier.width(16.dp))
             Column {
               expense.participants.forEach { participant ->
-                val member = uiState.householdMembers.find { it.userId == participant.userId }
+                val member = uiState.groupMembers.find { it.userId == participant.userId }
                 val isMe = member?.isCurrentUser == true
                 val name = if (isMe) "You" else member?.name ?: participant.userId
                 val verb = if (isMe) "Paid" else "Paid"
@@ -161,7 +160,7 @@ fun ExpenseDetailsScreen(
               }
               Spacer(Modifier.height(4.dp))
               expense.participants.forEach { participant ->
-                val member = uiState.householdMembers.find { it.userId == participant.userId }
+                val member = uiState.groupMembers.find { it.userId == participant.userId }
                 val isMe = member?.isCurrentUser == true
                 val name = if (isMe) "You" else member?.name ?: participant.userId
                 val verb = if (isMe) "owe" else "owes"
@@ -231,8 +230,7 @@ fun ExpenseDetailsScreenPreview() {
     ExpenseDetailsScreen(
         component =
             FakeExpenseDetailsComponent(
-                uiState =
-                    ExpenseDetailsUiState(expense = fakeExpense, householdMembers = fakeMembers)
+                uiState = ExpenseDetailsUiState(expense = fakeExpense, groupMembers = fakeMembers)
             )
     )
   }

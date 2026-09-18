@@ -4,7 +4,7 @@ import com.opensplit.component.TestCContext
 import com.opensplit.component.fakeStack
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthComponentFactory
-import com.opensplit.features.household.my.MyHouseholdsListComponent
+import com.opensplit.features.group.my.MyGroupsListComponent
 import com.opensplit.util.MainDispatcherExtension
 import com.opensplit.util.integrationKoin
 import com.opensplit.util.testValue
@@ -48,8 +48,8 @@ class AuthComponentTest : BehaviorSpec() {
               testCoroutineScheduler.advanceUntilIdle()
             }
           }
-          Then("navigates to MyHouseholdsListComponent") {
-            cContext.fakeStack() shouldContainExactly listOf(MyHouseholdsListComponent.Config)
+          Then("navigates to MyGroupsListComponent") {
+            cContext.fakeStack() shouldContainExactly listOf(MyGroupsListComponent.Config)
           }
         }
       }
