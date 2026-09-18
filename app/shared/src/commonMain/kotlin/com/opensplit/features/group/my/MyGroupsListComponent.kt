@@ -28,7 +28,7 @@ interface MyGroupsListComponent {
 
   fun onGroupClick(id: String) {}
 
-  fun onProfileClick() {}
+  fun onAccountClick() {}
 
   fun onToggleSettledExpanded()
 
@@ -77,7 +77,7 @@ class DefaultMyGroupsListComponent(
     navigation.pushNew(GroupDetailsComponent.Config(id))
   }
 
-  override fun onProfileClick() {
+  override fun onAccountClick() {
     navigation.pushNew(ProfileComponent.Config)
   }
 

@@ -23,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -112,12 +111,12 @@ fun MyGroupsListScreen(
                 onDismissRequest = { menuExpanded = false },
             ) {
               DropdownMenuItem(
-                  text = { Text("Profile") },
+                  text = { Text("Account") },
                   onClick = {
                     menuExpanded = false
-                    component.onProfileClick()
+                    component.onAccountClick()
                   },
-                  modifier = Modifier.testTag("menu-item-profile"),
+                  modifier = Modifier.testTag("menu-item-account"),
               )
             }
           }
