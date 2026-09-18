@@ -1,23 +1,33 @@
 package com.opensplit.features.household.createjoin
 
 import com.ahparhizgar.katch.ApiCallError
+import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.opensplit.component.CContext
+import com.opensplit.component.componentScope
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.remote.fieldErrors
 import com.opensplit.remote.userMessage
 import com.opensplit.repository.HouseholdRepository
+import com.opensplit.root.TopLevelDestinationConfig
 import com.opensplit.validation.household.HouseholdValidation
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 
 interface JoinHouseholdComponent {
   val uiState: StateFlow<UiState>
 
   fun updateInviteCode(code: String)
 
-  suspend fun submit()
+  fun submit(): Job
+
+  fun onBackClicked()
+
+  @Serializable class Config : TopLevelDestinationConfig
 
   data class UiState(
       val inviteCode: String = "",
@@ -25,6 +35,10 @@ interface JoinHouseholdComponent {
       val generalError: String? = null,
       val isSubmitting: Boolean = false,
   )
+}
+
+interface JoinHouseholdComponentFactory {
+  fun create(cContext: CContext): JoinHouseholdComponent
 }
 
 class DefaultJoinHouseholdComponent(
@@ -45,7 +59,9 @@ class DefaultJoinHouseholdComponent(
     }
   }
 
-  override suspend fun submit() {
+  val scope = componentScope()
+
+  override fun submit() = scope.launch {
     val current = _uiState.value
     val validation = HouseholdValidation.validateJoinHousehold(current.inviteCode)
 
@@ -53,7 +69,7 @@ class DefaultJoinHouseholdComponent(
       _uiState.update {
         it.copy(fieldErrors = validation.errors, generalError = null, isSubmitting = false)
       }
-      return
+      return@launch
     }
 
     _uiState.update { it.copy(fieldErrors = emptyMap(), generalError = null, isSubmitting = true) }
@@ -72,6 +88,17 @@ class DefaultJoinHouseholdComponent(
       }
     }
   }
+
+  override fun onBackClicked() {
+    navigation.pop()
+  }
+}
+
+class DefaultJoinHouseholdComponentFactory(
+    private val householdRepository: HouseholdRepository,
+) : JoinHouseholdComponentFactory {
+  override fun create(cContext: CContext): JoinHouseholdComponent =
+      DefaultJoinHouseholdComponent(cContext, householdRepository)
 }
 
 class FakeJoinHouseholdComponent(
@@ -82,5 +109,7 @@ class FakeJoinHouseholdComponent(
 
   override fun updateInviteCode(code: String) {}
 
-  override suspend fun submit() {}
+  override fun submit() = Job()
+
+  override fun onBackClicked() {}
 }

@@ -3,9 +3,8 @@ package com.opensplit
 import com.arkivanov.essenty.lifecycle.create
 import com.opensplit.component.TestCContext
 import com.opensplit.component.defaultCContext
-import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
-import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponentFactory
-import com.opensplit.features.household.createjoin.HouseholdTab
+import com.opensplit.features.household.createjoin.CreateHouseholdComponent
+import com.opensplit.features.household.createjoin.CreateHouseholdComponentFactory
 import com.opensplit.features.household.my.MyHouseholdsListComponent
 import com.opensplit.features.household.my.MyHouseholdsListComponentFactory
 import com.opensplit.util.MainDispatcherExtension
@@ -27,25 +26,24 @@ class HouseholdComponentTest : BehaviorSpec() {
     extensions(MainDispatcherExtension())
     val koin by integrationKoin()
 
-    Given("a CreateJoinHouseholdComponent – Create tab") {
-      var createJoinComponent by testValue {
+    Given("a CreateHouseholdComponent") {
+      var createComponent by testValue {
         koin
-            .get<CreateJoinHouseholdComponentFactory>()
+            .get<CreateHouseholdComponentFactory>()
             .create(defaultCContext(createComponentContext()))
       }
 
-      Then("initial tab is Create and fields are empty") {
-        createJoinComponent.activeTab.value shouldBe HouseholdTab.Create
-        createJoinComponent.createComponent.uiState.value.let { state ->
+      Then("initial fields are empty") {
+        createComponent.uiState.value.let { state ->
           state.householdName shouldBe ""
           state.fieldErrors should beEmpty()
         }
       }
 
       When("submitting with an empty household name") {
-        beforeEach { createJoinComponent.createComponent.submit() }
+        beforeEach { createComponent.submit() }
         Then("shows a validation error for name") {
-          createJoinComponent.createComponent.uiState.value.let { state ->
+          createComponent.uiState.value.let { state ->
             state.fieldErrors shouldNot beEmpty()
             state.fieldErrors["name"].shouldNotBeNull()
           }
@@ -54,11 +52,11 @@ class HouseholdComponentTest : BehaviorSpec() {
 
       When("submitting with a valid household name") {
         beforeEach {
-          createJoinComponent.createComponent.updateHouseholdName("Family Home")
-          createJoinComponent.createComponent.submit()
+          createComponent.updateHouseholdName("Family Home")
+          createComponent.submit()
         }
         Then("creates the household") {
-          createJoinComponent.createComponent.uiState.value.let { state ->
+          createComponent.uiState.value.let { state ->
             state.fieldErrors should beEmpty()
             state.generalError shouldBe null
           }
@@ -67,19 +65,12 @@ class HouseholdComponentTest : BehaviorSpec() {
 
       When("typing then clearing the household name") {
         beforeEach {
-          createJoinComponent.createComponent.updateHouseholdName("test")
-          createJoinComponent.createComponent.updateHouseholdName("")
-          createJoinComponent.createComponent.submit()
+          createComponent.updateHouseholdName("test")
+          createComponent.updateHouseholdName("")
+          createComponent.submit()
         }
         Then("still shows validation error on empty name") {
-          createJoinComponent.createComponent.uiState.value.fieldErrors["name"].shouldNotBeNull()
-        }
-      }
-
-      When("switching to Join tab") {
-        beforeEach { createJoinComponent.useJoin() }
-        Then("active tab is now Join") {
-          createJoinComponent.activeTab.value shouldBe HouseholdTab.Join
+          createComponent.uiState.value.fieldErrors["name"].shouldNotBeNull()
         }
       }
     }

@@ -24,8 +24,12 @@ import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.AddExpenseScreen
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.expense.ExpenseDetailsScreen
-import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
-import com.opensplit.features.household.createjoin.CreateJoinHouseholdScreen
+import com.opensplit.features.household.createjoin.CreateHouseholdComponent
+import com.opensplit.features.household.createjoin.CreateHouseholdScreen
+import com.opensplit.features.household.createjoin.HouseholdSelectionComponent
+import com.opensplit.features.household.createjoin.HouseholdSelectionScreen
+import com.opensplit.features.household.createjoin.JoinHouseholdComponent
+import com.opensplit.features.household.createjoin.JoinHouseholdScreen
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.details.HouseholdDetailsScreen
 import com.opensplit.features.household.my.MyHouseholdsListComponent
@@ -76,8 +80,22 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
           )
         }
 
-        is CreateJoinHouseholdComponent -> {
-          CreateJoinHouseholdScreen(
+        is HouseholdSelectionComponent -> {
+          HouseholdSelectionScreen(
+              component = child,
+              modifier = Modifier.fillMaxSize(),
+          )
+        }
+
+        is CreateHouseholdComponent -> {
+          CreateHouseholdScreen(
+              component = child,
+              modifier = Modifier.fillMaxSize(),
+          )
+        }
+
+        is JoinHouseholdComponent -> {
+          JoinHouseholdScreen(
               component = child,
               modifier = Modifier.fillMaxSize(),
           )

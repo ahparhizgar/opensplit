@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.androidHostTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.androidHostTest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.appleMain.iml" filepath="$PROJECT_DIR$/.idea/modules/app/shared/OpenSplit.app.shared.appleMain.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.androidHostTest.iml" filepath="$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.androidHostTest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.androidMain.iml" filepath="$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.androidMain.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.iosMain.iml" filepath="$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.iosMain.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.jsMain.iml" filepath="$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.jsMain.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.wasmJsMain.iml" filepath="$PROJECT_DIR$/.idea/modules/core/OpenSplit.core.wasmJsMain.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/OpenSplit.iml" filepath="$PROJECT_DIR$/.idea/OpenSplit.iml" />
     </modules>
   </component>
 </project>

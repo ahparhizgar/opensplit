@@ -1,18 +1,22 @@
 package com.opensplit.features.household.createjoin
 
 import com.ahparhizgar.katch.ApiCallError
+import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
-import com.opensplit.domain.Household
+import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.remote.fieldErrors
 import com.opensplit.remote.userMessage
 import com.opensplit.repository.HouseholdRepository
+import com.opensplit.root.TopLevelDestinationConfig
 import com.opensplit.validation.household.HouseholdValidation
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 
 data class CreateHouseholdViewState(
     val householdName: String = "",
@@ -27,16 +31,19 @@ interface CreateHouseholdComponent {
   fun updateHouseholdName(name: String)
 
   fun submit(): Job
+
+  fun onBackClicked()
+
+  @Serializable class Config : TopLevelDestinationConfig
 }
 
 interface CreateHouseholdComponentFactory {
-  fun create(cContext: CContext, onDone: (Household) -> Unit): CreateHouseholdComponent
+  fun create(cContext: CContext): CreateHouseholdComponent
 }
 
 class DefaultCreateHouseholdComponent(
     context: CContext,
     private val householdRepository: HouseholdRepository,
-    private val onDone: (Household) -> Unit,
 ) : CreateHouseholdComponent, CContext by context {
 
   private val _uiState = MutableStateFlow(CreateHouseholdViewState())
@@ -70,7 +77,7 @@ class DefaultCreateHouseholdComponent(
     try {
       val result = householdRepository.createHousehold(current.householdName)
       _uiState.update { it.copy(isSubmitting = false) }
-      onDone(result)
+      navigation.replaceCurrent(HouseholdDetailsComponent.Config(result.id))
     } catch (e: ApiCallError) {
       _uiState.update {
         it.copy(
@@ -81,6 +88,10 @@ class DefaultCreateHouseholdComponent(
       }
     }
   }
+
+  override fun onBackClicked() {
+    navigation.pop()
+  }
 }
 
 class DefaultCreateHouseholdComponentFactory(
@@ -88,9 +99,8 @@ class DefaultCreateHouseholdComponentFactory(
 ) : CreateHouseholdComponentFactory {
   override fun create(
       cContext: CContext,
-      onDone: (Household) -> Unit,
   ): CreateHouseholdComponent =
-      DefaultCreateHouseholdComponent(cContext, householdRepository, onDone)
+      DefaultCreateHouseholdComponent(cContext, householdRepository)
 }
 
 class FakeCreateHouseholdComponent(
@@ -102,4 +112,6 @@ class FakeCreateHouseholdComponent(
   override fun updateHouseholdName(name: String) {}
 
   override fun submit() = Job()
+
+  override fun onBackClicked() {}
 }

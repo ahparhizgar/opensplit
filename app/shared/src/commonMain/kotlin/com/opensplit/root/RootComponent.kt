@@ -19,8 +19,12 @@ import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.AddExpenseComponentFactory
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.expense.ExpenseDetailsComponentFactory
-import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
-import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponentFactory
+import com.opensplit.features.household.createjoin.CreateHouseholdComponent
+import com.opensplit.features.household.createjoin.CreateHouseholdComponentFactory
+import com.opensplit.features.household.createjoin.HouseholdSelectionComponent
+import com.opensplit.features.household.createjoin.HouseholdSelectionComponentFactory
+import com.opensplit.features.household.createjoin.JoinHouseholdComponent
+import com.opensplit.features.household.createjoin.JoinHouseholdComponentFactory
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponentFactory
 import com.opensplit.features.household.my.MyHouseholdsListComponent
@@ -102,8 +106,14 @@ class DefaultRootComponent(
       is AuthComponent.Config ->
           componentProvider.provide(AuthComponentFactory::class).create(cContext)
 
-      is CreateJoinHouseholdComponent.Config ->
-          componentProvider.provide(CreateJoinHouseholdComponentFactory::class).create(cContext)
+      is HouseholdSelectionComponent.Config ->
+          componentProvider.provide(HouseholdSelectionComponentFactory::class).create(cContext)
+
+      is CreateHouseholdComponent.Config ->
+          componentProvider.provide(CreateHouseholdComponentFactory::class).create(cContext)
+
+      is JoinHouseholdComponent.Config ->
+          componentProvider.provide(JoinHouseholdComponentFactory::class).create(cContext)
 
       is MyHouseholdsListComponent.Config ->
           componentProvider.provide(MyHouseholdsListComponentFactory::class).create(cContext)

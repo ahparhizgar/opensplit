@@ -21,9 +21,11 @@ import com.opensplit.features.expense.MoreSplitOptionsComponentFactory
 import com.opensplit.features.expense.QuickSplitComponentFactory
 import com.opensplit.features.expense.WhoPaidComponentFactory
 import com.opensplit.features.household.createjoin.CreateHouseholdComponentFactory
-import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponentFactory
 import com.opensplit.features.household.createjoin.DefaultCreateHouseholdComponentFactory
-import com.opensplit.features.household.createjoin.DefaultCreateJoinHouseholdComponentFactory
+import com.opensplit.features.household.createjoin.DefaultHouseholdSelectionComponentFactory
+import com.opensplit.features.household.createjoin.DefaultJoinHouseholdComponentFactory
+import com.opensplit.features.household.createjoin.HouseholdSelectionComponentFactory
+import com.opensplit.features.household.createjoin.JoinHouseholdComponentFactory
 import com.opensplit.features.household.details.DefaultHouseholdDetailsComponentFactory
 import com.opensplit.features.household.details.HouseholdDetailsComponentFactory
 import com.opensplit.features.household.my.DefaultMyHouseholdsListComponentFactory
@@ -48,9 +50,10 @@ fun decomposeModule() = module {
   factoryOf(::DefaultLoginComponentFactory).bind<LoginComponentFactory>()
   factoryOf(::DefaultSignUpComponentFactory).bind<SignUpComponentFactory>()
   factoryOf(::DefaultResetPasswordComponentFactory).bind<ResetPasswordComponentFactory>()
-  factoryOf(::DefaultCreateJoinHouseholdComponentFactory)
-      .bind<CreateJoinHouseholdComponentFactory>()
+  factoryOf(::DefaultHouseholdSelectionComponentFactory)
+      .bind<HouseholdSelectionComponentFactory>()
   factoryOf(::DefaultCreateHouseholdComponentFactory).bind<CreateHouseholdComponentFactory>()
+  factoryOf(::DefaultJoinHouseholdComponentFactory).bind<JoinHouseholdComponentFactory>()
   factoryOf(::DefaultMyHouseholdsListComponentFactory).bind<MyHouseholdsListComponentFactory>()
   factoryOf(::DefaultHouseholdDetailsComponentFactory).bind<HouseholdDetailsComponentFactory>()
   factoryOf(::DefaultHouseholdSettingsComponentFactory).bind<HouseholdSettingsComponentFactory>()

@@ -9,7 +9,7 @@ import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.domain.FakeHouseholdFactory
 import com.opensplit.domain.Household
-import com.opensplit.features.household.createjoin.CreateJoinHouseholdComponent
+import com.opensplit.features.household.createjoin.HouseholdSelectionComponent
 import com.opensplit.features.household.details.HouseholdDetailsComponent
 import com.opensplit.features.profile.ProfileComponent
 import com.opensplit.repository.HouseholdRepository
@@ -86,7 +86,7 @@ class DefaultMyHouseholdsListComponent(
   }
 
   override fun onAddHouseholdClick() {
-    navigation.pushNew(CreateJoinHouseholdComponent.Config())
+    navigation.pushNew(HouseholdSelectionComponent.Config())
   }
 
   override fun onToggleSettledExpanded() {
