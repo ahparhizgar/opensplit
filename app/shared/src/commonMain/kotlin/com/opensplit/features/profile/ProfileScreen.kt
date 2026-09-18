@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,7 +32,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -132,12 +132,15 @@ private fun ProfileHeader(
 private fun AvatarWithCamera(modifier: Modifier = Modifier) {
   Box(modifier = modifier.size(68.dp)) {
     Box(
-        modifier = Modifier.size(60.dp).clip(CircleShape).background(Color(0xFF35A79C)),
+        modifier =
+            Modifier.size(60.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondary),
         contentAlignment = Alignment.Center,
     ) {
-      // Stylized avatar background
-      Box(
-          modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFF80CBC4)),
+      Icon(
+          imageVector = Icons.Rounded.Person,
+          contentDescription = null,
+          modifier = Modifier.size(44.dp),
+          tint = MaterialTheme.colorScheme.onSecondary,
       )
     }
 

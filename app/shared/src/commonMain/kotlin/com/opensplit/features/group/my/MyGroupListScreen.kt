@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,7 +20,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.MoreVert
@@ -29,7 +29,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -58,6 +57,8 @@ import com.opensplit.domain.Group
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.colorSchemeExtended
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 
 @Composable
 fun MyGroupsListScreen(
@@ -75,12 +76,13 @@ fun MyGroupsListScreen(
     var menuExpanded by rememberSaveable { mutableStateOf(false) }
 
     val (activeGroups, settledGroups) =
-        remember(uiState.groups) { uiState.groups.partition { !it.isSettled } }
+        remember(uiState.groups) {
+          uiState.groups.partition {
+            !it.isSettled || it.lastInteractionAt < (Clock.System.now() - 7.days)
+          }
+        }
 
-    Scaffold(
-        floatingActionButton = { AddExpenseFab(onClick = { /* Navigate to add expense */ }) },
-        modifier = Modifier.testTag("group-active-shell"),
-    ) { padding ->
+    Scaffold(modifier = Modifier.testTag("group-active-shell")) { padding ->
       Column(
           modifier = Modifier.fillMaxSize().padding(padding),
       ) {
@@ -90,13 +92,6 @@ fun MyGroupsListScreen(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-          IconButton(onClick = {}) {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search",
-                modifier = Modifier.testTag("header-search"),
-            )
-          }
           IconButton(onClick = { component.onAddGroupClick() }) {
             Icon(
                 imageVector = Icons.Default.GroupAdd,
@@ -138,7 +133,7 @@ fun MyGroupsListScreen(
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             contentPadding =
-                androidx.compose.foundation.layout.PaddingValues(
+                PaddingValues(
                     horizontal = 16.dp,
                     vertical = 8.dp,
                 ),
@@ -152,10 +147,6 @@ fun MyGroupsListScreen(
                 modifier = Modifier.fillMaxWidth().testTag("group-card-${group.id}"),
             )
           }
-
-          // Sample "Non-group expenses" for visual fidelity
-          item { NonGroupExpensesCard() }
-
           // Settled Groups Section
           if (settledGroups.isNotEmpty()) {
             item {
@@ -342,67 +333,58 @@ private fun GroupCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-  Row(
-      modifier = modifier.clickable(onClick = onClick).padding(vertical = 4.dp),
-      horizontalArrangement = Arrangement.spacedBy(16.dp),
-      verticalAlignment = Alignment.CenterVertically,
+  Surface(
+      modifier = modifier,
+      onClick = onClick,
+      shape = MaterialTheme.shapes.medium,
   ) {
-    Box(
-        modifier =
-            Modifier.size(64.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(8.dp),
-                ),
-        contentAlignment = Alignment.Center,
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-      Icon(
-          imageVector = Icons.Default.Groups,
-          contentDescription = null,
-          modifier = Modifier.size(32.dp),
-          tint = MaterialTheme.colorScheme.onPrimaryContainer,
-      )
-    }
+      Box(
+          modifier =
+              Modifier.size(64.dp)
+                  .background(
+                      color = MaterialTheme.colorScheme.primaryContainer,
+                      shape = RoundedCornerShape(8.dp),
+                  ),
+          contentAlignment = Alignment.Center,
+      ) {
+        Icon(
+            imageVector = Icons.Default.Groups,
+            contentDescription = null,
+            modifier = Modifier.size(32.dp),
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+      }
 
-    Column(modifier = Modifier.weight(1f)) {
-      Text(
-          text = group.name,
-          style = MaterialTheme.typography.titleMedium,
-          fontWeight = FontWeight.Bold,
-      )
-      val balanceText =
-          when {
-            group.balance > 0 -> "you are owed IRR${group.balance}"
-            group.balance < 0 -> "you owe IRR${-group.balance}"
-            else -> "settled up"
-          }
-      val balanceColor =
-          when {
-            group.balance > 0 -> MaterialTheme.colorSchemeExtended.youAreOwed.color
-            group.balance < 0 -> MaterialTheme.colorSchemeExtended.youOwe.color
-            else -> MaterialTheme.colorScheme.onSurfaceVariant
-          }
-      Text(
-          text = balanceText,
-          style = MaterialTheme.typography.bodyMedium,
-          color = balanceColor,
-      )
+      Column(modifier = Modifier.weight(1f)) {
+        Text(
+            text = group.name,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        val balanceText =
+            when {
+              group.balance > 0 -> "you are owed IRR${group.balance}"
+              group.balance < 0 -> "you owe IRR${-group.balance}"
+              else -> "settled up"
+            }
+        val balanceColor =
+            when {
+              group.balance > 0 -> MaterialTheme.colorSchemeExtended.youAreOwed.color
+              group.balance < 0 -> MaterialTheme.colorSchemeExtended.youOwe.color
+              else -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        Text(
+            text = balanceText,
+            style = MaterialTheme.typography.bodyMedium,
+            color = balanceColor,
+        )
+      }
     }
   }
-}
-
-@Composable
-private fun AddExpenseFab(
-    onClick: () -> Unit,
-) {
-  ExtendedFloatingActionButton(
-      onClick = onClick,
-      icon = { Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = null) },
-      text = { Text("Add expense") },
-      containerColor = MaterialTheme.colorScheme.primary,
-      contentColor = MaterialTheme.colorScheme.onPrimary,
-      modifier = Modifier.testTag("add-expense-fab"),
-  )
 }
 
 @Composable

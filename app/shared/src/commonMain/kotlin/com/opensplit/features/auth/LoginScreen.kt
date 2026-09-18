@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +19,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.opensplit.ui.OpenSplitTheme
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
   val state by component.state.collectAsState()
@@ -141,11 +145,11 @@ fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
 
       Button(
           onClick = component::onLoginClicked,
-          modifier = Modifier.fillMaxWidth().height(56.dp),
-          shape = RoundedCornerShape(16.dp),
+          modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
+          shape = ButtonDefaults.squareShape,
           enabled = !state.isSubmitting,
       ) {
-        Text("Login", style = MaterialTheme.typography.titleMedium)
+        Text("Login")
       }
     }
   }

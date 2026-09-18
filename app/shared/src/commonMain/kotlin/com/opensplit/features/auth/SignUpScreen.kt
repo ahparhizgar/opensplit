@@ -175,7 +175,7 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
               RoundedCornerShape(
                   16.dp
               ), // Matched to design where button border radius is 16px (Wait, the design says
-                 // borderRadius: 16px for button content!)
+          // borderRadius: 16px for button content!)
           enabled = !state.isSubmitting,
       ) {
         Text("Register", style = MaterialTheme.typography.titleMedium)

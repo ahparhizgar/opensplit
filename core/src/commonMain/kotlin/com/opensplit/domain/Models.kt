@@ -23,6 +23,7 @@ data class Group(
     val isOwner: Boolean = false,
     val inviteLink: String,
     val balance: Double = 0.0,
+    val lastInteractionAt: Instant = Instant.DISTANT_PAST,
 ) {
   val isSettled: Boolean
     get() = balance == 0.0
