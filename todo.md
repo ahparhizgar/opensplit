@@ -1,6 +1,7 @@
 1. use enums in DAOs where possible
 2. separate dto and domain files and mention in AGENTS.md
 3. make expense list screen top bar collapsable
+4. backend returns Group.lastInteractionAt
 
 
 ### Done
