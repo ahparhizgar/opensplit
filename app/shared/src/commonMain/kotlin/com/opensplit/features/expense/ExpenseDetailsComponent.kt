@@ -24,8 +24,6 @@ interface ExpenseDetailsComponent {
 
   fun onEditClicked()
 
-  fun onAddReceiptClicked()
-
   @Serializable
   data class Config(val householdId: String, val expenseId: String) : TopLevelDestinationConfig
 }
@@ -93,10 +91,6 @@ class DefaultExpenseDetailsComponent(
         )
     )
   }
-
-  override fun onAddReceiptClicked() {
-    // TODO: implement add receipt
-  }
 }
 
 class DefaultExpenseDetailsComponentFactory(
@@ -126,6 +120,4 @@ class FakeExpenseDetailsComponent(uiState: ExpenseDetailsUiState = ExpenseDetail
   override fun onDeleteClicked() {}
 
   override fun onEditClicked() {}
-
-  override fun onAddReceiptClicked() {}
 }

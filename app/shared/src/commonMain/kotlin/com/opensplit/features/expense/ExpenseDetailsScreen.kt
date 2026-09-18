@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,7 +50,6 @@ import com.opensplit.domain.ParticipantShare
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.util.formatAmount
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseDetailsScreen(
     component: ExpenseDetailsComponent,
@@ -64,16 +62,13 @@ fun ExpenseDetailsScreen(
       modifier = modifier,
       topBar = {
         TopAppBar(
-            title = {},
+            title = {Text("Expense details")},
             navigationIcon = {
               IconButton(onClick = { component.onBackClicked() }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
               }
             },
             actions = {
-              IconButton(onClick = { component.onAddReceiptClicked() }) {
-                Icon(Icons.Default.AddPhotoAlternate, contentDescription = "Add Receipt")
-              }
               IconButton(onClick = { component.onDeleteClicked() }) {
                 Icon(Icons.Default.Delete, contentDescription = "Delete")
               }
@@ -84,6 +79,7 @@ fun ExpenseDetailsScreen(
         )
       },
       bottomBar = {
+          if (false)
         Surface(tonalElevation = 2.dp) {
           Row(
               modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
