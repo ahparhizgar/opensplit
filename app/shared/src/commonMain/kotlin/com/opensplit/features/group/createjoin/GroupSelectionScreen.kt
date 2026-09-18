@@ -43,7 +43,7 @@ fun GroupSelectionScreen(
       modifier = modifier,
       topBar = {
         TopAppBar(
-            title = { Text("Group") },
+            title = { Text("Add a Group") },
             navigationIcon = {
               IconButton(onClick = { component.onBackClicked() }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")

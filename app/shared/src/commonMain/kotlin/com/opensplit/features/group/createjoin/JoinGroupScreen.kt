@@ -5,11 +5,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.opensplit.ui.OpenSplitTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun JoinGroupScreen(
     component: JoinGroupComponent,
@@ -77,7 +80,8 @@ fun JoinGroupScreen(
 
       Button(
           onClick = { component.submit() },
-          modifier = Modifier.fillMaxWidth().testTag("group-submit"),
+          modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("group-submit"),
+          shape = ButtonDefaults.squareShape,
           enabled = !state.isSubmitting,
       ) {
         Text("Join")
