@@ -361,9 +361,9 @@ private fun BottomActionRow(householdName: String) {
   ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       Icon(
-          Icons.Default.Group,
+          imageVector = Icons.Default.Group,
           contentDescription = null,
-          tint = MaterialTheme.colorSchemeExtended.youOwe,
+          tint = MaterialTheme.colorSchemeExtended.youOwe.color,
           modifier = Modifier.size(24.dp),
       )
       Spacer(modifier = Modifier.width(8.dp))

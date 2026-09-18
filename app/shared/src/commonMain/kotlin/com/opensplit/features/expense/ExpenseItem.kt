@@ -50,8 +50,8 @@ fun ExpenseItem(
 
   val statusColor =
       when {
-        netBalance > 0 -> MaterialTheme.colorSchemeExtended.youAreOwed
-        netBalance < 0 -> MaterialTheme.colorSchemeExtended.youOwe
+        netBalance > 0 -> MaterialTheme.colorSchemeExtended.youAreOwed.color
+        netBalance < 0 -> MaterialTheme.colorSchemeExtended.youOwe.color
         else -> MaterialTheme.colorScheme.onSurfaceVariant
       }
 

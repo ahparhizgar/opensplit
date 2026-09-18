@@ -45,7 +45,7 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               {
                 Text(
                     text = "$otherName owes you IRR ${(amountSum / 2).formatAmount()}",
-                    color = MaterialTheme.colorSchemeExtended.youAreOwed,
+                    color = MaterialTheme.colorSchemeExtended.youAreOwed.color,
                 )
               }
             } else null,
@@ -70,7 +70,7 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               {
                 Text(
                     text = "$otherName owes you IRR ${amountSum.formatAmount()}",
-                    color = MaterialTheme.colorSchemeExtended.youAreOwed,
+                    color = MaterialTheme.colorSchemeExtended.youAreOwed.color,
                 )
               }
             } else null,
@@ -96,7 +96,7 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               {
                 Text(
                     text = "You owe $otherName IRR ${(amountSum / 2).formatAmount()}",
-                    color = MaterialTheme.colorSchemeExtended.youOwe,
+                    color = MaterialTheme.colorSchemeExtended.youOwe.color,
                 )
               }
             } else null,
@@ -122,7 +122,7 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
               {
                 Text(
                     text = "You owe $otherName IRR ${amountSum.formatAmount()}",
-                    color = MaterialTheme.colorSchemeExtended.youOwe,
+                    color = MaterialTheme.colorSchemeExtended.youOwe.color,
                 )
               }
             } else null,

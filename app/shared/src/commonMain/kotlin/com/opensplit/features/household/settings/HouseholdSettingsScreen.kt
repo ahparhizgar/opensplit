@@ -258,8 +258,8 @@ private fun MemberItem(member: Member, modifier: Modifier = Modifier) {
     Column(horizontalAlignment = Alignment.End) {
       val balanceText = if (member.balance >= 0) "gets back" else "owes"
       val balanceColor =
-          if (member.balance >= 0) MaterialTheme.colorSchemeExtended.youAreOwed
-          else MaterialTheme.colorSchemeExtended.youOwe
+          if (member.balance >= 0) MaterialTheme.colorSchemeExtended.youAreOwed.color
+          else MaterialTheme.colorSchemeExtended.youOwe.color
 
       Text(
           text = balanceText,

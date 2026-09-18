@@ -78,31 +78,31 @@ private fun getColors(tone: UserMessage.Tone): CustomSnackbarColors =
     when (tone) {
       Success -> {
         CustomSnackbarColors(
-            containerColor = MaterialTheme.colorSchemeExtended.successContainer,
-            contentColor = MaterialTheme.colorSchemeExtended.onSuccessContainer,
-            actionColor = MaterialTheme.colorSchemeExtended.onSuccessContainer,
-            actionContentColor = MaterialTheme.colorSchemeExtended.onSuccessContainer,
-            dismissActionContentColor = MaterialTheme.colorSchemeExtended.onSuccessContainer,
+            containerColor = MaterialTheme.colorSchemeExtended.success.colorContainer,
+            contentColor = MaterialTheme.colorSchemeExtended.success.onColorContainer,
+            actionColor = MaterialTheme.colorSchemeExtended.success.onColorContainer,
+            actionContentColor = MaterialTheme.colorSchemeExtended.success.onColorContainer,
+            dismissActionContentColor = MaterialTheme.colorSchemeExtended.success.onColorContainer,
         )
       }
 
       Info -> {
         CustomSnackbarColors(
-            containerColor = MaterialTheme.colorSchemeExtended.infoContainer,
-            contentColor = MaterialTheme.colorSchemeExtended.onInfoContainer,
-            actionColor = MaterialTheme.colorSchemeExtended.onInfoContainer,
-            actionContentColor = MaterialTheme.colorSchemeExtended.onInfoContainer,
-            dismissActionContentColor = MaterialTheme.colorSchemeExtended.onInfoContainer,
+            containerColor = MaterialTheme.colorSchemeExtended.success.colorContainer,
+            contentColor = MaterialTheme.colorSchemeExtended.success.onColorContainer,
+            actionColor = MaterialTheme.colorSchemeExtended.success.onColorContainer,
+            actionContentColor = MaterialTheme.colorSchemeExtended.success.onColorContainer,
+            dismissActionContentColor = MaterialTheme.colorSchemeExtended.success.onColorContainer,
         )
       }
 
       Warning -> {
         CustomSnackbarColors(
-            containerColor = MaterialTheme.colorSchemeExtended.warningContainer,
-            contentColor = MaterialTheme.colorSchemeExtended.onWarningContainer,
-            actionColor = MaterialTheme.colorSchemeExtended.onWarningContainer,
-            actionContentColor = MaterialTheme.colorSchemeExtended.onWarningContainer,
-            dismissActionContentColor = MaterialTheme.colorSchemeExtended.onWarningContainer,
+            containerColor = MaterialTheme.colorSchemeExtended.warning.colorContainer,
+            contentColor = MaterialTheme.colorSchemeExtended.warning.onColorContainer,
+            actionColor = MaterialTheme.colorSchemeExtended.warning.onColorContainer,
+            actionContentColor = MaterialTheme.colorSchemeExtended.warning.onColorContainer,
+            dismissActionContentColor = MaterialTheme.colorSchemeExtended.warning.onColorContainer,
         )
       }
 
