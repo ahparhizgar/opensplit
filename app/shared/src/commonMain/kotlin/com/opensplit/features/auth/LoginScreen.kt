@@ -61,7 +61,7 @@ fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
       contentWindowInsets = WindowInsets.safeDrawing,
       topBar = {
         TopAppBar(
-            title = { Text("Log in") },
+            title = { Text("Login") },
             navigationIcon = {
               IconButton(onClick = component::onBackClicked) {
                 Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
@@ -145,21 +145,10 @@ fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
       Button(
           onClick = component::onLoginClicked,
           modifier = Modifier.fillMaxWidth().height(56.dp),
-          shape = RoundedCornerShape(8.dp),
+          shape = RoundedCornerShape(16.dp),
           enabled = !state.isSubmitting,
       ) {
-        Text("Log in", style = MaterialTheme.typography.titleMedium)
-      }
-
-      Spacer(modifier = Modifier.height(24.dp))
-
-      Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        TextButton({ component.onForgotPasswordClicked() }) {
-          Text(
-              text = "Forgot your password?",
-              fontWeight = FontWeight.Bold,
-          )
-        }
+        Text("Login", style = MaterialTheme.typography.titleMedium)
       }
     }
   }

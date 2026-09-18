@@ -108,24 +108,6 @@ fun ExpenseItem(
 
     Spacer(Modifier.width(12.dp))
 
-    // Icon
-    Surface(
-        modifier = Modifier.size(40.dp),
-        shape = RoundedCornerShape(4.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-    ) {
-      Box(contentAlignment = Alignment.Center) {
-        Icon(
-            imageVector = Icons.Default.Description,
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-      }
-    }
-
-    Spacer(Modifier.width(12.dp))
-
     // Title and Payer info
     Column(modifier = Modifier.weight(1f)) {
       Text(

@@ -70,7 +70,7 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
       contentWindowInsets = WindowInsets.safeDrawing,
       topBar = {
         TopAppBar(
-            title = {},
+            title = { Text("Register") },
             navigationIcon = {
               IconButton(onClick = component::onBackClicked) {
                 Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
@@ -86,33 +86,23 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
                 .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState())
     ) {
-      Row(verticalAlignment = Alignment.CenterVertically) {
-        OutlinedTextField(
-            modifier = Modifier.weight(1f).focusRequester(immediateFocusRequester()),
-            value = state.fullName,
-            onValueChange = component::onFullNameChanged,
-            label = { Text("Full name") },
-            singleLine = true,
-            isError = state.fieldErrors.containsKey("fullName"),
-            keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next,
-                ),
-            keyboardActions =
-                KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Box(
-            modifier =
-                Modifier.size(64.dp).clip(CircleShape).background(Color(0xFFF5F5F5)).clickable {
-                  /* Profile pic button */
-                },
-            contentAlignment = Alignment.Center,
-        ) {
-          Icon(Icons.Default.AddAPhoto, contentDescription = null, tint = Color.Gray)
-        }
-      }
+      Spacer(modifier = Modifier.height(16.dp))
+
+      OutlinedTextField(
+          modifier = Modifier.fillMaxWidth().focusRequester(immediateFocusRequester()),
+          value = state.fullName,
+          onValueChange = component::onFullNameChanged,
+          label = { Text("Full name") },
+          singleLine = true,
+          isError = state.fieldErrors.containsKey("fullName"),
+          keyboardOptions =
+              KeyboardOptions(
+                  keyboardType = KeyboardType.Text,
+                  imeAction = ImeAction.Next,
+              ),
+          keyboardActions =
+              KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
+      )
 
       Spacer(modifier = Modifier.height(16.dp))
 
@@ -148,7 +138,6 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
             }
           },
           isError = state.fieldErrors.containsKey("password"),
-          supportingText = { Text("Minimum 8 characters") },
           keyboardOptions =
               KeyboardOptions(
                   keyboardType = KeyboardType.Password,
@@ -162,13 +151,15 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
 
       Row(verticalAlignment = Alignment.CenterVertically) {
         OutlinedTextField(
-            value = "+98",
+            value = "", // TODO: Add state.code if needed
             onValueChange = {},
-            readOnly = true,
+            label = { Text("Code") },
             modifier = Modifier.width(100.dp),
-            trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) }, // Mock dropdown
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
         )
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(16.dp))
         OutlinedTextField(
             value = state.phoneNumber,
             onValueChange = component::onPhoneChanged,
@@ -184,33 +175,16 @@ fun SignUpScreen(component: SignUpComponent, modifier: Modifier = Modifier) {
         )
       }
 
-      Spacer(modifier = Modifier.height(32.dp))
-
-      Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        Text(
-            text = "I use USD ($) as my currency. Change »",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-        )
-      }
-
       Spacer(modifier = Modifier.weight(1f))
 
       Button(
           onClick = component::onDoneClicked,
           modifier = Modifier.fillMaxWidth().height(56.dp),
-          shape = RoundedCornerShape(8.dp),
+          shape = RoundedCornerShape(16.dp), // Matched to design where button border radius is 16px (Wait, the design says borderRadius: 16px for button content!)
           enabled = !state.isSubmitting,
       ) {
-        Text("Done", style = MaterialTheme.typography.titleMedium)
+        Text("Register", style = MaterialTheme.typography.titleMedium)
       }
-      Spacer(modifier = Modifier.height(16.dp))
-      Text(
-          text = "By signing up, you accept the OpenSplit Terms of Service and Privacy Policy.",
-          style = MaterialTheme.typography.bodySmall,
-          textAlign = TextAlign.Center,
-          modifier = Modifier.fillMaxWidth(),
-      )
       Spacer(modifier = Modifier.height(16.dp))
     }
   }

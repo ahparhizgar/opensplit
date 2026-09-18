@@ -29,6 +29,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,6 +47,7 @@ import com.opensplit.domain.FakeHouseholdFactory
 import com.opensplit.features.expense.ExpenseItem
 import com.opensplit.ui.OpenSplitTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HouseholdDetailsScreen(
     component: HouseholdDetailsComponent,
@@ -50,67 +57,71 @@ fun HouseholdDetailsScreen(
   val household = uiState.household
   val currentUserId = household?.members?.find { it.isCurrentUser }?.userId ?: ""
 
+  val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
   Scaffold(
+      modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+      topBar = {
+        LargeTopAppBar(
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+            ),
+            title = {
+              Column {
+                Text(
+                    text = household?.name ?: "",
+                    style = MaterialTheme.typography.displaySmall,
+                )
+                if (household != null) {
+                  val balanceText =
+                      when {
+                        household.balance > 0 -> "You are owed IRR${household.balance}"
+                        household.balance < 0 -> "You owe IRR${-household.balance}"
+                        else -> "Settled up"
+                      }
+                  Text(
+                      text = balanceText,
+                      style = MaterialTheme.typography.titleMedium,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant
+                  )
+                }
+              }
+            },
+            navigationIcon = {
+              IconButton(onClick = { component.onBack() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                )
+              }
+            },
+            actions = {
+              IconButton(onClick = { component.onSettingsClick() }) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings",
+                )
+              }
+            },
+            scrollBehavior = scrollBehavior
+        )
+      },
       floatingActionButton = {
-        FloatingActionButton(onClick = { component.onAddExpenseClicked() }) {
-          Icon(Icons.Default.Add, contentDescription = "Add Expense")
-        }
+        ExtendedFloatingActionButton(
+            onClick = { component.onAddExpenseClicked() },
+            icon = { Icon(Icons.Default.Add, contentDescription = "Add Expense") },
+            text = { Text("Expense") },
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
       }
   ) { padding ->
     Column(modifier = Modifier.padding(padding)) {
-      Box(
-          modifier =
-              Modifier.background(MaterialTheme.colorScheme.primary)
-                  .height(240.dp)
-                  .fillMaxWidth()
-                  .padding(16.dp)
-      ) {
-        IconButton(onClick = { component.onBack() }) {
-          Icon(
-              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-              contentDescription = "Back",
-              tint = MaterialTheme.colorScheme.onPrimary,
-          )
-        }
-
-        IconButton(
-            modifier = Modifier.align(Alignment.TopEnd),
-            onClick = { component.onSettingsClick() },
-        ) {
-          Icon(
-              imageVector = Icons.Default.Settings,
-              contentDescription = "Settings",
-              tint = MaterialTheme.colorScheme.onPrimary,
-          )
-        }
-        if (household != null) {
-          Column(modifier = Modifier.align(Alignment.BottomStart)) {
-            Text(
-                text = household.name,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onPrimary,
-            )
-            val balanceText =
-                when {
-                  household.balance > 0 -> "You are owed IRR${household.balance}"
-                  household.balance < 0 -> "You owe IRR${-household.balance}"
-                  else -> "Settled up"
-                }
-            Text(
-                text = balanceText,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
-            )
-          }
-        }
-      }
-
-      Spacer(Modifier.height(16.dp))
-
-      Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+      Column {
         if (household != null) {
           if (household.members.isEmpty()) {
-            Card {
+            Card(modifier = Modifier.padding(16.dp)) {
               Column(
                   modifier = Modifier.fillMaxWidth().padding(16.dp),
                   verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -156,6 +167,7 @@ fun HouseholdDetailsScreen(
                     currentUserId = currentUserId,
                     onClick = { component.onExpenseClicked(expense) },
                 )
+                androidx.compose.material3.HorizontalDivider()
               }
             }
           }
@@ -166,6 +178,7 @@ fun HouseholdDetailsScreen(
 }
 
 @Preview
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HouseholdDetailsScreenLoadingPreview() {
   OpenSplitTheme {
@@ -176,6 +189,7 @@ fun HouseholdDetailsScreenLoadingPreview() {
 }
 
 @Preview
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HouseholdDetailsScreenPreview() {
   OpenSplitTheme {
@@ -192,6 +206,7 @@ fun HouseholdDetailsScreenPreview() {
 }
 
 @Preview
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HouseholdDetailsScreenWithMemberPreview() {
   OpenSplitTheme {
