@@ -62,7 +62,6 @@ import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.colorSchemeExtended
 import com.opensplit.util.formatAmount
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifier) {
   val uiState by component.uiState.subscribeAsState()
@@ -209,8 +208,6 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
     if (uiState.isLoading) {
       CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
     }
-
-    BottomActionRow(uiState.householdName)
   }
 }
 
@@ -349,32 +346,6 @@ private fun ClickableLabel(onClick: () -> Unit, content: @Composable () -> Unit)
               .padding(horizontal = 8.dp, vertical = 4.dp)
   ) {
     content()
-  }
-}
-
-@Composable
-private fun BottomActionRow(householdName: String) {
-  Row(
-      modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-      Icon(
-          imageVector = Icons.Default.Group,
-          contentDescription = null,
-          tint = MaterialTheme.colorSchemeExtended.youOwe.color,
-          modifier = Modifier.size(24.dp),
-      )
-      Spacer(modifier = Modifier.width(8.dp))
-      Text(householdName, style = MaterialTheme.typography.bodyMedium)
-    }
-
-    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-      Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = Color(0xFF4EB8C7))
-      Icon(Icons.Default.CameraAlt, contentDescription = null, tint = Color(0xFF9C27B0))
-      Icon(Icons.AutoMirrored.Filled.Note, contentDescription = null, tint = Color(0xFF4CAF50))
-    }
   }
 }
 
