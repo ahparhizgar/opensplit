@@ -2,6 +2,7 @@
 2. separate dto and domain files and mention in AGENTS.md
 3. make expense list screen top bar collapsable
 4. backend returns Group.lastInteractionAt
+5. add desktop views (large screen support)
 
 
 ### Done

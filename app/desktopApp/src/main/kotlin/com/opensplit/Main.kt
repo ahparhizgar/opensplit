@@ -25,21 +25,20 @@ import org.koin.dsl.module
 fun main(vararg args: String) {
   val lifecycle = LifecycleRegistry()
   println(args.joinToString())
-  val koin =
-      startKoin {
-            modules(
-                module {
-                  single {
-                    DataDir(
-                        args.firstOrNull { it.startsWith("--datadir=") }?.removePrefix("--datadir=")
-                            ?: DataDir.DEFAULT
-                    )
-                  }
-                }
+  val koin = startKoin {
+    modules(
+        module {
+          single {
+            DataDir(
+                args.firstOrNull { it.startsWith("--datadir=") }?.removePrefix("--datadir=")
+                    ?: DataDir.DEFAULT
             )
-            modules(appModule())
           }
-          .koin
+        }
+    )
+    modules(appModule())
+  }
+      .koin
 
   val backDispatcher = BackDispatcher()
   val context = DefaultCContext(lifecycle = lifecycle, backHandler = backDispatcher)

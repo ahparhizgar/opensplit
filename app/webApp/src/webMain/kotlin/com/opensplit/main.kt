@@ -19,12 +19,11 @@ import org.w3c.dom.events.Event
 fun main() {
   val lifecycle = LifecycleRegistry()
 
-  val koin =
-      startKoin {
-            modules(module { single { DataDir(DataDir.DEFAULT) } })
-            modules(appModule())
-          }
-          .koin
+  val koin = startKoin {
+    modules(module { single { DataDir(DataDir.DEFAULT) } })
+    modules(appModule())
+  }
+      .koin
 
   val backDispatcher = BackDispatcher()
   val context = DefaultCContext(lifecycle = lifecycle, backHandler = backDispatcher)

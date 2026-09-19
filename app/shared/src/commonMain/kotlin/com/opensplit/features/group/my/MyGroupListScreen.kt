@@ -53,9 +53,9 @@ import com.arkivanov.decompose.value.MutableValue
 import com.opensplit.domain.Group
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.colorSchemeExtended
-import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlinx.coroutines.launch
 
 @Composable
 fun MyGroupsListScreen(
@@ -75,7 +75,7 @@ fun MyGroupsListScreen(
     val (activeGroups, settledGroups) =
         remember(uiState.groups) {
           uiState.groups.partition {
-            !it.isSettled || it.lastInteractionAt < (Clock.System.now() - 7.days)
+            !it.isSettled || it.lastInteractionAt >= (Clock.System.now() - 7.days)
           }
         }
 

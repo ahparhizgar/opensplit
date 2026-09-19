@@ -31,24 +31,23 @@ import org.koin.dsl.module
 
 fun Spec.integrationKoin() = testValue {
   koinApplication {
-        allowOverride(true)
-        modules(
-            appModule(),
-            integrationTestModule(),
-        )
-      }
+    allowOverride(true)
+    modules(
+        appModule(),
+        integrationTestModule(),
+    )
+  }
       .koin
 }
 
-fun uiKoin() =
-    koinApplication {
-          allowOverride(true)
-          modules(
-              appModule(),
-              integrationTestModule(),
-          )
-        }
-        .koin
+fun uiKoin() = koinApplication {
+  allowOverride(true)
+  modules(
+      appModule(),
+      integrationTestModule(),
+  )
+}
+    .koin
 
 fun integrationTestModule() = module {
   single { CoroutineScope(SupervisorJob() + Dispatchers.Main) }

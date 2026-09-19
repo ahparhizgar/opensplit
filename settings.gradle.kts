@@ -7,7 +7,7 @@ pluginManagement {
     // DEAR AGENT! DON'T touch these ir repos!!!
     val isLocal = System.getenv("IS_LOCAL")?.toBoolean() ?: false
     if (isLocal) {
-      maven("https://mvnhub.ir")
+      //      maven("https://mvnhub.ir")
       maven("https://maven.myket.ir")
     }
     google {
@@ -38,17 +38,17 @@ dependencyResolutionManagement {
       filter { includeGroup("com.squareup.okio") }
     }
     if (isLocal) {
-      maven("https://mvnhub.ir") {
-        content {
-          // currently mvnhub is down. remove these later
-          excludeGroup("org.jetbrains.exposed")
-          excludeGroup("com.h2database")
-          excludeGroup("com.zaxxer")
-          excludeGroup("org.postgresql")
-          excludeModule("org.jetbrains.kotlinx", "kotlinx-datetime-jvm")
-          excludeGroup("org.checkerframework")
-        }
-      }
+      //      maven("https://mvnhub.ir") {
+      //        content {
+      //          // currently mvnhub is down. remove these later
+      //          excludeGroup("org.jetbrains.exposed")
+      //          excludeGroup("com.h2database")
+      //          excludeGroup("com.zaxxer")
+      //          excludeGroup("org.postgresql")
+      //          excludeModule("org.jetbrains.kotlinx", "kotlinx-datetime-jvm")
+      //          excludeGroup("org.checkerframework")
+      //        }
+      //      }
       maven("https://maven.myket.ir")
     }
     google {
