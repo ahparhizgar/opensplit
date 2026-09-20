@@ -74,6 +74,8 @@ kotlin {
       implementation(libs.compose.adaptive)
       implementation(libs.compose.adaptive.layout)
       implementation(libs.compose.adaptive.navigation)
+      implementation(libs.compose.adaptive.navigation.suite)
+      implementation(libs.compose.material3.windowSizeClass)
 
       implementation(libs.ktor.clientCore)
       implementation(libs.ktor.clientAuth)
@@ -83,6 +85,7 @@ kotlin {
       api(libs.decompose)
       api(libs.lifecycle)
       implementation(libs.decompose.compose)
+      implementation(libs.decompose.compose.experimental)
       implementation(libs.katch)
       implementation(libs.katch.ktor)
       implementation(libs.koin.core)
@@ -125,7 +128,10 @@ kotlin {
     //            implementation(libs.wrappers.browser)
     //        }
   }
-  compilerOptions { freeCompilerArgs.add("-Xcontext-parameters") }
+  compilerOptions {
+    // not needed anymore
+    //    freeCompilerArgs.add("-Xcontext-parameters")
+  }
 }
 
 tasks.withType<Test>().configureEach { useJUnitPlatform() }
