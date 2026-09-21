@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.arkivanov.decompose.defaultComponentContext
+import com.arkivanov.decompose.retainedComponent
 import com.opensplit.component.defaultCContext
 import com.opensplit.root.FakeRootComponent
 import com.opensplit.root.RootComponentFactory
@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
 
     val factory: RootComponentFactory by inject()
-    val root = factory.create(defaultCContext(defaultComponentContext()))
+    val root = retainedComponent { factory.create(defaultCContext(it)) }
 
     setContent { App(root) }
   }

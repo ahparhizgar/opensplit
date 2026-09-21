@@ -38,13 +38,18 @@ interface GroupSettingsComponent {
 }
 
 interface GroupSettingsComponentFactory {
-  fun create(cContext: CContext, config: GroupSettingsComponent.Config): GroupSettingsComponent
+  fun create(
+      cContext: CContext,
+      config: GroupSettingsComponent.Config,
+      onBack: (() -> Unit)? = null,
+  ): GroupSettingsComponent
 }
 
 class DefaultGroupSettingsComponent(
     context: CContext,
     config: GroupSettingsComponent.Config,
     private val groupRepository: GroupRepository,
+    private val onBack: (() -> Unit)? = null,
 ) : GroupSettingsComponent, CContext by context {
 
   override val groupId: String = config.groupId
@@ -56,7 +61,11 @@ class DefaultGroupSettingsComponent(
   }
 
   override fun onBack() {
-    navigation.pop()
+    if (onBack != null) {
+      onBack.invoke()
+    } else {
+      navigation.pop()
+    }
   }
 
   override fun onAddPeopleClicked() {
@@ -102,7 +111,9 @@ class DefaultGroupSettingsComponentFactory(
   override fun create(
       cContext: CContext,
       config: GroupSettingsComponent.Config,
-  ): GroupSettingsComponent = DefaultGroupSettingsComponent(cContext, config, groupRepository)
+      onBack: (() -> Unit)?,
+  ): GroupSettingsComponent =
+      DefaultGroupSettingsComponent(cContext, config, groupRepository, onBack)
 }
 
 class FakeGroupSettingsComponent(

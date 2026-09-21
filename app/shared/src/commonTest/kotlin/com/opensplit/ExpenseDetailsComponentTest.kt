@@ -1,5 +1,6 @@
 package com.opensplit
 
+import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.opensplit.component.TestCContext
 import com.opensplit.component.fakeStack
 import com.opensplit.dto.expense.SplitMethod.Equally
@@ -18,6 +19,7 @@ import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
+@OptIn(ExperimentalDecomposeApi::class)
 class ExpenseDetailsComponentTest : BehaviorSpec() {
   init {
     extensions(MainDispatcherExtension())

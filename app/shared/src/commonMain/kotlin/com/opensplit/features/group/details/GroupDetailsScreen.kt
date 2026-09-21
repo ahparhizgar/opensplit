@@ -22,6 +22,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -116,7 +117,7 @@ fun GroupDetailsScreen(
     Column(modifier = Modifier.padding(padding)) {
       Column {
         if (group != null) {
-          if (group.members.isEmpty()) {
+          if (group.members.size == 1 && uiState.expenses.isEmpty()) {
             Card(modifier = Modifier.padding(16.dp)) {
               Column(
                   modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -163,7 +164,7 @@ fun GroupDetailsScreen(
                     currentUserId = currentUserId,
                     onClick = { component.onExpenseClicked(expense) },
                 )
-                androidx.compose.material3.HorizontalDivider()
+                HorizontalDivider()
               }
             }
           }
@@ -174,7 +175,6 @@ fun GroupDetailsScreen(
 }
 
 @Preview
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDetailsScreenLoadingPreview() {
   OpenSplitTheme {
@@ -185,7 +185,6 @@ fun GroupDetailsScreenLoadingPreview() {
 }
 
 @Preview
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDetailsScreenPreview() {
   OpenSplitTheme {
@@ -202,7 +201,6 @@ fun GroupDetailsScreenPreview() {
 }
 
 @Preview
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDetailsScreenWithMemberPreview() {
   OpenSplitTheme {

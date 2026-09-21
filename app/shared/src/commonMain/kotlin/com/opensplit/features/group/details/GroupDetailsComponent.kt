@@ -42,7 +42,13 @@ interface GroupDetailsComponent {
 }
 
 interface GroupDetailsComponentFactory {
-  fun create(cContext: CContext, config: GroupDetailsComponent.Config): GroupDetailsComponent
+  fun create(
+      cContext: CContext,
+      config: GroupDetailsComponent.Config,
+      onExpenseClicked: ((Expense) -> Unit)? = null,
+      onSettingsClick: (() -> Unit)? = null,
+      onBack: (() -> Unit)? = null,
+  ): GroupDetailsComponent
 }
 
 class DefaultGroupDetailsComponent(
@@ -50,6 +56,9 @@ class DefaultGroupDetailsComponent(
     config: GroupDetailsComponent.Config,
     private val groupRepository: GroupRepository,
     private val expenseRepository: ExpenseRepository,
+    private val onExpenseClickedCallback: ((Expense) -> Unit)? = null,
+    private val onSettingsClickCallback: (() -> Unit)? = null,
+    private val onBackCallback: (() -> Unit)? = null,
 ) : GroupDetailsComponent, CContext by context {
 
   override val groupId: String = config.groupId
@@ -78,15 +87,27 @@ class DefaultGroupDetailsComponent(
   }
 
   override fun onExpenseClicked(expense: Expense) {
-    navigation.pushNew(ExpenseDetailsComponent.Config(groupId, expense.id))
+    if (onExpenseClickedCallback != null) {
+      onExpenseClickedCallback.invoke(expense)
+    } else {
+      navigation.pushNew(ExpenseDetailsComponent.Config(groupId, expense.id))
+    }
   }
 
   override fun onSettingsClick() {
-    navigation.pushNew(GroupSettingsComponent.Config(groupId))
+    if (onSettingsClickCallback != null) {
+      onSettingsClickCallback.invoke()
+    } else {
+      navigation.pushNew(GroupSettingsComponent.Config(groupId))
+    }
   }
 
   override fun onBack() {
-    navigation.pop()
+    if (onBackCallback != null) {
+      onBackCallback.invoke()
+    } else {
+      navigation.pop()
+    }
   }
 }
 
@@ -97,8 +118,19 @@ class DefaultGroupDetailsComponentFactory(
   override fun create(
       cContext: CContext,
       config: GroupDetailsComponent.Config,
+      onExpenseClicked: ((Expense) -> Unit)?,
+      onSettingsClick: (() -> Unit)?,
+      onBack: (() -> Unit)?,
   ): GroupDetailsComponent =
-      DefaultGroupDetailsComponent(cContext, config, groupRepository, expenseRepository)
+      DefaultGroupDetailsComponent(
+          context = cContext,
+          config = config,
+          groupRepository = groupRepository,
+          expenseRepository = expenseRepository,
+          onExpenseClickedCallback = onExpenseClicked,
+          onSettingsClickCallback = onSettingsClick,
+          onBackCallback = onBack,
+      )
 }
 
 class FakeGroupDetailsComponent(

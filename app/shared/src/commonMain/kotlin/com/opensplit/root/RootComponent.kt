@@ -11,6 +11,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.backhandler.BackHandler
 import com.opensplit.component.CContext
+import com.opensplit.component.WindowSizeHolder
 import com.opensplit.component.componentScope
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthComponentFactory
@@ -26,7 +27,8 @@ import com.opensplit.features.group.createjoin.GroupSelectionComponentFactory
 import com.opensplit.features.group.createjoin.JoinGroupComponent
 import com.opensplit.features.group.createjoin.JoinGroupComponentFactory
 import com.opensplit.features.group.details.GroupDetailsComponent
-import com.opensplit.features.group.details.GroupDetailsComponentFactory
+import com.opensplit.features.group.details.GroupFlowComponent
+import com.opensplit.features.group.details.GroupFlowComponentFactory
 import com.opensplit.features.group.my.MyGroupsListComponent
 import com.opensplit.features.group.my.MyGroupsListComponentFactory
 import com.opensplit.features.group.settings.GroupSettingsComponent
@@ -37,14 +39,15 @@ import com.opensplit.repository.GroupRepository
 import com.opensplit.splash.SplashDestination
 import com.opensplit.sync.SyncDaemon
 import com.opensplit.usermessage.MessageHolder
-import kotlin.reflect.KClass
 import kotlinx.coroutines.launch
 import org.koin.core.scope.Scope
+import kotlin.reflect.KClass
 
 interface RootComponent {
   val backHandler: BackHandler
   val childStack: Value<ChildStack<*, Any>>
   val messageHolder: MessageHolder
+  val windowSizeHolder: WindowSizeHolder
 
   fun onBack()
 }
@@ -118,8 +121,13 @@ class DefaultRootComponent(
       is MyGroupsListComponent.Config ->
           componentProvider.provide(MyGroupsListComponentFactory::class).create(cContext)
 
+      is GroupFlowComponent.Config ->
+          componentProvider.provide(GroupFlowComponentFactory::class).create(cContext, config)
+
       is GroupDetailsComponent.Config ->
-          componentProvider.provide(GroupDetailsComponentFactory::class).create(cContext, config)
+          componentProvider
+              .provide(GroupFlowComponentFactory::class)
+              .create(cContext, GroupFlowComponent.Config(config.groupId))
 
       is GroupSettingsComponent.Config ->
           componentProvider.provide(GroupSettingsComponentFactory::class).create(cContext, config)
@@ -169,6 +177,7 @@ class DefaultRootComponentFactory(
 class FakeRootComponent : RootComponent {
   override val backHandler: BackHandler = BackDispatcher()
   override val messageHolder: MessageHolder = MessageHolder()
+  override val windowSizeHolder: WindowSizeHolder = WindowSizeHolder()
 
   override fun onBack() {}
 

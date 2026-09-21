@@ -1,17 +1,20 @@
 package com.opensplit.component
 
+import androidx.window.core.layout.WindowSizeClass
 import com.ahparhizgar.katch.ApiCallError
 import com.arkivanov.decompose.Cancellation
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.ComponentContextFactory
 import com.arkivanov.decompose.GenericComponentContext
 import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.essenty.backhandler.BackCallback
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.backhandler.BackHandler
 import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.arkivanov.essenty.instancekeeper.InstanceKeeperDispatcher
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.lifecycle.resume
 import com.arkivanov.essenty.statekeeper.StateKeeper
@@ -26,11 +29,26 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
+class WindowSizeHolder(
+    initialWindowSizeClass: WindowSizeClass = WindowSizeClass(0, 0),
+) {
+  private val _windowSizeClass = MutableStateFlow(initialWindowSizeClass)
+  val windowSizeClass: StateFlow<WindowSizeClass> = _windowSizeClass.asStateFlow()
+
+  fun update(windowSizeClass: WindowSizeClass) {
+    _windowSizeClass.value = windowSizeClass
+  }
+}
 
 interface CContext : GenericComponentContext<CContext> {
   var navigation: StackNavigation<Any>
   var messageShower: MessageShower
+  var windowSizeHolder: WindowSizeHolder
 }
 
 class DefaultCContext(
@@ -41,6 +59,7 @@ class DefaultCContext(
     override val backHandler: BackHandler = BackDispatcher(),
     override var navigation: StackNavigation<Any> = NoopStackNavigation(),
     override var messageShower: MessageShower = MessageHolder(),
+    override var windowSizeHolder: WindowSizeHolder = WindowSizeHolder(),
 ) : CContext {
   override val componentContextFactory: ComponentContextFactory<CContext> =
       ComponentContextFactory { lifecycle, stateKeeper, instanceKeeper, backHandler ->
@@ -51,6 +70,7 @@ class DefaultCContext(
             backHandler = backHandler,
             navigation = navigation,
             messageShower = messageShower,
+            windowSizeHolder = windowSizeHolder,
         )
       }
 }
@@ -144,6 +164,7 @@ class TestCContext : CContext {
   val fakeStackNavigation = FakeStackNavigation<Any>(InitialTestDestination)
   val backDispatcher = BackDispatcher()
   val messageHolder = MessageHolder()
+  val testWindowSizeHolder = WindowSizeHolder()
 
   override val lifecycle: Lifecycle = lifecycleRegistry
 
@@ -156,13 +177,27 @@ class TestCContext : CContext {
 
   override val componentContextFactory: ComponentContextFactory<CContext> =
       ComponentContextFactory { lifecycle, stateKeeper, instanceKeeper, backHandler ->
-        DefaultCContext(lifecycle, stateKeeper, instanceKeeper, backHandler, navigation)
+        DefaultCContext(
+            lifecycle = lifecycle,
+            stateKeeper = stateKeeper,
+            instanceKeeper = instanceKeeper,
+            backHandler = backHandler,
+            navigation = navigation,
+            messageShower = messageShower,
+            windowSizeHolder = windowSizeHolder,
+        )
       }
   override var navigation: StackNavigation<Any> = fakeStackNavigation
   override var messageShower: MessageShower = messageHolder
+  override var windowSizeHolder: WindowSizeHolder = testWindowSizeHolder
 
   fun resumed(): TestCContext {
     lifecycleRegistry.resume()
     return this
   }
+}
+
+fun BackHandler.register(lifecycle: Lifecycle, callback: BackCallback) {
+  lifecycle.doOnCreate { register(callback) }
+  lifecycle.doOnDestroy { unregister(callback) }
 }

@@ -27,7 +27,9 @@ import com.opensplit.features.group.createjoin.DefaultJoinGroupComponentFactory
 import com.opensplit.features.group.createjoin.GroupSelectionComponentFactory
 import com.opensplit.features.group.createjoin.JoinGroupComponentFactory
 import com.opensplit.features.group.details.DefaultGroupDetailsComponentFactory
+import com.opensplit.features.group.details.DefaultGroupFlowComponentFactory
 import com.opensplit.features.group.details.GroupDetailsComponentFactory
+import com.opensplit.features.group.details.GroupFlowComponentFactory
 import com.opensplit.features.group.my.DefaultMyGroupsListComponentFactory
 import com.opensplit.features.group.my.MyGroupsListComponentFactory
 import com.opensplit.features.group.settings.DefaultGroupSettingsComponentFactory
@@ -55,6 +57,7 @@ fun decomposeModule() = module {
   factoryOf(::DefaultJoinGroupComponentFactory).bind<JoinGroupComponentFactory>()
   factoryOf(::DefaultMyGroupsListComponentFactory).bind<MyGroupsListComponentFactory>()
   factoryOf(::DefaultGroupDetailsComponentFactory).bind<GroupDetailsComponentFactory>()
+  factoryOf(::DefaultGroupFlowComponentFactory).bind<GroupFlowComponentFactory>()
   factoryOf(::DefaultGroupSettingsComponentFactory).bind<GroupSettingsComponentFactory>()
   factoryOf(::DefaultAddExpenseComponentFactory).bind<AddExpenseComponentFactory>()
   factoryOf(::DefaultExpenseDetailsComponentFactory).bind<ExpenseDetailsComponentFactory>()

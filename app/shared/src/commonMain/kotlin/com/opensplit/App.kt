@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -32,6 +34,8 @@ import com.opensplit.features.group.createjoin.JoinGroupComponent
 import com.opensplit.features.group.createjoin.JoinGroupScreen
 import com.opensplit.features.group.details.GroupDetailsComponent
 import com.opensplit.features.group.details.GroupDetailsScreen
+import com.opensplit.features.group.details.GroupFlowComponent
+import com.opensplit.features.group.details.GroupFlowScreen
 import com.opensplit.features.group.my.MyGroupsListComponent
 import com.opensplit.features.group.my.MyGroupsListScreen
 import com.opensplit.features.group.settings.GroupSettingsComponent
@@ -45,9 +49,12 @@ import com.opensplit.splash.SplashScreen
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.usermessage.CustomSnackbar
 
-@OptIn(ExperimentalDecomposeApi::class)
+@OptIn(ExperimentalDecomposeApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun App(root: RootComponent, modifier: Modifier = Modifier) {
+  val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+  LaunchedEffect(windowSizeClass) { root.windowSizeHolder.update(windowSizeClass) }
+
   OpenSplitTheme {
     val hostState = remember { SnackbarHostState() }
 
@@ -112,6 +119,13 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
           MyGroupsListScreen(
               modifier = Modifier.fillMaxSize().testTag("group-list"),
               component = child,
+          )
+        }
+
+        is GroupFlowComponent -> {
+          GroupFlowScreen(
+              component = child,
+              modifier = Modifier.fillMaxSize(),
           )
         }
 
