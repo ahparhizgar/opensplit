@@ -53,7 +53,11 @@ import com.opensplit.ui.colorSchemeExtended
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupSettingsScreen(component: GroupSettingsComponent, modifier: Modifier = Modifier) {
+fun GroupSettingsScreen(
+    component: GroupSettingsComponent,
+    modifier: Modifier = Modifier,
+    showBackButton: Boolean = true,
+) {
   val uiState by component.uiState.collectAsState()
 
   Scaffold(
@@ -61,8 +65,10 @@ fun GroupSettingsScreen(component: GroupSettingsComponent, modifier: Modifier = 
         TopAppBar(
             title = { Text("Group settings") },
             navigationIcon = {
-              IconButton(onClick = component::onBack) {
-                Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
+              if (showBackButton) {
+                IconButton(onClick = component::onBack) {
+                  Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
+                }
               }
             },
         )

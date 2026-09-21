@@ -53,6 +53,7 @@ import com.opensplit.util.formatAmount
 fun ExpenseDetailsScreen(
     component: ExpenseDetailsComponent,
     modifier: Modifier = Modifier,
+    showBackButton: Boolean = true,
 ) {
   val uiState by component.uiState.subscribeAsState()
   val expense = uiState.expense
@@ -63,8 +64,10 @@ fun ExpenseDetailsScreen(
         TopAppBar(
             title = { Text("Expense details") },
             navigationIcon = {
-              IconButton(onClick = { component.onBackClicked() }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+              if (showBackButton) {
+                IconButton(onClick = { component.onBackClicked() }) {
+                  Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                }
               }
             },
             actions = {

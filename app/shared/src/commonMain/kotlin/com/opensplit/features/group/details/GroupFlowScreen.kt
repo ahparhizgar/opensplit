@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +18,8 @@ import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.f
 import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.plus
 import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.scale
 import com.arkivanov.decompose.extensions.compose.stack.animation.predictiveback.materialPredictiveBackAnimatable
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.arkivanov.decompose.router.panels.ChildPanelsMode
 import com.opensplit.features.expense.ExpenseDetailsScreen
 import com.opensplit.features.group.settings.GroupSettingsScreen
 
@@ -26,6 +29,9 @@ fun GroupFlowScreen(
     component: GroupFlowComponent,
     modifier: Modifier = Modifier,
 ) {
+  val panels by component.panels.subscribeAsState()
+  val isDualPane = panels.mode == ChildPanelsMode.DUAL
+
   ChildPanels(
       modifier = modifier,
       panels = component.panels,
@@ -41,6 +47,7 @@ fun GroupFlowScreen(
             GroupSettingsScreen(
                 component = instance.component,
                 modifier = Modifier.fillMaxSize(),
+                showBackButton = !isDualPane,
             )
           }
 
@@ -48,6 +55,7 @@ fun GroupFlowScreen(
             ExpenseDetailsScreen(
                 component = instance.component,
                 modifier = Modifier.fillMaxSize(),
+                showBackButton = !isDualPane,
             )
           }
         }
