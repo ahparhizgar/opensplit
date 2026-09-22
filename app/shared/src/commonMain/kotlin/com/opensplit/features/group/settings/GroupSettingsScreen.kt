@@ -33,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -59,6 +61,7 @@ fun GroupSettingsScreen(
     showBackButton: Boolean = true,
 ) {
   val uiState by component.uiState.collectAsState()
+  val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
   Scaffold(
       topBar = {
@@ -71,9 +74,10 @@ fun GroupSettingsScreen(
                 }
               }
             },
+            scrollBehavior = scrollBehavior,
         )
       },
-      modifier = modifier,
+      modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
   ) { paddingValues ->
     Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
       if (uiState.isLoading) {

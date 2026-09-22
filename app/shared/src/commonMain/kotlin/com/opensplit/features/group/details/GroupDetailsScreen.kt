@@ -25,7 +25,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -42,6 +41,7 @@ import com.opensplit.domain.FakeExpenseFactory
 import com.opensplit.domain.FakeGroupFactory
 import com.opensplit.features.expense.ExpenseItem
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.components.AdaptiveTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,18 +58,18 @@ fun GroupDetailsScreen(
   Scaffold(
       modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
       topBar = {
-        LargeTopAppBar(
+        AdaptiveTopAppBar(
             colors =
                 TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                 ),
             title = {
-              Column {
-                Text(
-                    text = group?.name ?: "",
-                    style = MaterialTheme.typography.displaySmall,
-                )
+              Text(
+                  text = group?.name ?: "",
+              )
+            },
+            subtitle = {
                 if (group != null) {
                   val balanceText =
                       when {
@@ -79,11 +79,9 @@ fun GroupDetailsScreen(
                       }
                   Text(
                       text = balanceText,
-                      style = MaterialTheme.typography.titleMedium,
                       color = MaterialTheme.colorScheme.onSurfaceVariant,
                   )
                 }
-              }
             },
             navigationIcon = {
               IconButton(onClick = { component.onBack() }) {
