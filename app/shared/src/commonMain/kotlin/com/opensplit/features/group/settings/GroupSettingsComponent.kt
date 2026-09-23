@@ -20,8 +20,6 @@ interface GroupSettingsComponent {
 
   fun onBack() {}
 
-  fun onAddPeopleClicked()
-
   fun onInviteLinkClicked()
 
   fun onLeaveGroupClicked()
@@ -66,10 +64,6 @@ class DefaultGroupSettingsComponent(
     } else {
       navigation.pop()
     }
-  }
-
-  override fun onAddPeopleClicked() {
-    // TODO: Implement add people
   }
 
   override fun onInviteLinkClicked() {
@@ -122,8 +116,6 @@ class FakeGroupSettingsComponent(
         GroupSettingsComponent.UiState(group = FakeGroupFactory.create(id = "h1")),
 ) : GroupSettingsComponent {
   override val uiState: StateFlow<GroupSettingsComponent.UiState> = MutableStateFlow(uiState)
-
-  override fun onAddPeopleClicked() {}
 
   override fun onInviteLinkClicked() {}
 

@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -99,15 +98,6 @@ fun GroupSettingsScreen(
 
             item {
               SectionTitle(modifier = Modifier.padding(horizontal = 16.dp), title = "Group members")
-            }
-
-            item {
-              SettingsActionItem(
-                  modifier = Modifier.padding(horizontal = 16.dp),
-                  icon = Icons.Default.PersonAdd,
-                  text = "Add people to group",
-                  onClick = component::onAddPeopleClicked,
-              )
             }
 
             item {
