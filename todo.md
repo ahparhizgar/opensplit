@@ -3,6 +3,7 @@
 3. make expense list screen top bar collapsable
 4. backend returns Group.lastInteractionAt
 5. add desktop views (large screen support)
+6. implement delete group feature
 
 
 ### Done

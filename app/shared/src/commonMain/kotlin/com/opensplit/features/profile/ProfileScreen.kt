@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -27,24 +28,30 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.ui.OpenSplitTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun ProfileScreen(
     component: ProfileComponent,
     modifier: Modifier = Modifier,
 ) {
   val uiState by component.uiState.subscribeAsState()
+  val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+  val isLargeScreen =
+      windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
   Scaffold(
       topBar = {
@@ -65,21 +72,51 @@ fun ProfileScreen(
       },
       modifier = modifier,
   ) { paddingValues ->
-    Column(
-        modifier = Modifier.fillMaxSize().padding(paddingValues),
+    Box(
+        modifier =
+            Modifier.fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = if (isLargeScreen) 32.dp else 16.dp, vertical = 16.dp),
+        contentAlignment = if (isLargeScreen) Alignment.TopCenter else Alignment.TopStart,
     ) {
-      ProfileHeader(
-          component = component,
-          name = uiState.name,
-          email = uiState.email,
-          modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-      )
+      Column(
+          modifier =
+              Modifier.then(if (isLargeScreen) Modifier.widthIn(max = 640.dp) else Modifier)
+                  .fillMaxWidth(),
+      ) {
+        if (isLargeScreen) {
+          Surface(
+              shape = MaterialTheme.shapes.large,
+              color = MaterialTheme.colorScheme.surfaceContainerLow,
+              modifier = Modifier.fillMaxWidth(),
+          ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+              ProfileHeader(
+                  component = component,
+                  name = uiState.name,
+                  email = uiState.email,
+              )
+              Spacer(modifier = Modifier.height(24.dp))
+              LogoutButton(
+                  component = component,
+              )
+            }
+          }
+        } else {
+          ProfileHeader(
+              component = component,
+              name = uiState.name,
+              email = uiState.email,
+              modifier = Modifier.padding(vertical = 8.dp),
+          )
 
-      Spacer(modifier = Modifier.height(16.dp))
+          Spacer(modifier = Modifier.height(16.dp))
 
-      LogoutButton(
-          component = component,
-      )
+          LogoutButton(
+              component = component,
+          )
+        }
+      }
     }
   }
 }
@@ -193,7 +230,7 @@ private fun LogoutButton(
   }
 }
 
-@Preview
+@PreviewScreenSizes
 @Composable
 private fun ProfileScreenPreview() {
   OpenSplitTheme {

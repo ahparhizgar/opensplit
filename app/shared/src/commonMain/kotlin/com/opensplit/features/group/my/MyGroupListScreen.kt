@@ -132,10 +132,12 @@ fun MyGroupsListScreen(
         val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
         val columns =
             when {
-              windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) ->
-                  GridCells.Fixed(3)
-              windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) ->
-                  GridCells.Fixed(2)
+              windowSizeClass.isWidthAtLeastBreakpoint(
+                  WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND
+              ) -> GridCells.Fixed(3)
+              windowSizeClass.isWidthAtLeastBreakpoint(
+                  WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
+              ) -> GridCells.Fixed(2)
               else -> GridCells.Fixed(1)
             }
 
