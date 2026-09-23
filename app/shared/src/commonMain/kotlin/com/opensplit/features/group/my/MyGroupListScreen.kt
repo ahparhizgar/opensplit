@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GroupAdd
@@ -35,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,14 +51,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.value.MutableValue
 import com.opensplit.domain.Group
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.colorSchemeExtended
+import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
-import kotlinx.coroutines.launch
 
 @Composable
 fun MyGroupsListScreen(
@@ -127,17 +131,29 @@ fun MyGroupsListScreen(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
         )
 
-        LazyColumn(
+        val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+        val columns =
+            when {
+              windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) ->
+                  GridCells.Fixed(3)
+              windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) ->
+                  GridCells.Fixed(2)
+              else -> GridCells.Fixed(1)
+            }
+
+        LazyVerticalGrid(
+            columns = columns,
             modifier = Modifier.fillMaxWidth(),
             contentPadding =
                 PaddingValues(
                     horizontal = 16.dp,
                     vertical = 8.dp,
                 ),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
           // Group Cards
-          items(activeGroups) { group ->
+          items(activeGroups, key = { it.id }) { group ->
             GroupCard(
                 group = group,
                 onClick = { component.onGroupClick(group.id) },
@@ -146,7 +162,7 @@ fun MyGroupsListScreen(
           }
           // Settled Groups Section
           if (settledGroups.isNotEmpty()) {
-            item {
+            item(span = { GridItemSpan(maxLineSpan) }) {
               SettledGroupsSection(
                   groups = settledGroups,
                   isExpanded = component.isSettledExpanded.subscribeAsState().value,
