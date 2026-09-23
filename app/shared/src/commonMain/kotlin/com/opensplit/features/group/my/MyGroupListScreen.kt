@@ -1,7 +1,6 @@
 package com.opensplit.features.group.my
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -226,11 +224,6 @@ private fun BalanceSummaryRow(
         )
       }
     }
-    Icon(
-        imageVector = Icons.Default.Tune,
-        contentDescription = "Filter",
-        modifier = Modifier.size(28.dp).clickable {}.testTag("balance-filter"),
-    )
   }
 }
 
