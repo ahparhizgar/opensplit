@@ -2,6 +2,7 @@ package com.opensplit.features.expense
 
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.decompose.value.subscribe
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
@@ -63,11 +64,8 @@ interface QuickSplitComponent {
 interface QuickSplitComponentFactory {
   fun create(
       context: CContext,
-      allParticipants: List<String>,
-      amountText: String,
-      amountSum: Double,
+      parentUiState: Value<AddExpenseUiState>,
       groupId: String,
-      initialOption: QuickSplitComponent.QuickSplitOption? = null,
       onOptionSelected: (PayAmountsUiState, SplitMethod) -> Unit,
       onAdjustSplitClicked: () -> Unit,
   ): QuickSplitComponent
@@ -82,37 +80,79 @@ data class QuickSplitUiState(
 
 class DefaultQuickSplitComponent(
     context: CContext,
-    private val allParticipants: List<String>,
-    private val amountText: String,
-    amountSum: Double,
+    private val parentUiState: Value<AddExpenseUiState>,
     groupId: String,
-    initialOption: QuickSplitComponent.QuickSplitOption?,
     private val onOptionSelected: (PayAmountsUiState, SplitMethod) -> Unit,
     private val onAdjustSplitClicked: () -> Unit,
     private val repository: GroupRepository,
     private val profileRepository: ProfileRepository,
 ) : QuickSplitComponent, CContext by context {
 
-  private val _uiState = MutableValue(QuickSplitUiState(amountSum, selectedOption = initialOption))
+  private val _uiState = MutableValue(QuickSplitUiState(parentUiState.value.amountSum))
   override val uiState: Value<QuickSplitUiState> = _uiState
   private val scope = componentScope()
 
+  private var currentUserId: String? = null
+
   init {
+    parentUiState.subscribe(lifecycle) { parentState ->
+      _uiState.update {
+        it.copy(
+            amountSum = parentState.amountSum,
+            selectedOption = computeSelectedOption(parentState),
+        )
+      }
+    }
+
     scope.launch {
       val group = repository.getGroup(groupId)
       val members = group?.members ?: emptyList()
 
-      val currentUserId = profileRepository.profile.value?.id
+      currentUserId = profileRepository.profile.value?.id
       val otherMember = members.firstOrNull { it.userId != currentUserId }
       val firstMember = members.firstOrNull { it.userId == currentUserId }
 
-      _uiState.update { it.copy(you = firstMember, other = otherMember) }
+      _uiState.update {
+        it.copy(
+            you = firstMember,
+            other = otherMember,
+            selectedOption =
+                computeSelectedOption(
+                    parentUiState.value,
+                    firstMember?.userId,
+                    otherMember?.userId,
+                ),
+        )
+      }
     }
+  }
+
+  private fun computeSelectedOption(
+      parentState: AddExpenseUiState,
+      youId: String? = uiState.value.you?.userId,
+      otherId: String? = uiState.value.other?.userId,
+  ): QuickSplitComponent.QuickSplitOption? {
+    if (youId == null || otherId == null) return null
+    return QuickSplitComponent.getOption(
+        payAmounts = parentState.payAmounts,
+        splitMethod = parentState.splitMethod,
+        youId = youId,
+        otherId = otherId,
+        amountSum = parentState.amountSum,
+        allParticipants = parentState.allParticipants,
+    )
   }
 
   override fun onOptionSelected(option: QuickSplitComponent.QuickSplitOption) {
     _uiState.update { it.copy(selectedOption = option) }
     val uiStateValue = uiState.value
+    val parentState = parentUiState.value
+    val amountText =
+        when (val p = parentState.payAmounts) {
+          is PayAmountsUiState.OnePerson -> p.amount
+          is PayAmountsUiState.MultiplePeople -> parentState.amountSum.toString()
+        }
+
     when (option) {
       QuickSplitComponent.QuickSplitOption.YOU_PAID_SPLIT_EQUALLY -> {
         onOptionSelected(
@@ -120,7 +160,7 @@ class DefaultQuickSplitComponent(
                 uiStateValue.you!!.userId,
                 amountText,
             ),
-            SplitMethod.Equally(allParticipants),
+            SplitMethod.Equally(parentState.allParticipants),
         )
       }
       QuickSplitComponent.QuickSplitOption.YOU_ARE_OWED_FULL_AMOUNT -> {
@@ -138,7 +178,7 @@ class DefaultQuickSplitComponent(
                 uiStateValue.other!!.userId,
                 amountText,
             ),
-            SplitMethod.Equally(allParticipants),
+            SplitMethod.Equally(parentState.allParticipants),
         )
       }
       QuickSplitComponent.QuickSplitOption.OTHER_IS_OWED_FULL_AMOUNT -> {
@@ -164,25 +204,19 @@ class DefaultQuickSplitComponentFactory(
 ) : QuickSplitComponentFactory {
   override fun create(
       context: CContext,
-      allParticipants: List<String>,
-      amountText: String,
-      amountSum: Double,
+      parentUiState: Value<AddExpenseUiState>,
       groupId: String,
-      initialOption: QuickSplitComponent.QuickSplitOption?,
       onOptionSelected: (PayAmountsUiState, SplitMethod) -> Unit,
       onAdjustSplitClicked: () -> Unit,
   ): QuickSplitComponent {
     return DefaultQuickSplitComponent(
         context = context,
-        allParticipants = allParticipants,
-        amountText = amountText,
-        amountSum = amountSum,
+        parentUiState = parentUiState,
         repository = repository,
         profileRepository = profileRepository,
         onOptionSelected = onOptionSelected,
         onAdjustSplitClicked = onAdjustSplitClicked,
         groupId = groupId,
-        initialOption = initialOption,
     )
   }
 }

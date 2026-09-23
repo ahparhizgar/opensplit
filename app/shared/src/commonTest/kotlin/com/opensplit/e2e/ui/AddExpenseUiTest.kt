@@ -68,7 +68,7 @@ class AddExpenseUiTest {
     onNode(hasText("owes", substring = true)).assertExists()
 
     // Save
-    onNode(hasContentDescription("Done", ignoreCase = true)).performClick()
+    onNode(hasContentDescription("Save", ignoreCase = true)).performClick()
 
     // Wait for the expense to appear (we don't mock it completely, but in a fake DB it works)
     onNode(hasText("Dinner")).waitForExistence().assertExists()
@@ -101,7 +101,7 @@ class AddExpenseUiTest {
     onNode(hasContentDescription("Done", ignoreCase = true)).performClick()
 
     // Save
-    onNode(hasContentDescription("Done", ignoreCase = true)).performClick()
+    onNode(hasContentDescription("Save", ignoreCase = true)).performClick()
 
     onNode(hasText("Lunch")).waitForExistence().assertExists()
   }
@@ -133,7 +133,7 @@ class AddExpenseUiTest {
     onNode(hasContentDescription("Done", ignoreCase = true)).performClick()
 
     // Save
-    onNode(hasContentDescription("Done", ignoreCase = true)).performClick()
+    onNode(hasContentDescription("Save", ignoreCase = true)).performClick()
 
     onNode(hasText("Taxi")).waitForExistence().assertExists()
   }
@@ -144,6 +144,7 @@ class AddExpenseUiTest {
 
     // Enter amount
     onNode(hasTestTag("expense-amount")).performTextInput("100")
+    onNode(isRoot()).performKeyInput { pressKey(Key.Tab) }
 
     // Enter description
     onNode(hasTestTag("expense-description")).performTextInput("Groceries")
@@ -164,11 +165,8 @@ class AddExpenseUiTest {
     onNode(hasTestTag("paid-amount-user-1")).performTextReplacement("70")
     onNode(hasTestTag("paid-amount-user-2")).performTextReplacement("30")
 
-    // Click Done on PaidAmountsScreen -> returns to MoreSplitOptionsScreen
-    onNode(hasContentDescription("Done", ignoreCase = true)).performClick()
-
-    // Click Done on MoreSplitOptionsScreen -> returns to Main Expense Form
-    onNode(hasContentDescription("Done", ignoreCase = true)).performClick()
+    // Click Done on PaidAmountsScreen -> returns to Main Expense Form
+    onNode(hasContentDescription("Done", ignoreCase = true)).waitForExistence().performClick()
 
     // Amount should be updated on the main screen to 100.00
     onNode(hasText("100.00", substring = true)).assertExists()
@@ -177,7 +175,7 @@ class AddExpenseUiTest {
     onNode(hasText("equally")).assertExists()
 
     // Save
-    onNode(hasContentDescription("Done", ignoreCase = true)).performClick()
+    onNode(hasContentDescription("Save", ignoreCase = true)).performClick()
 
     onNode(hasText("Groceries")).waitForExistence().assertExists()
   }

@@ -1,5 +1,6 @@
 package com.opensplit.features.expense
 
+import com.opensplit.component.TestCContext
 import com.opensplit.domain.FakeGroupFactory
 import com.opensplit.domain.FakeMemberFactory
 import io.kotest.core.spec.style.BehaviorSpec
@@ -10,13 +11,24 @@ class PaidAmountsComponentTest : BehaviorSpec() {
     Given("a DefaultPaidAmountsComponent") {
       val member1 = FakeMemberFactory.create(userId = "u1", name = "User 1")
       val group = FakeGroupFactory.create(members = listOf(member1))
+      val cContext = TestCContext()
 
       When("initialized with OnePerson and null amount") {
+        val parentUiState =
+            com.arkivanov.decompose.value.MutableValue(
+                AddExpenseUiState(
+                    groupName = "Group",
+                    title = "Title",
+                    allParticipants = listOf("u1"),
+                    participants = listOf(member1),
+                    payAmounts = PayAmountsUiState.OnePerson("u1", ""),
+                )
+            )
         val component =
             DefaultPaidAmountsComponent(
-                initial = PayAmounts.OnePerson(userId = "u1", amount = null),
-                group = group,
+                parentUiState = parentUiState,
                 onDone = {},
+                cContext = cContext,
             )
 
         Then("it should not show 'null' in the amount field") {

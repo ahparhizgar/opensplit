@@ -11,14 +11,22 @@ import com.opensplit.features.auth.ResetPasswordComponentFactory
 import com.opensplit.features.auth.SignUpComponentFactory
 import com.opensplit.features.auth.WelcomeComponentFactory
 import com.opensplit.features.expense.AddExpenseComponentFactory
+import com.opensplit.features.expense.AddExpenseFlowComponentFactory
 import com.opensplit.features.expense.DefaultAddExpenseComponentFactory
+import com.opensplit.features.expense.DefaultAddExpenseFlowComponentFactory
 import com.opensplit.features.expense.DefaultExpenseDetailsComponentFactory
 import com.opensplit.features.expense.DefaultMoreSplitOptionsComponentFactory
+import com.opensplit.features.expense.DefaultPaidAmountsComponentFactory
+import com.opensplit.features.expense.DefaultPayerFlowComponentFactory
 import com.opensplit.features.expense.DefaultQuickSplitComponentFactory
+import com.opensplit.features.expense.DefaultSplitFlowComponentFactory
 import com.opensplit.features.expense.DefaultWhoPaidComponentFactory
 import com.opensplit.features.expense.ExpenseDetailsComponentFactory
 import com.opensplit.features.expense.MoreSplitOptionsComponentFactory
+import com.opensplit.features.expense.PaidAmountsComponentFactory
+import com.opensplit.features.expense.PayerFlowComponentFactory
 import com.opensplit.features.expense.QuickSplitComponentFactory
+import com.opensplit.features.expense.SplitFlowComponentFactory
 import com.opensplit.features.expense.WhoPaidComponentFactory
 import com.opensplit.features.group.createjoin.CreateGroupComponentFactory
 import com.opensplit.features.group.createjoin.DefaultCreateGroupComponentFactory
@@ -65,4 +73,8 @@ fun decomposeModule() = module {
   factoryOf(::DefaultWhoPaidComponentFactory).bind<WhoPaidComponentFactory>()
   factoryOf(::DefaultQuickSplitComponentFactory).bind<QuickSplitComponentFactory>()
   factoryOf(::DefaultProfileComponentFactory).bind<ProfileComponentFactory>()
+  factoryOf(::DefaultAddExpenseFlowComponentFactory).bind<AddExpenseFlowComponentFactory>()
+  factoryOf(::DefaultPayerFlowComponentFactory).bind<PayerFlowComponentFactory>()
+  factoryOf(::DefaultSplitFlowComponentFactory).bind<SplitFlowComponentFactory>()
+  factoryOf(::DefaultPaidAmountsComponentFactory).bind<PaidAmountsComponentFactory>()
 }

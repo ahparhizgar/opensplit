@@ -10,7 +10,6 @@ import com.opensplit.dto.group.FakeGroupDtoFactory
 import com.opensplit.fake.FakeExpenseApi
 import com.opensplit.fake.FakeGroupApi
 import com.opensplit.fake.FakeSyncApi
-import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.AddExpenseComponentFactory
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.expense.ExpenseDetailsComponentFactory
@@ -65,7 +64,10 @@ class E2EExpenseSyncTest : BehaviorSpec() {
               .get<AddExpenseComponentFactory>()
               .create(
                   TestCContext().resumed(),
-                  AddExpenseComponent.Config("group-1"),
+                  "group-1",
+                  null,
+                  onNavigateToPayerFlow = {},
+                  onNavigateToSplitFlow = {},
                   onFinished = { addFinished = true },
               )
         }
@@ -114,7 +116,10 @@ class E2EExpenseSyncTest : BehaviorSpec() {
                       .get<AddExpenseComponentFactory>()
                       .create(
                           TestCContext().resumed(),
-                          AddExpenseComponent.Config("group-1", targetExpenseId),
+                          "group-1",
+                          targetExpenseId,
+                          onNavigateToPayerFlow = {},
+                          onNavigateToSplitFlow = {},
                           onFinished = { editFinished = true },
                       )
 

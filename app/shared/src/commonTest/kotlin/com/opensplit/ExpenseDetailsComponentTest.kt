@@ -4,7 +4,7 @@ import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.opensplit.component.TestCContext
 import com.opensplit.component.fakeStack
 import com.opensplit.dto.expense.SplitMethod.Equally
-import com.opensplit.features.expense.AddExpenseComponent
+import com.opensplit.features.expense.AddExpenseFlowComponent
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.expense.ExpenseDetailsComponentFactory
 import com.opensplit.features.group.details.GroupDetailsComponent
@@ -75,12 +75,11 @@ class ExpenseDetailsComponentTest : BehaviorSpec() {
       When("onEditClicked is called") {
         beforeEach { expenseDetailsComponent.onEditClicked() }
 
-        Then("navigates to AddExpense screen in edit mode") {
+        Then("navigates to AddExpense flow in edit mode") {
           val lastConfig = cContext.fakeStack().last()
-          lastConfig.shouldBeInstanceOf<AddExpenseComponent.Config>()
-          val editConfig = lastConfig as AddExpenseComponent.Config
-          editConfig.expenseId shouldBe "expense-1"
-          editConfig.groupId shouldBe "group-1"
+          lastConfig.shouldBeInstanceOf<AddExpenseFlowComponent.Config>()
+          lastConfig.expenseId shouldBe "expense-1"
+          lastConfig.groupId shouldBe "group-1"
         }
       }
     }

@@ -2,10 +2,11 @@ package com.opensplit.features.expense
 
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.decompose.value.subscribe
 import com.arkivanov.decompose.value.update
-import com.opensplit.domain.FakeGroupFactory
+import com.opensplit.component.CContext
 import com.opensplit.domain.FakeMemberFactory
-import com.opensplit.domain.Group
+import com.opensplit.domain.Member
 import com.opensplit.dto.expense.ParticipantAmount
 
 interface PaidAmountsComponent {
@@ -18,9 +19,9 @@ interface PaidAmountsComponent {
 
 interface PaidAmountsComponentFactory {
   fun create(
-      initial: PayAmounts,
-      group: Group,
+      parentUiState: Value<AddExpenseUiState>,
       onDone: (PayAmountsUiState) -> Unit,
+      cContext: CContext,
   ): PaidAmountsComponent
 }
 
@@ -32,45 +33,60 @@ data class PaidAmountsUiState(
 )
 
 class DefaultPaidAmountsComponent(
-    initial: PayAmounts,
-    group: Group,
+    private val parentUiState: Value<AddExpenseUiState>,
     private val onDone: (PayAmountsUiState) -> Unit,
-) : PaidAmountsComponent {
+    cContext: CContext,
+) : PaidAmountsComponent, CContext by cContext {
 
-  private val _uiState =
-      MutableValue(
-          PaidAmountsUiState(
-              goalAmount =
-                  when (initial) {
-                    is PayAmounts.OnePerson -> initial.amount?.takeIf { it > 0.0 }
-                    is PayAmounts.MultiplePeople -> null
-                  },
-              allParticipantAmounts =
-                  when (initial) {
-                    is PayAmounts.OnePerson ->
-                        group.members.map { member ->
-                          if (member.userId == initial.userId)
-                              ParticipantValue(
-                                  initial.userId,
-                                  member.name,
-                                  initial.amount?.toString().orEmpty(),
-                              )
-                          else ParticipantValue(member.userId, member.name, "")
-                        }
-
-                    is PayAmounts.MultiplePeople ->
-                        group.members.map { member ->
-                          initial.amounts
-                              .find { it.userId == member.userId }
-                              ?.let {
-                                ParticipantValue(member.userId, member.name, it.amount.toString())
-                              } ?: ParticipantValue(member.userId, member.name, "")
-                        }
-                  },
-          )
-      )
-
+  private val _uiState = MutableValue(createState(parentUiState.value))
   override val uiState: Value<PaidAmountsUiState> = _uiState
+
+  init {
+    parentUiState.subscribe(lifecycle) { parentState ->
+      _uiState.update {
+        it.copy(
+            goalAmount =
+                when (val amounts = parentState.payAmountsDomain) {
+                  is PayAmounts.OnePerson -> amounts.amount?.takeIf { it > 0.0 }
+                  is PayAmounts.MultiplePeople -> null
+                }
+        )
+      }
+    }
+  }
+
+  private fun createState(parentState: AddExpenseUiState): PaidAmountsUiState {
+    val initial = parentState.payAmountsDomain
+    val members = parentState.participants
+    return PaidAmountsUiState(
+        goalAmount =
+            when (initial) {
+              is PayAmounts.OnePerson -> initial.amount?.takeIf { it > 0.0 }
+              is PayAmounts.MultiplePeople -> null
+            },
+        allParticipantAmounts =
+            when (initial) {
+              is PayAmounts.OnePerson ->
+                  members.map { member ->
+                    if (member.userId == initial.userId)
+                        ParticipantValue(
+                            initial.userId,
+                            member.name,
+                            initial.amount?.toString().orEmpty(),
+                        )
+                    else ParticipantValue(member.userId, member.name, "")
+                  }
+
+              is PayAmounts.MultiplePeople ->
+                  members.map { member ->
+                    initial.amounts
+                        .find { it.userId == member.userId }
+                        ?.let { ParticipantValue(member.userId, member.name, it.amount.toString()) }
+                        ?: ParticipantValue(member.userId, member.name, "")
+                  }
+            },
+    )
+  }
 
   override fun onParticipantAmountChanged(userId: String, amount: String) {
     val updatedAmounts =
@@ -98,20 +114,18 @@ class DefaultPaidAmountsComponent(
 
 class DefaultPaidAmountsComponentFactory : PaidAmountsComponentFactory {
   override fun create(
-      initial: PayAmounts,
-      group: Group,
+      parentUiState: Value<AddExpenseUiState>,
       onDone: (PayAmountsUiState) -> Unit,
+      cContext: CContext,
   ): PaidAmountsComponent {
-    return DefaultPaidAmountsComponent(initial = initial, group = group, onDone = onDone)
+    return DefaultPaidAmountsComponent(parentUiState = parentUiState, onDone = onDone, cContext)
   }
 }
 
 class FakePaidAmountsComponent(
     initial: PayAmounts = PayAmounts.OnePerson("user-1", 100.0),
-    group: Group =
-        FakeGroupFactory.create(
-            members = listOf(FakeMemberFactory.create(userId = "user-1", isCurrentUser = true))
-        ),
+    members: List<Member> =
+        listOf(FakeMemberFactory.create(userId = "user-1", isCurrentUser = true)),
     private val onDone: (PayAmounts) -> Unit = {},
 ) : PaidAmountsComponent {
 
@@ -126,7 +140,7 @@ class FakePaidAmountsComponent(
               allParticipantAmounts =
                   when (initial) {
                     is PayAmounts.OnePerson ->
-                        group.members.map { member ->
+                        members.map { member ->
                           if (member.userId == initial.userId)
                               ParticipantValue(
                                   initial.userId,
@@ -137,7 +151,7 @@ class FakePaidAmountsComponent(
                         }
 
                     is PayAmounts.MultiplePeople ->
-                        group.members.map { member ->
+                        members.map { member ->
                           initial.amounts
                               .find { it.userId == member.userId }
                               ?.let {

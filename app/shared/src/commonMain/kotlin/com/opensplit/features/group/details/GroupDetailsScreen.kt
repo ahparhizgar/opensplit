@@ -70,18 +70,18 @@ fun GroupDetailsScreen(
               )
             },
             subtitle = {
-                if (group != null) {
-                  val balanceText =
-                      when {
-                        group.balance > 0 -> "You are owed IRR${group.balance}"
-                        group.balance < 0 -> "You owe IRR${-group.balance}"
-                        else -> "Settled up"
-                      }
-                  Text(
-                      text = balanceText,
-                      color = MaterialTheme.colorScheme.onSurfaceVariant,
-                  )
-                }
+              if (group != null) {
+                val balanceText =
+                    when {
+                      group.balance > 0 -> "You are owed IRR${group.balance}"
+                      group.balance < 0 -> "You owe IRR${-group.balance}"
+                      else -> "Settled up"
+                    }
+                Text(
+                    text = balanceText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+              }
             },
             navigationIcon = {
               IconButton(onClick = { component.onBack() }) {

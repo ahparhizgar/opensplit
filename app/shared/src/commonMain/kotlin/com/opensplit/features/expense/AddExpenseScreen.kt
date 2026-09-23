@@ -51,7 +51,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.dto.expense.SplitMethod
@@ -66,59 +65,30 @@ fun AddExpenseScreen(component: AddExpenseComponent, modifier: Modifier = Modifi
       modifier = modifier,
       topBar = {
         TopAppBar(
-            title = {
-              Text(
-                  when (component.stack.value.active.instance) {
-                    is AddExpenseComponent.Child.Main ->
-                        if (component.uiState.value.isEditMode) "Edit Expense" else "Add Expense"
-                    is AddExpenseComponent.Child.WhoPaid -> "Who paid?"
-                    is AddExpenseComponent.Child.PaidAmounts -> "Enter paid amounts"
-                    is AddExpenseComponent.Child.QuickSplitSelection ->
-                        "How was this expense split?"
-                    is AddExpenseComponent.Child.MoreSplitOptions -> "Adjust split"
-                  }
-              )
-            },
+            title = { Text(if (uiState.isEditMode) "Edit Expense" else "Add Expense") },
             navigationIcon = {
               IconButton(onClick = component::onBackClicked) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
               }
             },
             actions = {
-              IconButton(
-                  onClick = {
-                    val activeChild = component.stack.value.active.instance
-                    if (activeChild is AddExpenseComponent.Child.Main) {
-                      component.onSaveClicked()
-                    } else if (activeChild is AddExpenseComponent.Child.MoreSplitOptions) {
-                      activeChild.component.onDoneClicked()
-                    } else if (activeChild is AddExpenseComponent.Child.PaidAmounts) {
-                      activeChild.component.onDone()
-                    } else {
-                      component.onDoneClicked()
-                    }
-                  }
-              ) {
-                Icon(Icons.Default.Check, contentDescription = "Done")
+              IconButton(onClick = component::onSaveClicked) {
+                Icon(Icons.Default.Check, contentDescription = "Save")
               }
             },
         )
       },
   ) { padding ->
-    Children(stack = component.stack, modifier = Modifier.padding(padding).fillMaxSize()) { child ->
-      when (val instance = child.instance) {
-        is AddExpenseComponent.Child.Main -> MainExpenseForm(instance.component, uiState)
-        is AddExpenseComponent.Child.WhoPaid -> WhoPaidScreen(instance.component)
-        is AddExpenseComponent.Child.PaidAmounts -> PaidAmountsScreen(instance.component)
-        is AddExpenseComponent.Child.QuickSplitSelection -> QuickSplitScreen(instance.component)
-        is AddExpenseComponent.Child.MoreSplitOptions -> MoreSplitOptionsScreen(instance.component)
-      }
-    }
+    MainExpenseForm(component, uiState, Modifier.padding(padding))
   }
 }
 
 @Composable
-private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseUiState) {
+private fun MainExpenseForm(
+    component: AddExpenseComponent,
+    uiState: AddExpenseUiState,
+    modifier: Modifier = Modifier,
+) {
   Column(
       modifier = Modifier.padding(16.dp).fillMaxSize(),
   ) {
@@ -185,7 +155,7 @@ private fun MainExpenseForm(component: AddExpenseComponent, uiState: AddExpenseU
           textStyle = MaterialTheme.typography.headlineSmall,
           colors = textFieldColors,
           keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-          keyboardActions = KeyboardActions(onDone = { component.onDoneClicked() }),
+          keyboardActions = KeyboardActions(onDone = { component.onSaveClicked() }),
       )
     }
 
@@ -273,9 +243,10 @@ private fun QuickSplitButton(uiState: AddExpenseUiState, component: AddExpenseCo
         uiState.summaryText!!
       } else {
         val payerText =
-            when (uiState.payAmountsDomain) {
-              is PayAmounts.MultiplePeople -> "2+ people"
-              is PayAmounts.OnePerson -> uiState.getParticipantName(uiState.payAmountsDomain.userId)
+            when (uiState.payAmounts) {
+              is PayAmountsUiState.MultiplePeople -> "2+ people"
+              is PayAmountsUiState.OnePerson ->
+                  uiState.getParticipantName(uiState.payAmounts.userId)
             }
         val splitLabel = if (uiState.splitMethod is SplitMethod.Equally) "equally" else "unequally"
         "Paid by $payerText and split $splitLabel"
@@ -298,9 +269,9 @@ private fun QuickSplitButton(uiState: AddExpenseUiState, component: AddExpenseCo
 @Composable
 private fun SplitSentence(uiState: AddExpenseUiState, component: AddExpenseComponent) {
   val payerLabel =
-      when (uiState.payAmountsDomain) {
-        is PayAmounts.MultiplePeople -> "2+ people"
-        is PayAmounts.OnePerson -> uiState.getParticipantName(uiState.payAmountsDomain.userId)
+      when (uiState.payAmounts) {
+        is PayAmountsUiState.MultiplePeople -> "2+ people"
+        is PayAmountsUiState.OnePerson -> uiState.getParticipantName(uiState.payAmounts.userId)
       }
 
   val splitLabel = if (uiState.splitMethod is SplitMethod.Equally) "equally" else "unequally"
@@ -311,19 +282,9 @@ private fun SplitSentence(uiState: AddExpenseUiState, component: AddExpenseCompo
       verticalAlignment = Alignment.CenterVertically,
   ) {
     Text("Paid by ")
-    ClickableLabel(
-        onClick = {
-          if (uiState.payAmountsDomain is PayAmounts.MultiplePeople) {
-            component.navigateToPaidAmounts()
-          } else {
-            component.navigateToPayerSelection()
-          }
-        }
-    ) {
-      Text(payerLabel)
-    }
+    ClickableLabel(onClick = { component.navigateToPayerSelection() }) { Text(payerLabel) }
     Text(" and split ")
-    ClickableLabel(onClick = { component.navigateToAdjustSplit() }) { Text(splitLabel) }
+    ClickableLabel(onClick = { component.navigateToQuickSplit() }) { Text(splitLabel) }
   }
 }
 

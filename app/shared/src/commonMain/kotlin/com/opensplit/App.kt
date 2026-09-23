@@ -22,8 +22,8 @@ import com.arkivanov.decompose.extensions.compose.stack.animation.scale
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthRootScreen
-import com.opensplit.features.expense.AddExpenseComponent
-import com.opensplit.features.expense.AddExpenseScreen
+import com.opensplit.features.expense.AddExpenseFlowComponent
+import com.opensplit.features.expense.AddExpenseFlowScreen
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.expense.ExpenseDetailsScreen
 import com.opensplit.features.group.createjoin.CreateGroupComponent
@@ -136,8 +136,8 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
           )
         }
 
-        is AddExpenseComponent -> {
-          AddExpenseScreen(
+        is AddExpenseFlowComponent -> {
+          AddExpenseFlowScreen(
               component = child,
           )
         }

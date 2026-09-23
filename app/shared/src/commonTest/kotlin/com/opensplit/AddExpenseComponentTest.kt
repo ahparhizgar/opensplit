@@ -6,7 +6,6 @@ import com.opensplit.db.SyncQueueDao
 import com.opensplit.domain.ParticipantShare
 import com.opensplit.dto.auth.UserProfile
 import com.opensplit.dto.expense.SplitMethod
-import com.opensplit.features.expense.AddExpenseComponent
 import com.opensplit.features.expense.AddExpenseComponentFactory
 import com.opensplit.features.expense.PayAmountsUiState
 import com.opensplit.repository.ExpenseRepository
@@ -36,7 +35,10 @@ class AddExpenseComponentTest : BehaviorSpec() {
             .get<AddExpenseComponentFactory>()
             .create(
                 TestCContext(),
-                AddExpenseComponent.Config("h1"),
+                "h1",
+                null,
+                onNavigateToPayerFlow = {},
+                onNavigateToSplitFlow = {},
                 onFinished = { onFinishedCalled = true },
             )
       }
@@ -144,7 +146,10 @@ class AddExpenseComponentTest : BehaviorSpec() {
                   .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
-                      AddExpenseComponent.Config(groupId, createdExpense.id),
+                      groupId = groupId,
+                      expenseId = createdExpense.id,
+                      onNavigateToPayerFlow = {},
+                      onNavigateToSplitFlow = {},
                       onFinished = {},
                   )
           testCoroutineScheduler.advanceUntilIdle()
@@ -179,7 +184,10 @@ class AddExpenseComponentTest : BehaviorSpec() {
                   .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
-                      AddExpenseComponent.Config(groupId, createdExpense.id),
+                      groupId = groupId,
+                      expenseId = createdExpense.id,
+                      onNavigateToPayerFlow = {},
+                      onNavigateToSplitFlow = {},
                       onFinished = {},
                   )
           testCoroutineScheduler.advanceUntilIdle()
@@ -211,7 +219,10 @@ class AddExpenseComponentTest : BehaviorSpec() {
                   .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
-                      AddExpenseComponent.Config(groupId, createdExpense.id),
+                      groupId = groupId,
+                      expenseId = createdExpense.id,
+                      onNavigateToPayerFlow = {},
+                      onNavigateToSplitFlow = {},
                       onFinished = {},
                   )
           testCoroutineScheduler.advanceUntilIdle()
@@ -244,7 +255,10 @@ class AddExpenseComponentTest : BehaviorSpec() {
                   .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
-                      AddExpenseComponent.Config(groupId, createdExpense.id),
+                      groupId = groupId,
+                      expenseId = createdExpense.id,
+                      onNavigateToPayerFlow = {},
+                      onNavigateToSplitFlow = {},
                       onFinished = {},
                   )
           testCoroutineScheduler.advanceUntilIdle()
@@ -286,7 +300,10 @@ class AddExpenseComponentTest : BehaviorSpec() {
                   .get<AddExpenseComponentFactory>()
                   .create(
                       TestCContext(),
-                      AddExpenseComponent.Config(groupId, createdExpense.id),
+                      groupId = groupId,
+                      expenseId = createdExpense.id,
+                      onNavigateToPayerFlow = {},
+                      onNavigateToSplitFlow = {},
                       onFinished = {},
                   )
           testCoroutineScheduler.advanceUntilIdle()
@@ -297,33 +314,6 @@ class AddExpenseComponentTest : BehaviorSpec() {
 
           component.onSaveClicked().join()
           component.uiState.value.fieldErrors["amount"].shouldNotBeNull()
-        }
-      }
-
-      When("Switch split method during edit") {
-        val component by testValue {
-          koin
-              .get<AddExpenseComponentFactory>()
-              .create(
-                  TestCContext(),
-                  AddExpenseComponent.Config(groupId),
-                  onFinished = {},
-              )
-        }
-        beforeEach {
-          testCoroutineScheduler.advanceUntilIdle()
-          component.onAmountChanged("100.0")
-        }
-
-        Then("switches method correctly and keeps fields empty") {
-          component.navigateToAdjustSplit()
-          val moreOptions =
-              (component.stack.value.active.instance as AddExpenseComponent.Child.MoreSplitOptions)
-                  .component
-
-          moreOptions.onTabChanged(com.opensplit.dto.expense.SplitType.PERCENTAGE)
-          val percentageState = moreOptions.percentageComponent.uiState.value
-          percentageState.percentages should beEmpty()
         }
       }
     }

@@ -16,8 +16,8 @@ import com.opensplit.component.componentScope
 import com.opensplit.features.auth.AuthComponent
 import com.opensplit.features.auth.AuthComponentFactory
 import com.opensplit.features.auth.TokenStorage
-import com.opensplit.features.expense.AddExpenseComponent
-import com.opensplit.features.expense.AddExpenseComponentFactory
+import com.opensplit.features.expense.AddExpenseFlowComponent
+import com.opensplit.features.expense.AddExpenseFlowComponentFactory
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.expense.ExpenseDetailsComponentFactory
 import com.opensplit.features.group.createjoin.CreateGroupComponent
@@ -132,13 +132,12 @@ class DefaultRootComponent(
       is GroupSettingsComponent.Config ->
           componentProvider.provide(GroupSettingsComponentFactory::class).create(cContext, config)
 
-      is AddExpenseComponent.Config ->
+      is AddExpenseFlowComponent.Config ->
           componentProvider
-              .provide(AddExpenseComponentFactory::class)
+              .provide(AddExpenseFlowComponentFactory::class)
               .create(
-                  context = cContext,
+                  cContext = cContext,
                   config = config,
-                  onFinished = { rootNavigation.pop() },
               )
 
       is ExpenseDetailsComponent.Config ->

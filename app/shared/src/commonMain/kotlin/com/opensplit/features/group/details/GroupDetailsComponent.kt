@@ -6,7 +6,7 @@ import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.domain.Expense
 import com.opensplit.domain.Group
-import com.opensplit.features.expense.AddExpenseComponent
+import com.opensplit.features.expense.AddExpenseFlowComponent
 import com.opensplit.features.expense.ExpenseDetailsComponent
 import com.opensplit.features.group.settings.GroupSettingsComponent
 import com.opensplit.repository.ExpenseRepository
@@ -83,7 +83,7 @@ class DefaultGroupDetailsComponent(
   }
 
   override fun onAddExpenseClicked() {
-    navigation.pushNew(AddExpenseComponent.Config(groupId = groupId))
+    navigation.pushNew(AddExpenseFlowComponent.Config(groupId = groupId))
   }
 
   override fun onExpenseClicked(expense: Expense) {

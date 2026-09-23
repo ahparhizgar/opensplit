@@ -85,7 +85,7 @@ class DefaultExpenseDetailsComponent(
 
   override fun onEditClicked() {
     navigation.pushNew(
-        AddExpenseComponent.Config(
+        AddExpenseFlowComponent.Config(
             groupId = config.groupId,
             expenseId = config.expenseId,
         )

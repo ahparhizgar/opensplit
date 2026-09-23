@@ -1,16 +1,8 @@
 package com.opensplit.features.expense
 
 import com.ahparhizgar.katch.ApiCallError
-import com.arkivanov.decompose.router.stack.ChildStack
-import com.arkivanov.decompose.router.stack.StackNavigation
-import com.arkivanov.decompose.router.stack.childStack
-import com.arkivanov.decompose.router.stack.navigate
-import com.arkivanov.decompose.router.stack.pop
-import com.arkivanov.decompose.router.stack.popTo
-import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.decompose.value.operator.map
 import com.arkivanov.decompose.value.update
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
@@ -23,17 +15,15 @@ import com.opensplit.remote.fieldErrors
 import com.opensplit.repository.ExpenseRepository
 import com.opensplit.repository.GroupRepository
 import com.opensplit.repository.ProfileRepository
-import com.opensplit.root.TopLevelDestinationConfig
 import com.opensplit.util.formatAmount
 import com.opensplit.validation.expense.ExpenseValidation
-import kotlin.math.abs
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlin.math.abs
 
 interface AddExpenseComponent {
   val uiState: Value<AddExpenseUiState>
-  val stack: Value<ChildStack<*, Child>>
 
   fun onTitleChanged(title: String)
 
@@ -49,54 +39,26 @@ interface AddExpenseComponent {
 
   fun onBackClicked()
 
-  fun onDoneClicked()
-
   fun navigateToPayerSelection()
 
-  fun navigateToPaidAmounts()
-
   fun navigateToQuickSplit()
-
-  fun navigateToAdjustSplit()
 
   @Serializable
   data class Config(
       val groupId: String,
       val expenseId: String? = null,
-  ) : TopLevelDestinationConfig
-
-  sealed class Child {
-    class Main(val component: AddExpenseComponent) : Child()
-
-    class WhoPaid(val component: WhoPaidComponent) : Child()
-
-    class PaidAmounts(val component: PaidAmountsComponent) : Child()
-
-    class QuickSplitSelection(val component: QuickSplitComponent) : Child()
-
-    class MoreSplitOptions(val component: MoreSplitOptionsComponent) : Child()
-  }
+  )
 }
 
 interface AddExpenseComponentFactory {
   fun create(
       context: CContext,
-      config: AddExpenseComponent.Config,
+      groupId: String,
+      expenseId: String?,
+      onNavigateToPayerFlow: () -> Unit,
+      onNavigateToSplitFlow: () -> Unit,
       onFinished: () -> Unit,
   ): AddExpenseComponent
-}
-
-@Serializable
-sealed class AddExpenseChildConfig {
-  @Serializable data object Main : AddExpenseChildConfig()
-
-  @Serializable data object PayerSelection : AddExpenseChildConfig()
-
-  @Serializable data object PaidAmounts : AddExpenseChildConfig()
-
-  @Serializable data object QuickSplitSelection : AddExpenseChildConfig()
-
-  @Serializable data object MoreSplitOptions : AddExpenseChildConfig()
 }
 
 sealed interface PayAmountsUiState {
@@ -185,17 +147,15 @@ data class AddExpenseUiState(
 
 class DefaultAddExpenseComponent(
     context: CContext,
-    config: AddExpenseComponent.Config,
+    private val groupId: String,
+    private val expenseId: String?,
     private val expenseRepository: ExpenseRepository,
     private val groupRepository: GroupRepository,
     private val profileRepository: ProfileRepository,
-    private val moreSplitOptionsComponentFactory: MoreSplitOptionsComponentFactory,
-    private val whoPaidComponentFactory: WhoPaidComponentFactory,
-    private val quickSplitComponentFactory: QuickSplitComponentFactory,
+    private val onNavigateToPayerFlow: () -> Unit,
+    private val onNavigateToSplitFlow: () -> Unit,
     private val onFinished: () -> Unit,
 ) : AddExpenseComponent, CContext by context {
-  private val groupId = config.groupId
-  private val expenseId = config.expenseId
   private var loadedGroup: Group? = null
   private val _uiState =
       MutableValue(
@@ -208,114 +168,6 @@ class DefaultAddExpenseComponent(
       )
   override val uiState: Value<AddExpenseUiState> = _uiState
   private val scope = componentScope()
-
-  private val stackNavigation = StackNavigation<AddExpenseChildConfig>()
-
-  override val stack: Value<ChildStack<*, AddExpenseComponent.Child>> =
-      childStack(
-          source = stackNavigation,
-          serializer = AddExpenseChildConfig.serializer(),
-          initialConfiguration = AddExpenseChildConfig.Main,
-          handleBackButton = true,
-          childFactory = { config, componentContext ->
-            when (config) {
-              is AddExpenseChildConfig.Main -> AddExpenseComponent.Child.Main(this)
-              is AddExpenseChildConfig.PayerSelection ->
-                  AddExpenseComponent.Child.WhoPaid(
-                      whoPaidComponentFactory.create(
-                          context = componentContext,
-                          participants = _uiState.value.participants,
-                          selectedUserId =
-                              (_uiState.value.payAmounts as? PayAmountsUiState.OnePerson)?.userId,
-                          onParticipantSelected = { userId ->
-                            val currentAmount =
-                                (_uiState.value.payAmounts as? PayAmountsUiState.OnePerson)?.amount
-                                    ?: ""
-                            setPaidAmounts(PayAmountsUiState.OnePerson(userId, currentAmount))
-                            stackNavigation.pop()
-                          },
-                          onMultiplePeopleClicked = { navigateToPaidAmounts() },
-                      )
-                  )
-              is AddExpenseChildConfig.PaidAmounts ->
-                  AddExpenseComponent.Child.PaidAmounts(
-                      DefaultPaidAmountsComponentFactory()
-                          .create(
-                              initial = _uiState.value.payAmountsDomain,
-                              group = loadedGroup!!,
-                              onDone = { amounts ->
-                                setPaidAmounts(amounts)
-                                stackNavigation.navigate { configs ->
-                                  configs
-                                      .filter { it !is AddExpenseChildConfig.PayerSelection }
-                                      .dropLast(1)
-                                }
-                              },
-                          )
-                  )
-              is AddExpenseChildConfig.QuickSplitSelection -> {
-                val state = _uiState.value
-                val currentUserId = profileRepository.profile.value?.id ?: ""
-                val otherId =
-                    state.participants.firstOrNull { it.userId != currentUserId }?.userId ?: ""
-                val amountText =
-                    when (val p = state.payAmounts) {
-                      is PayAmountsUiState.OnePerson -> p.amount
-                      is PayAmountsUiState.MultiplePeople -> state.amountSum.toString()
-                    }
-                AddExpenseComponent.Child.QuickSplitSelection(
-                    quickSplitComponentFactory.create(
-                        context = componentContext,
-                        allParticipants = state.allParticipants,
-                        amountText = amountText,
-                        amountSum = state.amountSum,
-                        groupId = groupId,
-                        initialOption =
-                            QuickSplitComponent.getOption(
-                                payAmounts = state.payAmounts,
-                                splitMethod = state.splitMethod,
-                                youId = currentUserId,
-                                otherId = otherId,
-                                amountSum = state.amountSum,
-                                allParticipants = state.allParticipants,
-                            ),
-                        onOptionSelected = { amounts, method ->
-                          setPaidAmounts(amounts)
-                          setSplitMethod(method)
-                          stackNavigation.pop()
-                        },
-                        onAdjustSplitClicked = { navigateToAdjustSplit() },
-                    )
-                )
-              }
-              is AddExpenseChildConfig.MoreSplitOptions ->
-                  AddExpenseComponent.Child.MoreSplitOptions(
-                      moreSplitOptionsComponentFactory.create(
-                          context = componentContext,
-                          participants = _uiState.value.participants,
-                          totalAmount = _uiState.value.payAmountsDomain.sum(),
-                          initialSplitMethod = _uiState.value.splitMethod,
-                          payerName =
-                              _uiState.map { state ->
-                                when (state.payAmountsDomain) {
-                                  is PayAmounts.MultiplePeople -> "Multiple people"
-                                  is PayAmounts.OnePerson ->
-                                      state.getParticipantName(state.payAmountsDomain.userId)
-                                }
-                              },
-                          onPayerClicked = { navigateToPayerSelection() },
-                          onDone = { splitMethod ->
-                            _uiState.update { it.copy(splitMethod = splitMethod) }
-                            stackNavigation.navigate {
-                              it.filterNot { c -> c is AddExpenseChildConfig.QuickSplitSelection }
-                                  .dropLast(1)
-                            }
-                          },
-                      )
-                  )
-            }
-          },
-      )
 
   init {
     loadMembers()
@@ -451,23 +303,11 @@ class DefaultAddExpenseComponent(
   }
 
   override fun navigateToPayerSelection() {
-    stackNavigation.pushNew(AddExpenseChildConfig.PayerSelection)
-  }
-
-  override fun navigateToPaidAmounts() {
-    stackNavigation.pushNew(AddExpenseChildConfig.PaidAmounts)
+    onNavigateToPayerFlow()
   }
 
   override fun navigateToQuickSplit() {
-    stackNavigation.pushNew(AddExpenseChildConfig.QuickSplitSelection)
-  }
-
-  override fun navigateToAdjustSplit() {
-    stackNavigation.pushNew(AddExpenseChildConfig.MoreSplitOptions)
-  }
-
-  override fun onDoneClicked() {
-    stackNavigation.popTo(0)
+    onNavigateToSplitFlow()
   }
 
   override fun onSaveClicked(): Job = scope.launch {
@@ -549,11 +389,7 @@ class DefaultAddExpenseComponent(
   }
 
   override fun onBackClicked() {
-    if (stack.value.items.size > 1) {
-      stackNavigation.pop()
-    } else {
-      onFinished()
-    }
+    onFinished()
   }
 }
 
@@ -561,24 +397,24 @@ class DefaultAddExpenseComponentFactory(
     private val expenseRepository: ExpenseRepository,
     private val groupRepository: GroupRepository,
     private val profileRepository: ProfileRepository,
-    private val moreSplitOptionsComponentFactory: MoreSplitOptionsComponentFactory,
-    private val whoPaidComponentFactory: WhoPaidComponentFactory,
-    private val quickSplitComponentFactory: QuickSplitComponentFactory,
 ) : AddExpenseComponentFactory {
   override fun create(
       context: CContext,
-      config: AddExpenseComponent.Config,
+      groupId: String,
+      expenseId: String?,
+      onNavigateToPayerFlow: () -> Unit,
+      onNavigateToSplitFlow: () -> Unit,
       onFinished: () -> Unit,
   ): AddExpenseComponent =
       DefaultAddExpenseComponent(
           context = context,
-          config = config,
+          groupId = groupId,
+          expenseId = expenseId,
           expenseRepository = expenseRepository,
           groupRepository = groupRepository,
           profileRepository = profileRepository,
-          moreSplitOptionsComponentFactory = moreSplitOptionsComponentFactory,
-          whoPaidComponentFactory = whoPaidComponentFactory,
-          quickSplitComponentFactory = quickSplitComponentFactory,
+          onNavigateToPayerFlow = onNavigateToPayerFlow,
+          onNavigateToSplitFlow = onNavigateToSplitFlow,
           onFinished = onFinished,
       )
 }
@@ -589,18 +425,8 @@ class FakeAddExpenseComponent(
             allParticipants = listOf("user1"),
             payAmounts = PayAmountsUiState.OnePerson(userId = "user1", amount = ""),
         ),
-    childFactory: (AddExpenseComponent) -> AddExpenseComponent.Child = {
-      AddExpenseComponent.Child.Main(it)
-    },
 ) : AddExpenseComponent {
   override val uiState: Value<AddExpenseUiState> = MutableValue(uiState)
-  override val stack: Value<ChildStack<*, AddExpenseComponent.Child>> =
-      MutableValue(
-          ChildStack(
-              configuration = Unit,
-              instance = childFactory(this),
-          )
-      )
 
   override fun onTitleChanged(title: String) {}
 
@@ -620,13 +446,7 @@ class FakeAddExpenseComponent(
 
   override fun onBackClicked() {}
 
-  override fun onDoneClicked() {}
-
   override fun navigateToPayerSelection() {}
 
-  override fun navigateToPaidAmounts() {}
-
   override fun navigateToQuickSplit() {}
-
-  override fun navigateToAdjustSplit() {}
 }
