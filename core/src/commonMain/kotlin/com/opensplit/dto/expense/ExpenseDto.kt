@@ -1,7 +1,7 @@
 package com.opensplit.dto.expense
 
-import kotlinx.serialization.Serializable
 import kotlin.time.Instant
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class ExpenseDto(

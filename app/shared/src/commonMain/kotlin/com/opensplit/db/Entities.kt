@@ -12,6 +12,7 @@ data class GroupEntity(
     val name: String,
     val inviteLink: String,
     val isOwner: Boolean,
+    val lastInteractionAtEpochMillis: Long = 0L,
 )
 
 @Entity(tableName = "group_members", primaryKeys = ["groupId", "userId"])

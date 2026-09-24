@@ -10,6 +10,8 @@ import com.opensplit.dto.group.CreateGroupRequest
 import com.opensplit.dto.group.GroupDto
 import com.opensplit.testOpenSplit
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
+import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -17,6 +19,8 @@ import io.ktor.http.HttpStatusCode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 
 class ExpenseRoutesTest {
   @Test
@@ -462,5 +466,75 @@ class ExpenseRoutesTest {
         }
 
     assertEquals(HttpStatusCode.Forbidden, response.status)
+  }
+
+  @Test
+  fun expenseMutations_updateGroupLastInteractionAt() = testOpenSplit {
+    val group =
+        client.post("/groups") { setBody(CreateGroupRequest("Activity Group")) }.body<GroupDto>()
+    val initialInteraction = group.lastInteractionAt
+
+    // Wait a tiny bit or let time progress to ensure distinct timestamp
+    delay(10.milliseconds)
+
+    // 1. Create Expense updates lastInteractionAt
+    val createResponse =
+        client.post("/groups/${group.id}/expenses") {
+          setBody(
+              CreateExpenseRequest(
+                  title = "Groceries",
+                  amount = 50.0,
+                  participants =
+                      listOf(
+                          ParticipantShareDto(
+                              userId = group.members[0].userId,
+                              paidShare = 50.0,
+                              consumedShare = 50.0,
+                          )
+                      ),
+                  splitMethod = SplitMethod.Equally(listOf(group.members[0].userId)),
+              )
+          )
+        }
+    assertEquals(HttpStatusCode.Created, createResponse.status)
+    val expense = createResponse.body<ExpenseDto>()
+
+    val groupAfterCreate = client.get("/groups/${group.id}").body<GroupDto>()
+    assertTrue(groupAfterCreate.lastInteractionAt >= initialInteraction)
+
+    delay(10.milliseconds)
+
+    // 2. Update Expense updates lastInteractionAt
+    val updateResponse =
+        client.put("/groups/${group.id}/expenses/${expense.id}") {
+          setBody(
+              CreateExpenseRequest(
+                  title = "Groceries & Snacks",
+                  amount = 60.0,
+                  participants =
+                      listOf(
+                          ParticipantShareDto(
+                              userId = group.members[0].userId,
+                              paidShare = 60.0,
+                              consumedShare = 60.0,
+                          )
+                      ),
+                  splitMethod = SplitMethod.Equally(listOf(group.members[0].userId)),
+              )
+          )
+        }
+    assertEquals(HttpStatusCode.OK, updateResponse.status)
+
+    val groupAfterUpdate = client.get("/groups/${group.id}").body<GroupDto>()
+    assertTrue(groupAfterUpdate.lastInteractionAt >= groupAfterCreate.lastInteractionAt)
+
+    delay(10.milliseconds)
+
+    // 3. Delete Expense updates lastInteractionAt
+    val deleteResponse = client.delete("/groups/${group.id}/expenses/${expense.id}")
+    assertEquals(HttpStatusCode.NoContent, deleteResponse.status)
+
+    val groupAfterDelete = client.get("/groups/${group.id}").body<GroupDto>()
+    assertTrue(groupAfterDelete.lastInteractionAt >= groupAfterUpdate.lastInteractionAt)
   }
 }

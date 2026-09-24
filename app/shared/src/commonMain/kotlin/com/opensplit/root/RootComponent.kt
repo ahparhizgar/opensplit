@@ -39,9 +39,9 @@ import com.opensplit.repository.GroupRepository
 import com.opensplit.splash.SplashDestination
 import com.opensplit.sync.SyncDaemon
 import com.opensplit.usermessage.MessageHolder
+import kotlin.reflect.KClass
 import kotlinx.coroutines.launch
 import org.koin.core.scope.Scope
-import kotlin.reflect.KClass
 
 interface RootComponent {
   val backHandler: BackHandler

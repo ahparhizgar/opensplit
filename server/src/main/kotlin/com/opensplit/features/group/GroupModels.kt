@@ -7,6 +7,7 @@ data class GroupRecord(
     val name: String,
     val ownerId: String,
     val inviteCode: String?,
+    val lastInteractionAt: Long = 0L,
 )
 
 data class GroupMemberRecord(

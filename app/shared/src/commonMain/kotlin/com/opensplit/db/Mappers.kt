@@ -9,6 +9,7 @@ import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.dto.group.GroupDto
 import com.opensplit.dto.group.GroupMemberDto
+import kotlin.time.Instant
 import kotlinx.serialization.json.Json
 
 fun GroupDto.toEntity() =
@@ -17,6 +18,7 @@ fun GroupDto.toEntity() =
         name = name,
         inviteLink = inviteLink,
         isOwner = isOwner,
+        lastInteractionAtEpochMillis = lastInteractionAt.toEpochMilliseconds(),
     )
 
 fun GroupEntity.toDto(members: List<GroupMemberDto>) =
@@ -26,6 +28,7 @@ fun GroupEntity.toDto(members: List<GroupMemberDto>) =
         members = members,
         inviteLink = inviteLink,
         isOwner = isOwner,
+        lastInteractionAt = Instant.fromEpochMilliseconds(lastInteractionAtEpochMillis),
     )
 
 fun GroupWithMembers.toDto() = group.toDto(members.map { it.toDto() })
@@ -39,6 +42,7 @@ fun GroupWithMembers.toDomain(): Group {
       isOwner = group.isOwner,
       inviteLink = group.inviteLink,
       balance = memberList.find { it.isCurrentUser }?.balance ?: 0.0,
+      lastInteractionAt = Instant.fromEpochMilliseconds(group.lastInteractionAtEpochMillis),
   )
 }
 
@@ -51,6 +55,7 @@ fun GroupDto.toDomain(): Group {
       isOwner = isOwner,
       inviteLink = inviteLink,
       balance = memberList.find { it.isCurrentUser }?.balance ?: 0.0,
+      lastInteractionAt = lastInteractionAt,
   )
 }
 
@@ -113,7 +118,7 @@ fun ExpenseEntity.toDto(participants: List<ParticipantShareDto>) =
         title = title,
         amount = amount,
         creator = creator,
-        createdAt = kotlin.time.Instant.fromEpochMilliseconds(createdAtEpochMillis),
+        createdAt = Instant.fromEpochMilliseconds(createdAtEpochMillis),
         shares = participants,
         splitMethod = Json.decodeFromString(splitMethodJson),
         syncStatus = syncStatus,
@@ -126,7 +131,7 @@ fun ExpenseEntity.toDomain(participants: List<ParticipantShare>) =
         title = title,
         amount = amount,
         creator = creator,
-        createdAt = kotlin.time.Instant.fromEpochMilliseconds(createdAtEpochMillis),
+        createdAt = Instant.fromEpochMilliseconds(createdAtEpochMillis),
         participants = participants,
         splitMethod = Json.decodeFromString(splitMethodJson),
         syncStatus = syncStatus,

@@ -52,12 +52,13 @@ import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.value.MutableValue
+import com.opensplit.domain.FakeGroupFactory
 import com.opensplit.domain.Group
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.colorSchemeExtended
-import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlinx.coroutines.launch
 
 @Composable
 fun MyGroupsListScreen(
@@ -421,6 +422,37 @@ private fun MyGroupsListExtendedPreview() {
         component =
             FakeMyGroupsListComponent(
                 isSettledExpanded = MutableValue(true),
+            ),
+    )
+  }
+}
+
+@Preview
+@Composable
+private fun MyGroupsListWithRecentSettledPreview() {
+  val now = Clock.System.now()
+  OpenSplitTheme {
+    MyGroupsListScreen(
+        component =
+            FakeMyGroupsListComponent(
+                uiState =
+                    MyGroupsUiState(
+                        groups =
+                            listOf(
+                                FakeGroupFactory.create(
+                                    id = "group-recent-settled",
+                                    name = "Recent Weekend Trip",
+                                    balance = 0.0,
+                                    lastInteractionAt = now - 1.days,
+                                ),
+                                FakeGroupFactory.create(
+                                    id = "group-old-settled",
+                                    name = "Last Summer Trip",
+                                    balance = 0.0,
+                                    lastInteractionAt = now - 30.days,
+                                ),
+                            ),
+                    ),
             ),
     )
   }

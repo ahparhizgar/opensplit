@@ -91,6 +91,7 @@ class ExpenseRepository(
           val delta = participant.paidShare - participant.consumedShare
           groupDao.updateMemberBalance(groupId, participant.userId, delta)
         }
+        groupDao.updateLastInteraction(groupId, now.toEpochMilliseconds())
 
         syncQueueDao.enqueue(syncEntry)
       }
@@ -111,6 +112,7 @@ class ExpenseRepository(
 
         expenseDao.deleteExpense(expenseId)
         expenseDao.deleteParticipants(expenseId)
+        groupDao.updateLastInteraction(groupId, Clock.System.now().toEpochMilliseconds())
         syncQueueDao.enqueue(
             SyncQueueEntity(
                 operation = OperationType.DELETE,
@@ -170,6 +172,7 @@ class ExpenseRepository(
           val delta = participant.paidShare - participant.consumedShare
           groupDao.updateMemberBalance(groupId, participant.userId, delta)
         }
+        groupDao.updateLastInteraction(groupId, now.toEpochMilliseconds())
 
         val syncEntry =
             SyncQueueEntity(

@@ -4,6 +4,7 @@ import com.opensplit.database.Groups
 import com.opensplit.database.Memberships
 import com.opensplit.database.Users
 import com.opensplit.features.sync.SyncRepository
+import kotlin.time.Clock
 import kotlin.uuid.Uuid
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.*
@@ -43,11 +44,13 @@ class GroupRepositoryImpl(
         val targetGroupId = Uuid.random().toString()
         val inviteCode = Uuid.random().toString().replace("-", "").take(12)
 
+        val now = Clock.System.now().toEpochMilliseconds()
         Groups.insert {
           it[Groups.id] = targetGroupId
           it[Groups.name] = name
           it[Groups.ownerId] = ownerId
           it[Groups.inviteCode] = inviteCode
+          it[Groups.lastInteractionAt] = now
         }
         val membershipId = Uuid.random().toString()
         Memberships.insert {
@@ -65,6 +68,7 @@ class GroupRepositoryImpl(
             name = name,
             ownerId = ownerId,
             inviteCode = inviteCode,
+            lastInteractionAt = now,
         )
       }
 
@@ -181,6 +185,7 @@ class GroupRepositoryImpl(
           name = get(Groups.name),
           ownerId = get(Groups.ownerId),
           inviteCode = get(Groups.inviteCode),
+          lastInteractionAt = get(Groups.lastInteractionAt),
       )
 
   private fun ResultRow.toGroupMember(balance: Double = 0.0): GroupMemberRecord =

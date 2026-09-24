@@ -1,5 +1,6 @@
 package com.opensplit.dto.group
 
+import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -24,6 +25,7 @@ data class GroupDto(
     val members: List<GroupMemberDto>,
     val isOwner: Boolean = false,
     val inviteLink: String,
+    val lastInteractionAt: Instant = Instant.DISTANT_PAST,
 )
 
 object FakeGroupDtoFactory {
@@ -31,11 +33,13 @@ object FakeGroupDtoFactory {
       id: String = "group-1",
       name: String = "My Group",
       members: List<GroupMemberDto> = FakeGroupMemberDtoFactory.createList(),
+      lastInteractionAt: Instant = Instant.DISTANT_PAST,
   ) =
       GroupDto(
           id = id,
           name = name,
           members = members,
           inviteLink = "https://opensplit.com/invite/85243892",
+          lastInteractionAt = lastInteractionAt,
       )
 }

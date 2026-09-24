@@ -47,6 +47,9 @@ interface GroupDao {
   )
   suspend fun updateMemberBalance(groupId: String, userId: String, delta: Double)
 
+  @Query("UPDATE groups SET lastInteractionAtEpochMillis = :timestamp WHERE id = :groupId")
+  suspend fun updateLastInteraction(groupId: String, timestamp: Long)
+
   @Transaction
   suspend fun deleteGroup(id: String) {
     deleteMembersByGroup(id)

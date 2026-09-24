@@ -11,8 +11,8 @@
 
 **Purpose**: Update shared core contracts, DTOs, domain models, and fake factories across modules.
 
-- [ ] T001 [P] Add `lastInteractionAt: Instant = Instant.DISTANT_PAST` and update `FakeGroupDtoFactory.create` with default `lastInteractionAt` in [core/src/commonMain/kotlin/com/opensplit/dto/group/GroupDto.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/core/src/commonMain/kotlin/com/opensplit/dto/group/GroupDto.kt)
-- [ ] T002 [P] Update `FakeGroupFactory.create` in [core/src/commonMain/kotlin/com/opensplit/domain/Group.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/core/src/commonMain/kotlin/com/opensplit/domain/Group.kt) to accept `lastInteractionAt: Instant = Instant.DISTANT_PAST` parameter defaulting to `Instant.DISTANT_PAST`
+- [X] T001 [P] Add `lastInteractionAt: Instant = Instant.DISTANT_PAST` and update `FakeGroupDtoFactory.create` with default `lastInteractionAt` in [core/src/commonMain/kotlin/com/opensplit/dto/group/GroupDto.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/core/src/commonMain/kotlin/com/opensplit/dto/group/GroupDto.kt)
+- [X] T002 [P] Update `FakeGroupFactory.create` in [core/src/commonMain/kotlin/com/opensplit/domain/Group.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/core/src/commonMain/kotlin/com/opensplit/domain/Group.kt) to accept `lastInteractionAt: Instant = Instant.DISTANT_PAST` parameter defaulting to `Instant.DISTANT_PAST`
 
 ---
 
@@ -22,12 +22,12 @@
 
 **⚠️ CRITICAL**: Must complete before user story logic can be wired up.
 
-- [ ] T003 Add `val lastInteractionAt = long("last_interaction_at").default(0L)` column with default `0L` to `Groups` table in [server/src/main/kotlin/com/opensplit/database/Tables.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/database/Tables.kt)
-- [ ] T004 [P] Add `lastInteractionAt: Long = 0L` property to `GroupRecord` in [server/src/main/kotlin/com/opensplit/features/group/GroupModels.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/features/group/GroupModels.kt)
-- [ ] T005 [P] Add `lastInteractionAtEpochMillis: Long = 0L` to `GroupEntity` in [app/shared/src/commonMain/kotlin/com/opensplit/db/Entities.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/db/Entities.kt)
-- [ ] T006 Bump Room database version from `3` to `4` in [app/shared/src/commonMain/kotlin/com/opensplit/db/AppDatabase.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/db/AppDatabase.kt)
-- [ ] T007 Add `updateLastInteraction(groupId: String, timestamp: Long)` query to `GroupDao` in [app/shared/src/commonMain/kotlin/com/opensplit/db/DAOs.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/db/DAOs.kt)
-- [ ] T008 [P] Update `toEntity()`, `toDto()`, and `toDomain()` mappers in [app/shared/src/commonMain/kotlin/com/opensplit/db/Mappers.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/db/Mappers.kt) to map between `GroupDto.lastInteractionAt`, `GroupEntity.lastInteractionAtEpochMillis`, and `Group.lastInteractionAt`
+- [X] T003 Add `val lastInteractionAt = long("last_interaction_at").default(0L)` column with default `0L` to `Groups` table in [server/src/main/kotlin/com/opensplit/database/Tables.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/database/Tables.kt)
+- [X] T004 [P] Add `lastInteractionAt: Long = 0L` property to `GroupRecord` in [server/src/main/kotlin/com/opensplit/features/group/GroupModels.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/features/group/GroupModels.kt)
+- [X] T005 [P] Add `lastInteractionAtEpochMillis: Long = 0L` to `GroupEntity` in [app/shared/src/commonMain/kotlin/com/opensplit/db/Entities.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/db/Entities.kt)
+- [X] T006 Bump Room database version from `3` to `4` in [app/shared/src/commonMain/kotlin/com/opensplit/db/AppDatabase.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/db/AppDatabase.kt)
+- [X] T007 Add `updateLastInteraction(groupId: String, timestamp: Long)` query to `GroupDao` in [app/shared/src/commonMain/kotlin/com/opensplit/db/DAOs.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/db/DAOs.kt)
+- [X] T008 [P] Update `toEntity()`, `toDto()`, and `toDomain()` mappers in [app/shared/src/commonMain/kotlin/com/opensplit/db/Mappers.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/db/Mappers.kt) to map between `GroupDto.lastInteractionAt`, `GroupEntity.lastInteractionAtEpochMillis`, and `Group.lastInteractionAt`
 
 **Checkpoint**: Core models and DB schemas updated across server and client.
 
@@ -42,12 +42,12 @@ Run Compose UI test or component test: A settled group (`balance = 0.0`) with `l
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T009 [P] [US1] Write UI test for active vs settled group partitioning with recent activity in [app/shared/src/commonTest/kotlin/com/opensplit/features/group/my/MyGroupsListScreenTest.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonTest/kotlin/com/opensplit/features/group/my/MyGroupsListScreenTest.kt)
+- [X] T009 [P] [US1] Write UI test for active vs settled group partitioning with recent activity in [app/shared/src/commonTest/kotlin/com/opensplit/features/group/my/MyGroupsListScreenTest.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonTest/kotlin/com/opensplit/features/group/my/MyGroupsListScreenTest.kt)
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] Verify and ensure `MyGroupsListScreen.kt` partition logic (`!it.isSettled || it.lastInteractionAt >= (Clock.System.now() - 7.days)`) in [app/shared/src/commonMain/kotlin/com/opensplit/features/group/my/MyGroupListScreen.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/features/group/my/MyGroupListScreen.kt) correctly handles preview and UI states
-- [ ] T011 [US1] Add a preview state in [app/shared/src/commonMain/kotlin/com/opensplit/features/group/my/MyGroupListScreen.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/features/group/my/MyGroupListScreen.kt) showcasing a settled group appearing in active list due to recent `lastInteractionAt`
+- [X] T010 [US1] Verify and ensure `MyGroupsListScreen.kt` partition logic (`!it.isSettled || it.lastInteractionAt >= (Clock.System.now() - 7.days)`) in [app/shared/src/commonMain/kotlin/com/opensplit/features/group/my/MyGroupListScreen.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/features/group/my/MyGroupListScreen.kt) correctly handles preview and UI states
+- [X] T011 [US1] Add a preview state in [app/shared/src/commonMain/kotlin/com/opensplit/features/group/my/MyGroupListScreen.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/features/group/my/MyGroupListScreen.kt) showcasing a settled group appearing in active list due to recent `lastInteractionAt`
 
 **Checkpoint**: User Story 1 UI partition behavior verified independently.
 
@@ -64,15 +64,15 @@ Run backend routes tests:
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T012 [P] [US2] Add integration tests in [server/src/test/kotlin/com/opensplit/features/GroupRoutesTest.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/test/kotlin/com/opensplit/features/GroupRoutesTest.kt) verifying `lastInteractionAt` is returned on group creation and fetch
-- [ ] T013 [P] [US2] Add integration tests in [server/src/test/kotlin/com/opensplit/features/ExpenseRoutesTest.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/test/kotlin/com/opensplit/features/ExpenseRoutesTest.kt) verifying expense creation, update, and deletion update group `lastInteractionAt`
+- [X] T012 [P] [US2] Add integration tests in [server/src/test/kotlin/com/opensplit/features/GroupRoutesTest.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/test/kotlin/com/opensplit/features/GroupRoutesTest.kt) verifying `lastInteractionAt` is returned on group creation and fetch
+- [X] T013 [P] [US2] Add integration tests in [server/src/test/kotlin/com/opensplit/features/ExpenseRoutesTest.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/test/kotlin/com/opensplit/features/ExpenseRoutesTest.kt) verifying expense creation, update, and deletion update group `lastInteractionAt`
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Update `GroupRepositoryImpl.createGroup` and `loadGroups` / `loadGroupDetail` in [server/src/main/kotlin/com/opensplit/features/group/GroupRepositoryImpl.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/features/group/GroupRepositoryImpl.kt) to populate `Groups.lastInteractionAt` with `Clock.System.now().toEpochMilliseconds()` on insert and read it back
-- [ ] T015 [US2] Update `GroupService.kt` in [server/src/main/kotlin/com/opensplit/features/group/GroupService.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/features/group/GroupService.kt) to map `lastInteractionAt` from `GroupRecord` into `GroupDto` using `Instant.fromEpochMilliseconds(record.lastInteractionAt)`
-- [ ] T016 [US2] Update `ExpenseRepositoryImpl.createExpense` in [server/src/main/kotlin/com/opensplit/features/expense/ExpenseRepositoryImpl.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/features/expense/ExpenseRepositoryImpl.kt) to update `Groups.lastInteractionAt` with expense `createdAt.toEpochMilliseconds()` and emit sync change for `"HOUSEHOLD"`
-- [ ] T017 [US2] Update `ExpenseRepositoryImpl.updateExpense` and `deleteExpense` in [server/src/main/kotlin/com/opensplit/features/expense/ExpenseRepositoryImpl.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/features/expense/ExpenseRepositoryImpl.kt) to update `Groups.lastInteractionAt` with `Clock.System.now().toEpochMilliseconds()` and emit sync change for `"HOUSEHOLD"`
+- [X] T014 [US2] Update `GroupRepositoryImpl.createGroup` and `loadGroups` / `loadGroupDetail` in [server/src/main/kotlin/com/opensplit/features/group/GroupRepositoryImpl.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/features/group/GroupRepositoryImpl.kt) to populate `Groups.lastInteractionAt` with `Clock.System.now().toEpochMilliseconds()` on insert and read it back
+- [X] T015 [US2] Update `GroupService.kt` in [server/src/main/kotlin/com/opensplit/features/group/GroupService.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/features/group/GroupService.kt) to map `lastInteractionAt` from `GroupRecord` into `GroupDto` using `Instant.fromEpochMilliseconds(record.lastInteractionAt)`
+- [X] T016 [US2] Update `ExpenseRepositoryImpl.createExpense` in [server/src/main/kotlin/com/opensplit/features/expense/ExpenseRepositoryImpl.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/features/expense/ExpenseRepositoryImpl.kt) to update `Groups.lastInteractionAt` with expense `createdAt.toEpochMilliseconds()` and emit sync change for `"HOUSEHOLD"`
+- [X] T017 [US2] Update `ExpenseRepositoryImpl.updateExpense` and `deleteExpense` in [server/src/main/kotlin/com/opensplit/features/expense/ExpenseRepositoryImpl.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/server/src/main/kotlin/com/opensplit/features/expense/ExpenseRepositoryImpl.kt) to update `Groups.lastInteractionAt` with `Clock.System.now().toEpochMilliseconds()` and emit sync change for `"HOUSEHOLD"`
 
 **Checkpoint**: Backend guarantees accurate `lastInteractionAt` tracking across all group and expense mutations.
 
@@ -87,12 +87,12 @@ Run client component/flow test: Create an expense locally in a settled group whi
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T018 [P] [US3] Add test in [app/shared/src/commonTest/kotlin/com/opensplit/GroupFlowComponentTest.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonTest/kotlin/com/opensplit/GroupFlowComponentTest.kt) verifying offline persistence of `lastInteractionAt` and group partitioning behavior
+- [X] T018 [P] [US3] Add test in [app/shared/src/commonTest/kotlin/com/opensplit/GroupFlowComponentTest.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonTest/kotlin/com/opensplit/GroupFlowComponentTest.kt) verifying offline persistence of `lastInteractionAt` and group partitioning behavior
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Update `GroupRepository.saveGroupWithPendingAdjustment` in [app/shared/src/commonMain/kotlin/com/opensplit/repository/GroupRepository.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/repository/GroupRepository.kt) to persist `lastInteractionAtEpochMillis` from `GroupDto` to `GroupEntity`
-- [ ] T020 [US3] Update `ExpenseRepository.createExpense`, `updateExpense`, and `deleteExpense` in [app/shared/src/commonMain/kotlin/com/opensplit/repository/ExpenseRepository.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/repository/ExpenseRepository.kt) to update `groupDao.updateLastInteraction(groupId, Clock.System.now().toEpochMilliseconds())` optimistically
+- [X] T019 [US3] Update `GroupRepository.saveGroupWithPendingAdjustment` in [app/shared/src/commonMain/kotlin/com/opensplit/repository/GroupRepository.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/repository/GroupRepository.kt) to persist `lastInteractionAtEpochMillis` from `GroupDto` to `GroupEntity`
+- [X] T020 [US3] Update `ExpenseRepository.createExpense`, `updateExpense`, and `deleteExpense` in [app/shared/src/commonMain/kotlin/com/opensplit/repository/ExpenseRepository.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonMain/kotlin/com/opensplit/repository/ExpenseRepository.kt) to update `groupDao.updateLastInteraction(groupId, Clock.System.now().toEpochMilliseconds())` optimistically
 
 **Checkpoint**: Offline-first caching and optimistic UI updates for `lastInteractionAt` fully functional.
 
@@ -102,9 +102,9 @@ Run client component/flow test: Create an expense locally in a settled group whi
 
 **Purpose**: Format checking, end-to-end regression validation, and quality gates.
 
-- [ ] T021 Update `FakeGroupApi` in [app/shared/src/commonTest/kotlin/com/opensplit/fake/FakeGroupApi.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonTest/kotlin/com/opensplit/fake/FakeGroupApi.kt) if needed to supply `lastInteractionAt`
-- [ ] T022 [P] Execute server and client test suites: `./gradlew :server:test :app:shared:jvmTest`
-- [ ] T023 Run full verification gate: `./gradlew jvmTest test ktfmtFormat --offline`
+- [X] T021 Update `FakeGroupApi` in [app/shared/src/commonTest/kotlin/com/opensplit/fake/FakeGroupApi.kt](file:///Users/snapp/AndroidStudioProjects/opensplit/app/shared/src/commonTest/kotlin/com/opensplit/fake/FakeGroupApi.kt) if needed to supply `lastInteractionAt`
+- [X] T022 [P] Execute server and client test suites: `./gradlew :server:test :app:shared:jvmTest`
+- [X] T023 Run full verification gate: `./gradlew jvmTest test ktfmtFormat --offline`
 
 ---
 

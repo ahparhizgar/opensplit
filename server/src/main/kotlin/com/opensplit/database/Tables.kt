@@ -28,6 +28,7 @@ object Groups : Table("groups") {
   val ownerId = varchar("owner_id", 36).references(Users.id)
   val inviteCode = varchar("invite_code", 64).nullable()
   val version = long("version").default(0)
+  val lastInteractionAt = long("last_interaction_at").default(0L)
 
   override val primaryKey = PrimaryKey(id)
 

@@ -1,5 +1,9 @@
 1. backend returns Group.lastInteractionAt
 2. implement delete group feature
+3. delete recordChange("HOUSEHOLD") and use enum instead of string
+4. can we use Instant directly in Exposed?
+5. migrate server tests to Kotest and put assertion messages there
+6. migrate UI tests to Kotest?
 
 
 ### Done

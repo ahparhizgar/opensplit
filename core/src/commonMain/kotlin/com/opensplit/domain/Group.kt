@@ -1,7 +1,7 @@
 package com.opensplit.domain
 
-import kotlinx.serialization.Serializable
 import kotlin.time.Instant
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class Group(
@@ -35,6 +35,7 @@ object FakeGroupFactory {
       isOwner: Boolean = false,
       inviteLink: String = "https://opensplit.com/invite/85243892",
       balance: Double = 0.0,
+      lastInteractionAt: Instant = Instant.DISTANT_PAST,
   ) =
       Group(
           id = id,
@@ -43,5 +44,6 @@ object FakeGroupFactory {
           isOwner = isOwner,
           inviteLink = inviteLink,
           balance = balance,
+          lastInteractionAt = lastInteractionAt,
       )
 }

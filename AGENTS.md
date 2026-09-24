@@ -4,7 +4,7 @@ Use TextButton instead of `clickable` modifier on a Text most of the time.
 Use IconButton instead of `clickable` modifier on an Icon most of the time.
 Always write previews for screens or public composable components.
 Write multiple previews for different important states of the component/screen.
-Wrap the preview in OpenSplitTheme
+Wrap the preview in OpenSplitTheme.
 
 ## Large screens
 Support large screens - read `adaptive` skill if needed.
@@ -21,12 +21,15 @@ Don't make functions of Decompose components `suspend`. instead launch in them a
 It's a good practice to keep screen functions small by extracting private sections.
 Pass the whole decompose component to extracted private composables. don't split states and callbacks in them.
 But for public components which there is no specific component, pass states and callbacks instead of decompose component.
+Always use Value class for states.
 
 # Using kotlin
 Always use Clock.System.now() for time, don't use System.currentTimeMillis() or Instant.now().
 Don't Use Instant.now(), it's deprecated.
 If you need millis use Clock.System.now().toEpochMilliseconds()
 Don't use fully qualified name. Write simple name, and let the compiler give error to you.
+Prefer enums over strings. Use enums in DTOs and DAOs and domain layer where possible.
+when using delay use the overload delay(10.milliseconds) not the one with Long parameter (deprecated).
 
 # Using KOIN
 Define dependencies like this: `factoryOf(::DefaultRootComponentFactory).bind<RootComponentFactory>()` So when the signature changes, no need to change the binding.

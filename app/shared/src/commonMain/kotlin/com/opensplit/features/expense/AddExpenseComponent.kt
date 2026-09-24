@@ -17,10 +17,10 @@ import com.opensplit.repository.GroupRepository
 import com.opensplit.repository.ProfileRepository
 import com.opensplit.util.formatAmount
 import com.opensplit.validation.expense.ExpenseValidation
+import kotlin.math.abs
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import kotlin.math.abs
 
 interface AddExpenseComponent {
   val uiState: Value<AddExpenseUiState>

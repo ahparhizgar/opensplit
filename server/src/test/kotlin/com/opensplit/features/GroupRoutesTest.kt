@@ -19,6 +19,7 @@ import io.ktor.http.HttpStatusCode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Clock
 
 class GroupScenarios {
   @Test
@@ -212,5 +213,19 @@ class GroupScenarios {
         }
 
     assertEquals(HttpStatusCode.Forbidden, response.status)
+  }
+
+  @Test
+  fun createAndFetchGroup_returnsLastInteractionAt() = testOpenSplit {
+    val before = Clock.System.now()
+    val created =
+        client.post("/groups") { setBody(CreateGroupRequest("Timestamp House")) }.body<GroupDto>()
+    val after = Clock.System.now()
+
+    assertTrue(created.lastInteractionAt >= before)
+    assertTrue(created.lastInteractionAt <= after)
+
+    val fetched = client.get("/groups/${created.id}").body<GroupDto>()
+    assertEquals(created.lastInteractionAt, fetched.lastInteractionAt)
   }
 }
