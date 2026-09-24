@@ -1,50 +1,77 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+- Version change: [CONSTITUTION_VERSION] -> 1.0.0
+- List of modified principles:
+  - PRINCIPLE_1_NAME -> UI - JetBrains Compose and Keyboard Rule
+  - PRINCIPLE_2_NAME -> Decompose Component Rules
+  - PRINCIPLE_3_NAME -> Kotlin Time and Import Discipline
+  - PRINCIPLE_4_NAME -> Dependency Injection and DI Patterns (Koin)
+  - PRINCIPLE_5_NAME -> Testing and Fake Factory Discipline
+- Added sections:
+  - Data Modeling and DTOs (DTO & Serialization Laws)
+  - Project Architecture and Verification Gate
+- Removed sections:
+  - None (replaces template placeholders)
+- Follow-up TODOs:
+  - None. All AGENTS.md rules translated to caveman dialect.
+-->
+
+# OpenSplit Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### UI - JetBrains Compose and Keyboard Rule
+* Surface good. Scaffold good. Background modifier bad, use only when must.
+* Text click? No raw `clickable` on Text. Use TextButton. Icon click? Use IconButton.
+* Screen or public composable MUST have preview. Not one preview. Multiple previews for many states!
+* Wrap all preview in OpenSplitTheme. No naked preview.
+* Big screen matter! Support large screen with Decompose panels and `CContext.windowSizeHolder`. Use `AdaptiveTopAppbar` when want `LargeTopAppBar`. Put card content center on big screen.
+* Keyboard king! Every knob, button, door must open with keyboard. Text field MUST have `keyboardOptions` and `keyboardActions`.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### Decompose Component Rules
+* No `suspend` function on Decompose component! Function launch job inside, return `Job` to caller.
+* Screen getting fat? Cut small private slice!
+* Private slice take whole Decompose component. No chop states and callbacks into many pieces.
+* Public generic slice with no component take raw states and callbacks.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### Kotlin Time and Import Discipline
+* Time come only from `Clock.System.now()`.
+* Old `System.currentTimeMillis()` forbidden. `Instant.now()` dead, forbidden.
+* Need millis? Call `Clock.System.now().toEpochMilliseconds()`.
+* No long full package name in code (no FQCN). Write short name, let compiler complain if wrong.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### Dependency Injection and DI Patterns (Koin)
+* Bind dependency with `factoryOf(::DefaultRootComponentFactory).bind<RootComponentFactory>()`.
+* Signature change in constructor? DI binding stay strong, no manual fix.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### Testing and Fake Factory Discipline
+* UI test MUST press keyboard keys to prove keyboard works.
+* Fake factories live in same file right after real class. Never make trash files like `Models.kt` or `Dtos.kt`.
+* File order law: 1. Main class, 2. Extension functions, 3. Related class, 4. Fake factory.
+* Fake factory MUST have `create()` with smart defaults. Add `createList()` when list handy.
+* Test MUST use fake factory. Fake factory MUST call neighbor fake factory (FakeGroupFactory call FakeParticipantFactory, not make participant itself).
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Data Modeling and DTOs
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+* String for enum in DTO? Forbidden! Enum MUST be true enum class.
+* Model all domain data with sealed interface. Live documentation with Kotlin Serialization.
+* Split file per concept (e.g., `GroupDto.kt` for DTO, `Group.kt` for domain models and fake factory).
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Project Architecture and Verification Gate
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+* Big picture map:
+  - `server`: Ktor, Exposed, Hikari, PostgreSQL (or H2 in test).
+  - `core`: Shared core library for everyone.
+  - `app/shared`: KMP Compose UI for Android, Desktop, Web.
+  - `app/androidApp`, `app/desktopApp`, `app/webApp`: Platform launcher heads.
+* Special colors `youOwe` and `youAreOwed` live inside `MaterialTheme.colorSchemeExtended` in `Extended.kt`.
+* Task finish? Agent MUST run verification club:
+  `./gradlew jvmTest test ktfmtFormat --offline`
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+* Caveman constitution rule whole tribe! Outrank all random ideas.
+* Any change to rule need patch note, version bump, consensus.
+* Pull request MUST check rules. Fail verification gate = no merge rock into cave.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-09-24 | **Last Amended**: 2026-09-24
