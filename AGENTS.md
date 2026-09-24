@@ -49,7 +49,8 @@ Testing multi-user on backend
 # How to structure classes into files
 Put fake factories after the real classes in the same file.
 Don't create file such as Dtos.kt or Models.kt. Instead, create a file for each group of related DTOs or model classes. For example, create GroupDto.kt for GroupDto class and Group.kt for Group model class. Group.kt may contain GroupParticipants class etc. And must contain their fake factories.
-In a single file, order like this: 1. the main class, 2. extension functions (if any) 3. related classes, 4. fake factories (in the same order as classes),
+In a single file, order like this: 1. the main class/interface, 2. extension functions (if any) 3. related classes, 4. fake factories (in the same order as classes).
+In repository file, you can place enums that are used by the repository functions.
 
 # Fake factories
 Create meaningful factory functions
@@ -64,6 +65,8 @@ Fully model data structure using sealed interfaces. we use kotlin serialization 
 
 GEMINI: use `run_shell_command` tool ./gradlew instead of `gradle_build` tool call. this prevents blocking by an already running Gradle task in the IDE. So always use run_shell_command tool.
 
+# Using Room
+always write migrations for Room when schema changes.
 
 ---
 

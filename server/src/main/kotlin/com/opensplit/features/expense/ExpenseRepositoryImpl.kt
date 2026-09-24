@@ -4,6 +4,8 @@ import com.opensplit.database.ExpenseParticipants
 import com.opensplit.database.Expenses
 import com.opensplit.database.Groups
 import com.opensplit.database.Memberships
+import com.opensplit.features.sync.SyncEntityType
+import com.opensplit.features.sync.SyncOperation
 import com.opensplit.features.sync.SyncRepository
 import java.util.*
 import kotlin.time.Clock
@@ -50,8 +52,7 @@ class ExpenseRepositoryImpl(
         it[lastInteractionAt] = expense.createdAt.toEpochMilliseconds()
       }
 
-      syncRepository.recordChange("EXPENSE", expense.id, "INSERT")
-      syncRepository.recordChange("HOUSEHOLD", expense.groupId, "UPDATE")
+      syncRepository.recordChange(SyncEntityType.EXPENSE, expense.id, SyncOperation.INSERT)
     }
   }
 
@@ -94,8 +95,7 @@ class ExpenseRepositoryImpl(
       val now = Clock.System.now().toEpochMilliseconds()
       Groups.update({ Groups.id eq groupId }) { it[lastInteractionAt] = now }
 
-      syncRepository.recordChange("EXPENSE", expenseId, "DELETE")
-      syncRepository.recordChange("HOUSEHOLD", groupId, "UPDATE")
+      syncRepository.recordChange(SyncEntityType.EXPENSE, expenseId, SyncOperation.DELETE)
       ExpenseParticipants.deleteWhere { ExpenseParticipants.expenseId eq expenseId }
       Expenses.deleteWhere { Expenses.id eq expenseId }
     }
@@ -153,8 +153,7 @@ class ExpenseRepositoryImpl(
       val now = Clock.System.now().toEpochMilliseconds()
       Groups.update({ Groups.id eq groupId }) { it[lastInteractionAt] = now }
 
-      syncRepository.recordChange("EXPENSE", expense.id, "UPDATE")
-      syncRepository.recordChange("HOUSEHOLD", groupId, "UPDATE")
+      syncRepository.recordChange(SyncEntityType.EXPENSE, expense.id, SyncOperation.UPDATE)
     }
   }
 

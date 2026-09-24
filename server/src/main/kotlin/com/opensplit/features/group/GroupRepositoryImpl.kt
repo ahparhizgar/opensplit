@@ -3,6 +3,8 @@ package com.opensplit.features.group
 import com.opensplit.database.Groups
 import com.opensplit.database.Memberships
 import com.opensplit.database.Users
+import com.opensplit.features.sync.SyncEntityType
+import com.opensplit.features.sync.SyncOperation
 import com.opensplit.features.sync.SyncRepository
 import kotlin.time.Clock
 import kotlin.uuid.Uuid
@@ -60,8 +62,7 @@ class GroupRepositoryImpl(
           it[Memberships.balance] = 0.0
         }
 
-        syncRepository.recordChange("HOUSEHOLD", targetGroupId, "INSERT")
-        syncRepository.recordChange("MEMBERSHIP", membershipId, "INSERT")
+        syncRepository.recordChange(SyncEntityType.MEMBERSHIP, membershipId, SyncOperation.INSERT)
 
         GroupRecord(
             id = targetGroupId,
@@ -107,7 +108,7 @@ class GroupRepositoryImpl(
           it[Memberships.userId] = userId
           it[Memberships.balance] = 0.0
         }
-        syncRepository.recordChange("MEMBERSHIP", membershipId, "INSERT")
+        syncRepository.recordChange(SyncEntityType.MEMBERSHIP, membershipId, SyncOperation.INSERT)
       }
     }
   }
@@ -170,7 +171,7 @@ class GroupRepositoryImpl(
               .map { it[Memberships.id] }
 
       membershipsToDelete.forEach { membershipId ->
-        syncRepository.recordChange("MEMBERSHIP", membershipId, "DELETE")
+        syncRepository.recordChange(SyncEntityType.MEMBERSHIP, membershipId, SyncOperation.DELETE)
       }
 
       Memberships.deleteWhere {

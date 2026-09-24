@@ -1,12 +1,14 @@
 package com.opensplit.database
 
+import com.opensplit.features.sync.SyncEntityType
+import com.opensplit.features.sync.SyncOperation
 import org.jetbrains.exposed.v1.core.Table
 
 object ChangeLog : Table("change_log") {
   val id = long("id").autoIncrement()
-  val entityType = varchar("entity_type", 50)
+  val entityType = enumerationByName("entity_type", 50, SyncEntityType::class)
   val entityId = varchar("entity_id", 36)
-  val operation = varchar("operation", 20) // INSERT, UPDATE, DELETE
+  val operation = enumerationByName("operation", 20, SyncOperation::class)
   val timestamp = long("timestamp")
 
   override val primaryKey = PrimaryKey(id)

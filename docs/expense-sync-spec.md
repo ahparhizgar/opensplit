@@ -18,9 +18,9 @@ Bidirectional offline-first sync engine. Outbox pattern for upstream (Client -> 
 
 * **`change_log`**
   * `id`: Long (PK, auto-increment) -> global sync sequence.
-  * `entity_type`: VARCHAR(50) -> `"EXPENSE"`, `"HOUSEHOLD"`, `"MEMBERSHIP"`.
+  * `entity_type`: `SyncEntityType` (VARCHAR(50)) -> `EXPENSE`, `MEMBERSHIP`.
   * `entity_id`: VARCHAR(36) -> target entity UUID.
-  * `operation`: VARCHAR(20) -> `"INSERT"`, `"UPDATE"`, `"DELETE"`.
+  * `operation`: `SyncOperation` (VARCHAR(20)) -> `INSERT`, `UPDATE`, `DELETE`.
   * `timestamp`: Long -> epoch millis.
 * **`expenses`**
   * `id`: VARCHAR(36) (PK)

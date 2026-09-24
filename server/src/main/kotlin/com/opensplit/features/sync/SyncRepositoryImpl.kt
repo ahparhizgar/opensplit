@@ -13,7 +13,11 @@ import org.jetbrains.exposed.v1.jdbc.*
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 class SyncRepositoryImpl(private val database: Database) : SyncRepository {
-  override fun recordChange(entityType: String, entityId: String, operation: String): Long =
+  override fun recordChange(
+      entityType: SyncEntityType,
+      entityId: String,
+      operation: SyncOperation,
+  ): Long =
       transaction(database) {
         val logId =
             ChangeLog.insert {
@@ -24,9 +28,10 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
                 }[ChangeLog.id]
 
         when (entityType) {
-          "HOUSEHOLD" -> Groups.update({ Groups.id eq entityId }) { it[version] = logId }
-          "EXPENSE" -> Expenses.update({ Expenses.id eq entityId }) { it[version] = logId }
-          "MEMBERSHIP" -> Memberships.update({ Memberships.id eq entityId }) { it[version] = logId }
+          SyncEntityType.EXPENSE ->
+              Expenses.update({ Expenses.id eq entityId }) { it[version] = logId }
+          SyncEntityType.MEMBERSHIP ->
+              Memberships.update({ Memberships.id eq entityId }) { it[version] = logId }
         }
         logId
       }
@@ -64,8 +69,8 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
             ChangeLog.selectAll()
                 .where {
                   (ChangeLog.id greater sinceVersion) and
-                      (ChangeLog.entityType eq "EXPENSE") and
-                      (ChangeLog.operation eq "DELETE")
+                      (ChangeLog.entityType eq SyncEntityType.EXPENSE) and
+                      (ChangeLog.operation eq SyncOperation.DELETE)
                 }
                 .map { it[ChangeLog.entityId] }
 
