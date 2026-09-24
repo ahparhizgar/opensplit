@@ -68,6 +68,10 @@ GEMINI: use `run_shell_command` tool ./gradlew instead of `gradle_build` tool ca
 # Using Room
 always write migrations for Room when schema changes.
 
+# Using Exposed
+Use the DSL not the DAO.
+Always use `timestamp("name")` instead of `long("name")` for timestamp columns.
+
 ---
 
 Project "big picture" (what talks to what)

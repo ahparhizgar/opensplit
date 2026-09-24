@@ -3,7 +3,6 @@ package com.opensplit.features.group
 import com.opensplit.dto.group.GroupDto
 import com.opensplit.dto.group.GroupMemberDto
 import com.opensplit.features.auth.UserPrincipal
-import kotlin.time.Instant
 
 class GroupService(private val groupRepository: GroupRepository) {
   fun loadGroups(user: UserPrincipal): List<GroupDto> =
@@ -27,7 +26,7 @@ class GroupService(private val groupRepository: GroupRepository) {
             ),
         inviteLink = group.inviteLink(),
         isOwner = true,
-        lastInteractionAt = Instant.fromEpochMilliseconds(group.lastInteractionAt),
+        lastInteractionAt = group.lastInteractionAt,
     )
   }
 
@@ -101,7 +100,7 @@ class GroupService(private val groupRepository: GroupRepository) {
         members = memberDtos,
         inviteLink = group.inviteLink(),
         isOwner = group.ownerId == currentUserId,
-        lastInteractionAt = Instant.fromEpochMilliseconds(group.lastInteractionAt),
+        lastInteractionAt = group.lastInteractionAt,
     )
   }
 

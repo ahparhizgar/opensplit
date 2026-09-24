@@ -2,14 +2,25 @@ package com.opensplit.database
 
 import com.opensplit.features.sync.SyncEntityType
 import com.opensplit.features.sync.SyncOperation
+import kotlin.time.Instant
+import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.core.datetime.InstantColumnType
+
+class KotlinInstantColumnType : InstantColumnType<Instant>() {
+  override fun toInstant(value: Instant): Instant = value
+
+  override fun fromInstant(instant: Instant): Instant = instant
+}
+
+fun Table.timestamp(name: String): Column<Instant> = registerColumn(name, KotlinInstantColumnType())
 
 object ChangeLog : Table("change_log") {
   val id = long("id").autoIncrement()
   val entityType = enumerationByName("entity_type", 50, SyncEntityType::class)
   val entityId = varchar("entity_id", 36)
   val operation = enumerationByName("operation", 20, SyncOperation::class)
-  val timestamp = long("timestamp")
+  val timestamp = timestamp("timestamp")
 
   override val primaryKey = PrimaryKey(id)
 }
@@ -30,7 +41,7 @@ object Groups : Table("groups") {
   val ownerId = varchar("owner_id", 36).references(Users.id)
   val inviteCode = varchar("invite_code", 64).nullable()
   val version = long("version").default(0)
-  val lastInteractionAt = long("last_interaction_at").default(0L)
+  val lastInteractionAt = timestamp("last_interaction_at").default(Instant.DISTANT_PAST)
 
   override val primaryKey = PrimaryKey(id)
 
@@ -55,7 +66,7 @@ object Expenses : Table("expenses") {
   val title = varchar("title", 255)
   val amount = double("amount")
   val creator = varchar("creator", 36).references(Users.id)
-  val createdAt = long("created_at")
+  val createdAt = timestamp("created_at")
   val splitMethod = text("split_method")
   val version = long("version").default(0)
 

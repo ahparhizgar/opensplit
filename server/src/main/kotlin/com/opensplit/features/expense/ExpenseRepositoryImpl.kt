@@ -9,7 +9,6 @@ import com.opensplit.features.sync.SyncOperation
 import com.opensplit.features.sync.SyncRepository
 import java.util.*
 import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.*
@@ -27,7 +26,7 @@ class ExpenseRepositoryImpl(
         it[title] = expense.title
         it[amount] = expense.amount
         it[creator] = expense.creator
-        it[createdAt] = expense.createdAt.toEpochMilliseconds()
+        it[createdAt] = expense.createdAt
         it[splitMethod] = Json.encodeToString(expense.splitMethod)
       }
 
@@ -48,9 +47,7 @@ class ExpenseRepositoryImpl(
         }
       }
 
-      Groups.update({ Groups.id eq expense.groupId }) {
-        it[lastInteractionAt] = expense.createdAt.toEpochMilliseconds()
-      }
+      Groups.update({ Groups.id eq expense.groupId }) { it[lastInteractionAt] = expense.createdAt }
 
       syncRepository.recordChange(SyncEntityType.EXPENSE, expense.id, SyncOperation.INSERT)
     }
@@ -92,7 +89,7 @@ class ExpenseRepositoryImpl(
         }
       }
 
-      val now = Clock.System.now().toEpochMilliseconds()
+      val now = Clock.System.now()
       Groups.update({ Groups.id eq groupId }) { it[lastInteractionAt] = now }
 
       syncRepository.recordChange(SyncEntityType.EXPENSE, expenseId, SyncOperation.DELETE)
@@ -150,7 +147,7 @@ class ExpenseRepositoryImpl(
         }
       }
 
-      val now = Clock.System.now().toEpochMilliseconds()
+      val now = Clock.System.now()
       Groups.update({ Groups.id eq groupId }) { it[lastInteractionAt] = now }
 
       syncRepository.recordChange(SyncEntityType.EXPENSE, expense.id, SyncOperation.UPDATE)
@@ -178,7 +175,7 @@ class ExpenseRepositoryImpl(
           title = get(Expenses.title),
           amount = get(Expenses.amount),
           creator = get(Expenses.creator),
-          createdAt = Instant.fromEpochMilliseconds(get(Expenses.createdAt)),
+          createdAt = get(Expenses.createdAt),
           participants = participants,
           splitMethod = Json.decodeFromString(get(Expenses.splitMethod)),
       )

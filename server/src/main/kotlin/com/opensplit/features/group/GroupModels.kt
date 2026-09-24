@@ -1,13 +1,14 @@
 package com.opensplit.features.group
 
 import com.opensplit.dto.group.GroupDto
+import kotlin.time.Instant
 
 data class GroupRecord(
     val id: String,
     val name: String,
     val ownerId: String,
     val inviteCode: String?,
-    val lastInteractionAt: Long = 0L,
+    val lastInteractionAt: Instant = Instant.DISTANT_PAST,
 )
 
 data class GroupMemberRecord(

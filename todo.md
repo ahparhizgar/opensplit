@@ -1,7 +1,6 @@
 1. implement delete group feature
-2. can we use Instant directly in Exposed?
-3. migrate server tests to Kotest and put assertion messages there
-4. migrate UI tests to Kotest?
+2. migrate server tests to Kotest and put assertion messages there
+3. migrate UI tests to Kotest?
 
 
 ### Done
@@ -28,6 +27,7 @@
 20. separate dto and domain files and mention in AGENTS.md
 21. backend returns Group.lastInteractionAt
 22. delete recordChange("HOUSEHOLD") and use enum instead of string
+23. can we use Instant directly in Exposed?
 
 ---
 ### After functional working

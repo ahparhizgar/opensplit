@@ -46,7 +46,7 @@ class GroupRepositoryImpl(
         val targetGroupId = Uuid.random().toString()
         val inviteCode = Uuid.random().toString().replace("-", "").take(12)
 
-        val now = Clock.System.now().toEpochMilliseconds()
+        val now = Clock.System.now()
         Groups.insert {
           it[Groups.id] = targetGroupId
           it[Groups.name] = name

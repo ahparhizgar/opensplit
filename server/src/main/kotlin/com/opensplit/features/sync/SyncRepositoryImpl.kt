@@ -6,7 +6,6 @@ import com.opensplit.features.expense.ExpenseParticipantRecord
 import com.opensplit.features.expense.ExpenseRecord
 import com.opensplit.features.expense.toDto
 import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.*
@@ -24,7 +23,7 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
                   it[ChangeLog.entityType] = entityType
                   it[ChangeLog.entityId] = entityId
                   it[ChangeLog.operation] = operation
-                  it[ChangeLog.timestamp] = Clock.System.now().toEpochMilliseconds()
+                  it[ChangeLog.timestamp] = Clock.System.now()
                 }[ChangeLog.id]
 
         when (entityType) {
@@ -90,7 +89,7 @@ class SyncRepositoryImpl(private val database: Database) : SyncRepository {
           title = get(Expenses.title),
           amount = get(Expenses.amount),
           creator = get(Expenses.creator),
-          createdAt = Instant.fromEpochMilliseconds(get(Expenses.createdAt)),
+          createdAt = get(Expenses.createdAt),
           participants = participants,
           splitMethod = Json.decodeFromString(get(Expenses.splitMethod)),
       )
