@@ -17,7 +17,6 @@ data class Group(
     get() = balance == 0.0
 }
 
-
 @Serializable
 data class Member(
     val userId: String,

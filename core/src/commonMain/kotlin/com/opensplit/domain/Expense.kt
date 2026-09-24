@@ -93,9 +93,9 @@ object FakeMemberFactory {
 }
 
 object FakeParticipantShareFactory {
-    fun create(
-        userId: String = "user-1",
-        paidShare: Double = 0.0,
-        consumedShare: Double = 0.0,
-    ) = ParticipantShare(userId, paidShare, consumedShare)
+  fun create(
+      userId: String = "user-1",
+      paidShare: Double = 0.0,
+      consumedShare: Double = 0.0,
+  ) = ParticipantShare(userId, paidShare, consumedShare)
 }
