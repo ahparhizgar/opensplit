@@ -1,7 +1,5 @@
-1. use enums in DAOs where possible
-2. separate dto and domain files and mention in AGENTS.md
-3. backend returns Group.lastInteractionAt
-4. implement delete group feature
+1. backend returns Group.lastInteractionAt
+2. implement delete group feature
 
 
 ### Done
@@ -24,6 +22,8 @@
 16. expense sync has stopped working
 17. make expense list screen top bar collapsable
 18. add desktop views (large screen support)
+19. use enums in DAOs where possible
+20. separate dto and domain files and mention in AGENTS.md
 
 ---
 ### After functional working

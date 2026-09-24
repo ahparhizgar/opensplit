@@ -46,12 +46,14 @@ Testing multi-user on backend
 # How to structure classes into files
 Put fake factories after the real classes in the same file.
 Don't create file such as Dtos.kt or Models.kt. Instead, create a file for each group of related DTOs or model classes. For example, create GroupDto.kt for GroupDto class and Group.kt for Group model class. Group.kt may contain GroupParticipants class etc. And must contain their fake factories.
+In a single file, order like this: 1. the main class, 2. extension functions (if any) 3. related classes, 4. fake factories (in the same order as classes),
 
 # Fake factories
 Create meaningful factory functions
 Almost always should be a general create()
 Write createList() in fake factories if appropriate
 Always use fake factories in tests.
+Fake factories should use each other. so FakeGroupFactory should use FakeParticipantFactory to create participants. Don't create participants in FakeGroupFactory.
 
 # DTOs
 Always use enums in DTOs where possible. Don't use strings for enums in DTOs. Use enums instead.
