@@ -1,17 +1,66 @@
-# AGENTS.md — Agent onboarding and playbook
+# UI - JetBrains Compose
+use Surface(color, contentColor), or Scaffold instead of background modifier where possible.
+Use TextButton instead of `clickable` modifier on a Text most of the time.
+Use IconButton instead of `clickable` modifier on an Icon most of the time.
+Always write previews for screens or public composable components.
+Write multiple previews for different important states of the component/screen.
+Wrap the preview in OpenSplitTheme
 
-Purpose: give AI coding agents the exact, repository-specific knowledge needed to be productive immediately.
+## Large screens
+Support large screens - read `adaptive` skill if needed.
+use of Decompose panels and `CContext.windowSizeHolder`
+Use `AdaptiveTopAppbar` if you want to use `LargeTopAppBar`.
+Use centered cards content on large screens.
 
-Quick checklist for agents
-- Reproduce CI steps locally: run unit tests with `./gradlew jvmTest test --offline`.
-- To run backend integration stack: use the Gradle helper tasks under the `server` module.
-- Do not change plugin repo handling in `settings.gradle.kts`.
+## Keyboard accessibility
+Be keyboard-accessible. every functionality should be accessible via keyboard.
+Always set keyboardOptions and keyboardActions for text fields.
 
-Run JVM/unit tests:
+# Using Decompose
+Don't make functions of Decompose components `suspend`. instead launch in them and return the `Job`.
+It's a good practice to keep screen functions small by extracting private sections.
+Pass the whole decompose component to extracted private composables. don't split states and callbacks in them.
+But for public components which there is no specific component, pass states and callbacks instead of decompose component.
 
-```bash
-./gradlew jvmTest test --offline
-```
+# Using kotlin
+Always use Clock.System.now() for time, don't use System.currentTimeMillis() or Instant.now().
+Don't Use Instant.now(), it's deprecated.
+If you need millis use Clock.System.now().toEpochMilliseconds()
+Don't use fully qualified name. Write simple name, and let the compiler give error to you.
+
+# Using KOIN
+Define dependencies like this: `factoryOf(::DefaultRootComponentFactory).bind<RootComponentFactory>()` So when the signature changes, no need to change the binding.
+
+
+# Testing
+
+Write UI tests using keyboard actions so keyboard accessibility is verified.
+Use default value of fake factories if it doesn't matter.
+Testing UI
+Testing integration of Decompose components
+Unit testing
+
+Testing on backend
+Testing multi-user on backend
+
+# How to structure classes into files
+Put fake factories after the real classes in the same file.
+Don't create file such as Dtos.kt or Models.kt. Instead, create a file for each group of related DTOs or model classes. For example, create GroupDto.kt for GroupDto class and Group.kt for Group model class. Group.kt may contain GroupParticipants class etc. And must contain their fake factories.
+
+# Fake factories
+Create meaningful factory functions
+Almost always should be a general create()
+Write createList() in fake factories if appropriate
+Always use fake factories in tests.
+
+# DTOs
+Always use enums in DTOs where possible. Don't use strings for enums in DTOs. Use enums instead.
+Fully model data structure using sealed interfaces. we use kotlin serialization and shared module for DTOs. So it creates a live documentation.
+
+GEMINI: use `run_shell_command` tool ./gradlew instead of `gradle_build` tool call. this prevents blocking by an already running Gradle task in the IDE. So always use run_shell_command tool.
+
+
+---
 
 Project "big picture" (what talks to what)
 - Modules:
@@ -19,29 +68,12 @@ Project "big picture" (what talks to what)
   - `core` — shared core libraries used across targets (`core/src/commonMain`).
   - `app/shared` — Kotlin Multiplatform UI and client code used by `androidApp`, `desktopApp` and `webApp`. Targets: JVM, Android, iOS simulator, wasmJs. Common code under `app/shared/src/commonMain`.
   - `app/androidApp`, `app/desktopApp`, `app/webApp` — platform entry points.
-- Integration highlights:
-  - `app/shared` uses Ktor client (`ktor.clientOkHttp`) on JVM and `ktor-client-darwin` on Apple platforms. Look at `app/shared/build.gradle.kts` for client bindings.
-  - Backend database is configured in `docker-compose.yml`. The server expects `JDBC_DATABASE_URL` env; CI/local docker-compose config supplies it.
+
+
+Project important niche points
   - `youOwe` and `youAreOwed` colors are in the `MaterialTheme.colorSchemeExtended` object defined in `Extended.kt`
 
-Where to look for the most important code
-- Backend entry and wiring: `server/src/main/kotlin/...` (search for `Application.kt` or `com.opensplit.ApplicationKt`). The main class is set in `server/build.gradle.kts`.
-- Docker compose and env: `docker-compose.yml` (DB credentials, JDBC URL template).
-- Multiplatform shared code: `app/shared/src/commonMain` and the platform-specific source sets in `app/shared/build.gradle.kts`.
-- Central dependency map: `gradle/libs.versions.toml`.
-- Project includes and repo-level Gradle behavior: `settings.gradle.kts`.
-- Agent skills and automation: `.agents/` (contains skills, workflows, and examples used by the project's AI/agent tooling).
-
-Code review standards
-- Run `docs/review-checklist.md` during every review — each item must be verified before marking `done`.
-- Story ACs must cover the display/feedback side of every feature, not just creation. Validate ACs against the checklist at story creation time, not after implementation.
-- Review checklist items are non-negotiable: security, error states, empty states, display of created data, test coverage.
-
-Common AI mistakes:
-- Don't use fully qualified name
-- Always write previews for screens or public composable components
-- Don't make functions of decompose components suspend. instead launch in them and return the job.
-- Pass the whole component to extracted private composables. don't split states and callbacks in them.
-- But for public components which there is no equivalent component, pass states and callbacks.
-- Always use Clock.System.now() for time, don't use System.currentTimeMillis() or Instant.now().
-- If you need millis use Clock.System.now().toEpochMilliseconds()
+Run verification gate after finishing a task:
+```bash
+./gradlew jvmTest test ktfmtFormat --offline
+```

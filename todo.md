@@ -1,9 +1,7 @@
 1. use enums in DAOs where possible
 2. separate dto and domain files and mention in AGENTS.md
-3. make expense list screen top bar collapsable
-4. backend returns Group.lastInteractionAt
-5. add desktop views (large screen support)
-6. implement delete group feature
+3. backend returns Group.lastInteractionAt
+4. implement delete group feature
 
 
 ### Done
@@ -24,6 +22,8 @@
 14. remove `val payerId: String` from expense and instead add `creator` field to Expense model
 15. remove currentTimeMillis function and use Clock.System.now() instead and note in AGENTS.md
 16. expense sync has stopped working
+17. make expense list screen top bar collapsable
+18. add desktop views (large screen support)
 
 ---
 ### After functional working
