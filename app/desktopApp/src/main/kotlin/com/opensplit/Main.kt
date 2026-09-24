@@ -5,7 +5,6 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -51,7 +50,7 @@ fun main(vararg args: String) {
   }
 
   application {
-    val windowState = rememberWindowState(width = 400.dp, height = 800.dp)
+    val windowState = rememberWindowState()
     LifecycleController(lifecycle, windowState)
     Window(
         onCloseRequest = ::exitApplication,
