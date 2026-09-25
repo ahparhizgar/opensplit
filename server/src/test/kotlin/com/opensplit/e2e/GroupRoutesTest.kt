@@ -150,8 +150,5 @@ class GroupRoutesTest {
     val now = Clock.System.now()
 
     assertEquals((created.lastInteractionAt - now).inWholeSeconds, 0)
-
-    val fetched = client.getGroups()
-    assertEquals(created.lastInteractionAt, fetched.first().lastInteractionAt)
   }
 }

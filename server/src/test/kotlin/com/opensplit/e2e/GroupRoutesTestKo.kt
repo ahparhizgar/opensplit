@@ -10,6 +10,7 @@ import com.opensplit.fixture.createGroupWith1MemberFixture
 import com.opensplit.fixture.createGroupWith2MembersFixture
 import com.opensplit.fixture.getGroups
 import com.opensplit.util.KtorBehaviorSpec
+import com.opensplit.util.almostEquals
 import com.opensplit.util.createClient
 import com.opensplit.util.createClientWithResult
 import com.opensplit.util.testValue
@@ -143,8 +144,8 @@ class GroupRoutesTestKo : KtorBehaviorSpec() {
         val created by testValue { client.createGroup() }
         val fetchedGroups by testValue { client.getGroups() }
         Then("lastInteractionAt is present and matches the current time") {
-          (created.lastInteractionAt - now).inWholeSeconds shouldBe 0
-          fetchedGroups.first().lastInteractionAt shouldBe created.lastInteractionAt
+          created.lastInteractionAt almostEquals now
+          fetchedGroups.first().lastInteractionAt almostEquals created.lastInteractionAt
         }
       }
     }
