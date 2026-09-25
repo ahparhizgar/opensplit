@@ -1,11 +1,10 @@
-1. migrate server tests to Kotest and put assertion messages there
-2. migrate UI tests to Kotest?
-3. Improve code coverage for client
-4. Implement delete group feature
-5. Implement settlement
-6. Add Currency model
-7. Fix text fields font size problem
-8. remove joining by id feature
+1. migrate UI tests to Kotest?
+2. Improve code coverage for client
+3. Implement delete group feature
+4. Implement settlement
+5. Add Currency model
+6. Fix text fields font size problem
+7. remove joining by id feature
 
 
 ### Done
@@ -33,6 +32,7 @@
 21. backend returns Group.lastInteractionAt
 22. delete recordChange("HOUSEHOLD") and use enum instead of string
 23. can we use Instant directly in Exposed?
+24. migrate server tests to Kotest and put assertion messages there
 
 ---
 ### After functional working

@@ -9,7 +9,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.server.testing.ApplicationTestBuilder
+import io.ktor.server.testing.ClientProvider
 
 suspend fun HttpClient.createGroup(name: String = "Home"): GroupDto =
     post("/groups") { setBody(CreateGroupRequest(name)) }.body<GroupDto>()
@@ -21,7 +21,7 @@ suspend fun HttpClient.getGroup(groupId: String) = get("/groups/$groupId").body<
 
 suspend fun HttpClient.getGroups() = get("/groups").body<List<GroupDto>>()
 
-suspend fun ApplicationTestBuilder.createGroupWith1MemberFixture(): GroupWith1MemberFixture {
+suspend fun ClientProvider.createGroupWith1MemberFixture(): GroupWith1MemberFixture {
   val (client1, user1) = createClientWithResult("UserA")
   val group = client1.post("/groups") { setBody(CreateGroupRequest("AB House")) }.body<GroupDto>()
   return GroupWith1MemberFixture(
@@ -35,7 +35,7 @@ suspend fun ApplicationTestBuilder.createGroupWith1MemberFixture(): GroupWith1Me
  * Creates a group with two members and returns the group and the two members' auth results. user1
  * (client1) creates the group, and user2 (client2) joins the group using the invite link.
  */
-suspend fun ApplicationTestBuilder.createGroupWith2MembersFixture(): GroupAnd2MembersFixture {
+suspend fun ClientProvider.createGroupWith2MembersFixture(): GroupAnd2MembersFixture {
   val (client1, user1) = createClientWithResult("UserA")
   val group = client1.post("/groups") { setBody(CreateGroupRequest("AB House")) }.body<GroupDto>()
   val (client2, user2) = createClientWithResult("UserB")

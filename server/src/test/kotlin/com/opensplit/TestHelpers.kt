@@ -22,6 +22,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.testing.ApplicationTestBuilder
+import io.ktor.server.testing.ClientProvider
 import io.ktor.server.testing.testApplication
 import org.jetbrains.exposed.v1.jdbc.deleteAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -51,7 +52,7 @@ fun testOpenSplit(block: suspend ApplicationTestBuilder.() -> Unit) = testApplic
 }
 
 @Deprecated("use createClient instead")
-fun ApplicationTestBuilder.createClientByToken(token: String): HttpClient = createClient {
+fun ClientProvider.createClientByToken(token: String): HttpClient = createClient {
   install(ContentNegotiation) { json() }
 
   install(DefaultRequest) { contentType(ContentType.Application.Json) }
@@ -64,11 +65,11 @@ fun ApplicationTestBuilder.createClientByToken(token: String): HttpClient = crea
   }
 }
 
-suspend fun ApplicationTestBuilder.createClient(name: String = "Other"): HttpClient {
+suspend fun ClientProvider.createClient(name: String = "Other"): HttpClient {
   return createClientWithResult(name).first
 }
 
-suspend fun ApplicationTestBuilder.createClientWithResult(
+suspend fun ClientProvider.createClientWithResult(
     name: String = "Other"
 ): Pair<HttpClient, AuthResult> {
   val otherUser =

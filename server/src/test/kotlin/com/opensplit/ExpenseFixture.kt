@@ -13,7 +13,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
-import io.ktor.server.testing.ApplicationTestBuilder
+import io.ktor.server.testing.ClientProvider
 
 suspend fun HttpClient.createExpenseRequest(
     groupId: String,
@@ -81,7 +81,7 @@ suspend fun HttpClient.getExpenses(groupId: String): List<ExpenseDto> =
 suspend fun HttpClient.deleteExpense(groupId: String, expenseId: String): HttpResponse =
     delete("/groups/$groupId/expenses/$expenseId")
 
-suspend fun ApplicationTestBuilder.createExpenseWith1MemberFixture(
+suspend fun ClientProvider.createExpenseWith1MemberFixture(
     title: String = "Pizza",
     amount: Double = 25.0,
 ): ExpenseWith1MemberFixture {
@@ -99,7 +99,7 @@ suspend fun ApplicationTestBuilder.createExpenseWith1MemberFixture(
   )
 }
 
-suspend fun ApplicationTestBuilder.createExpenseWith2MembersFixture(
+suspend fun ClientProvider.createExpenseWith2MembersFixture(
     title: String = "Groceries",
     amount: Double = 100.0,
 ): ExpenseAndMembersFixture =

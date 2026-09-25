@@ -7,6 +7,7 @@ plugins {
   alias(libs.plugins.ktor)
   alias(libs.plugins.ktfmt)
   alias(libs.plugins.kover)
+  alias(libs.plugins.kotest)
 }
 
 group = "com.opensplit"
@@ -43,11 +44,16 @@ dependencies {
   implementation(libs.bcrypt)
 
   testImplementation(libs.ktor.serverTestHost)
-  testImplementation(libs.kotlin.testJunit)
+  testImplementation(libs.kotlin.testJunit5)
   testImplementation(libs.ktor.clientContentNegotiation)
   testImplementation(libs.ktor.serializationKotlinxJson)
+  testImplementation(libs.kotest.framework)
+  testImplementation(libs.kotest.assertion)
+  testImplementation(libs.kotest.junit)
   implementation(libs.ktor.clientAuth)
 }
+
+tasks.withType<Test>().configureEach { useJUnitPlatform() }
 
 tasks.withType(ShadowJar::class.java) {
   archiveFileName.set("server-fat.jar")

@@ -14,7 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class AuthScenarios {
+class AuthRoutesTest {
   @Test
   fun signInRejectsInvalidData() = testOpenSplit {
     val response = client.post("/tokens") { setBody(SignInRequest("bad", "short")) }
