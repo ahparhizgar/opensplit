@@ -1,10 +1,9 @@
-1. migrate UI tests to Kotest?
-2. Improve code coverage for client
-3. Implement delete group feature
-4. Implement settlement
-5. Add Currency model
-6. Fix text fields font size problem
-7. remove joining by id feature
+1. Improve code coverage for client
+2. Implement delete group feature
+3. Implement settlement
+4. Add Currency model
+5. Fix text fields font size problem
+6. remove joining by id feature
 
 
 ### Done
@@ -33,6 +32,7 @@
 22. delete recordChange("HOUSEHOLD") and use enum instead of string
 23. can we use Instant directly in Exposed?
 24. migrate server tests to Kotest and put assertion messages there
+25. migrate UI tests to Kotest? NO
 
 ---
 ### After functional working
