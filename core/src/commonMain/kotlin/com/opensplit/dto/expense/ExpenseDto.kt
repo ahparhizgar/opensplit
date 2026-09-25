@@ -90,3 +90,61 @@ object FakeParticipantShareDtoFactory {
           create(userId = "user-2", paidShare = 0.0, consumedShare = 5.0),
       )
 }
+
+object FakeCreateExpenseRequestFactory {
+  fun create(
+      title: String = "Pizza",
+      amount: Double = 25.0,
+      participants: List<ParticipantShareDto> = FakeParticipantShareDtoFactory.createList(),
+      splitMethod: SplitMethod = SplitMethod.Equally(participants.map { it.userId }),
+  ) =
+      CreateExpenseRequest(
+          title = title,
+          amount = amount,
+          participants = participants,
+          splitMethod = splitMethod,
+      )
+
+  fun createEqual(
+      userIds: List<String>,
+      payerId: String = userIds.first(),
+      title: String = "Pizza",
+      amount: Double = 25.0,
+  ): CreateExpenseRequest {
+    val shareAmount = if (userIds.isEmpty()) 0.0 else amount / userIds.size
+    val participants = userIds.map { userId ->
+      FakeParticipantShareDtoFactory.create(
+          userId = userId,
+          paidShare = if (userId == payerId) amount else 0.0,
+          consumedShare = shareAmount,
+      )
+    }
+    return create(
+        title = title,
+        amount = amount,
+        participants = participants,
+        splitMethod = SplitMethod.Equally(userIds),
+    )
+  }
+
+  fun createUnequal(
+      consumedShares: Map<String, Double>,
+      payerId: String = consumedShares.keys.first(),
+      title: String = "Groceries",
+      amount: Double = consumedShares.values.sum(),
+  ): CreateExpenseRequest {
+    val participants = consumedShares.map { (userId, consumed) ->
+      FakeParticipantShareDtoFactory.create(
+          userId = userId,
+          paidShare = if (userId == payerId) amount else 0.0,
+          consumedShare = consumed,
+      )
+    }
+    return create(
+        title = title,
+        amount = amount,
+        participants = participants,
+        splitMethod = SplitMethod.Unequally(consumedShares),
+    )
+  }
+}

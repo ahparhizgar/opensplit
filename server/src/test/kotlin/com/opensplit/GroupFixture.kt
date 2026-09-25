@@ -35,12 +35,12 @@ suspend fun ApplicationTestBuilder.createGroupWith1MemberFixture(): GroupWith1Me
  * Creates a group with two members and returns the group and the two members' auth results. user1
  * (client1) creates the group, and user2 (client2) joins the group using the invite link.
  */
-suspend fun ApplicationTestBuilder.createGroupWith2MembersFixture(): GroupAndMembersFixture {
+suspend fun ApplicationTestBuilder.createGroupWith2MembersFixture(): GroupAnd2MembersFixture {
   val (client1, user1) = createClientWithResult("UserA")
   val group = client1.post("/groups") { setBody(CreateGroupRequest("AB House")) }.body<GroupDto>()
   val (client2, user2) = createClientWithResult("UserB")
   client2.joinGroup(group.inviteLink)
-  return GroupAndMembersFixture(
+  return GroupAnd2MembersFixture(
       group = group,
       user1 = user1,
       user2 = user2,
@@ -55,7 +55,7 @@ class GroupWith1MemberFixture(
     val client: HttpClient,
 )
 
-class GroupAndMembersFixture(
+class GroupAnd2MembersFixture(
     val group: GroupDto,
     val user1: AuthResult,
     val user2: AuthResult,

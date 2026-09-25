@@ -64,8 +64,8 @@ fun ApplicationTestBuilder.createClientByToken(token: String): HttpClient = crea
   }
 }
 
-suspend fun ApplicationTestBuilder.createClient(): HttpClient {
-  return createClientWithResult().first
+suspend fun ApplicationTestBuilder.createClient(name: String = "Other"): HttpClient {
+  return createClientWithResult(name).first
 }
 
 suspend fun ApplicationTestBuilder.createClientWithResult(
