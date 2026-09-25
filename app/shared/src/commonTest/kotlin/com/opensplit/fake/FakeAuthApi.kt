@@ -1,8 +1,8 @@
 package com.opensplit.fake
 
 import com.opensplit.dto.auth.AuthResult
-import com.opensplit.features.auth.AuthApi
-import com.opensplit.features.auth.AuthSubmissionResult
+import com.opensplit.integration.auth.AuthApi
+import com.opensplit.integration.auth.AuthSubmissionResult
 import com.opensplit.util.FakeService
 
 class FakeAuthApi : AuthApi, FakeService {

@@ -3,7 +3,7 @@ package com.opensplit.fake
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SplitMethod
-import com.opensplit.features.expense.ExpenseApi
+import com.opensplit.integration.expense.ExpenseApi
 import com.opensplit.util.FakeService
 import kotlin.time.Instant
 

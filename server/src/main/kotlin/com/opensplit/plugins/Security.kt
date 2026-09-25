@@ -1,7 +1,7 @@
 package com.opensplit.plugins
 
-import com.opensplit.features.auth.JwtService
-import com.opensplit.features.auth.UserPrincipal
+import com.opensplit.integration.auth.JwtService
+import com.opensplit.integration.auth.UserPrincipal
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication

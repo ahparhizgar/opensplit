@@ -3,7 +3,7 @@ package com.opensplit.fake
 import com.opensplit.dto.group.FakeGroupDtoFactory
 import com.opensplit.dto.group.GroupDto
 import com.opensplit.dto.group.GroupMemberDto
-import com.opensplit.features.group.GroupApi
+import com.opensplit.integration.group.GroupApi
 import com.opensplit.util.FakeService
 
 class FakeGroupApi : GroupApi, FakeService {

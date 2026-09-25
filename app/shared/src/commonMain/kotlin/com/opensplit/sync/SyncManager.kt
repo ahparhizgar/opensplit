@@ -12,7 +12,7 @@ import com.opensplit.db.toEntity
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.dto.sync.SyncResponse
-import com.opensplit.features.expense.ExpenseApi
+import com.opensplit.integration.expense.ExpenseApi
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope

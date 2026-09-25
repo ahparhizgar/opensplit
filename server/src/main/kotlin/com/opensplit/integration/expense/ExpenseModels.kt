@@ -1,0 +1,44 @@
+package com.opensplit.integration.expense
+
+import com.opensplit.dto.expense.ExpenseDto
+import com.opensplit.dto.expense.ParticipantShareDto
+import com.opensplit.dto.expense.SplitMethod
+import kotlin.time.Instant
+
+data class ExpenseParticipantRecord(
+    val userId: String,
+    val paidAmount: Double,
+    val owedAmount: Double,
+)
+
+data class ExpenseRecord(
+    val id: String,
+    val groupId: String,
+    val title: String,
+    val amount: Double,
+    val creator: String,
+    val createdAt: Instant,
+    val participants: List<ExpenseParticipantRecord> = emptyList(),
+    val splitMethod: SplitMethod,
+)
+
+fun ExpenseRecord.toDto() =
+    ExpenseDto(
+        id = id,
+        groupId = groupId,
+        title = title,
+        amount = amount,
+        creator = creator,
+        createdAt = createdAt,
+        shares = participants.map { it.toDto() },
+        splitMethod = splitMethod,
+    )
+
+fun ExpenseParticipantRecord.toDto() =
+    ParticipantShareDto(
+        userId = userId,
+        paidShare = paidAmount,
+        consumedShare = owedAmount,
+    )
+
+class NotAMemberException : RuntimeException()

@@ -1,0 +1,134 @@
+package com.opensplit.integration.expense
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.opensplit.ui.OpenSplitTheme
+import kotlin.math.abs
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun PaidAmountsScreen(
+    component: PaidAmountsComponent,
+    showBackButton: Boolean,
+    onBackClicked: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+  val uiState by component.uiState.subscribeAsState()
+
+  Scaffold(
+      modifier = modifier,
+      topBar = {
+        androidx.compose.material3.TopAppBar(
+            title = { Text("Enter paid amounts") },
+            navigationIcon = {
+              if (showBackButton) {
+                IconButton(onClick = onBackClicked) {
+                  Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                }
+              }
+            },
+            actions = {
+              IconButton(onClick = component::onDone) {
+                Icon(Icons.Default.Check, contentDescription = "Done")
+              }
+            },
+        )
+      },
+  ) { padding ->
+    Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+      LazyColumn(modifier = Modifier.weight(1f)) {
+        items(uiState.allParticipantAmounts) { participant ->
+          ListItem(
+              leadingContent = {
+                Box(
+                    modifier =
+                        Modifier.size(40.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center,
+                ) {
+                  Icon(Icons.Default.Person, contentDescription = null)
+                }
+              },
+              headlineContent = { Text(participant.name) },
+              trailingContent = {
+                OutlinedTextField(
+                    modifier = Modifier.width(120.dp).testTag("paid-amount-${participant.userId}"),
+                    value = participant.value,
+                    onValueChange = {
+                      component.onParticipantAmountChanged(participant.userId, it)
+                    },
+                    prefix = { Text("IRR ") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                )
+              },
+          )
+        }
+      }
+
+      Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
+        val totalPaid = uiState.allParticipantAmounts.sumOf { it.value.toDoubleOrNull() ?: 0.0 }
+        val amount = uiState.goalAmount
+        if (amount != null) {
+          val diff = amount - totalPaid
+
+          Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "IRR $totalPaid of IRR $amount",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = if (abs(diff) < 0.01) "All settled" else "IRR $diff left",
+                style = MaterialTheme.typography.labelSmall,
+                color =
+                    if (abs(diff) < 0.01) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.error,
+            )
+          }
+        }
+      }
+    }
+  }
+}
+
+@Preview
+@Composable
+private fun PaidAmountsPreview() {
+  OpenSplitTheme {
+    PaidAmountsScreen(FakePaidAmountsComponent(), showBackButton = true, onBackClicked = {})
+  }
+}

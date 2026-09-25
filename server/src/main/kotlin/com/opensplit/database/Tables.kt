@@ -1,7 +1,7 @@
 package com.opensplit.database
 
-import com.opensplit.features.sync.SyncEntityType
-import com.opensplit.features.sync.SyncOperation
+import com.opensplit.integration.sync.SyncEntityType
+import com.opensplit.integration.sync.SyncOperation
 import kotlin.time.Instant
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.Table

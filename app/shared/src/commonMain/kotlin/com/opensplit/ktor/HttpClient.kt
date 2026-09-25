@@ -3,7 +3,7 @@ package com.opensplit.ktor
 import com.ahparhizgar.katch.ktor.ClientErrorExtras
 import com.ahparhizgar.katch.ktor.KatchPlugin
 import com.opensplit.dto.auth.ErrorResponse
-import com.opensplit.features.auth.TokenStorage
+import com.opensplit.integration.auth.TokenStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.auth.Auth

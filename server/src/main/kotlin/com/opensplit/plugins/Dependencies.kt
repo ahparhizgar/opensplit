@@ -5,11 +5,11 @@ import com.opensplit.config.DatabaseConfig
 import com.opensplit.database.DatabaseInitializer
 import com.opensplit.database.connectDatabase
 import com.opensplit.database.createHikariDataSource
-import com.opensplit.features.auth.authKoinModule
-import com.opensplit.features.auth.testAuthKoinModule
-import com.opensplit.features.expense.expenseKoinModule
-import com.opensplit.features.group.groupKoinModule
-import com.opensplit.features.sync.syncKoinModule
+import com.opensplit.integration.auth.authKoinModule
+import com.opensplit.integration.auth.testAuthKoinModule
+import com.opensplit.integration.expense.expenseKoinModule
+import com.opensplit.integration.group.groupKoinModule
+import com.opensplit.integration.sync.syncKoinModule
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import org.koin.dsl.module

@@ -8,7 +8,7 @@ import com.opensplit.db.toDomain
 import com.opensplit.db.toEntity
 import com.opensplit.domain.Group
 import com.opensplit.dto.group.GroupDto
-import com.opensplit.features.group.GroupApi
+import com.opensplit.integration.group.GroupApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

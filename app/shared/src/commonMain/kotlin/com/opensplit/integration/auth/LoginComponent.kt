@@ -1,0 +1,153 @@
+package com.opensplit.integration.auth
+
+import com.ahparhizgar.katch.ClientError
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.pushNew
+import com.opensplit.component.CContext
+import com.opensplit.component.componentScope
+import com.opensplit.dto.auth.UserProfile
+import com.opensplit.remote.fieldErrors
+import com.opensplit.repository.ProfileRepository
+import com.opensplit.validation.auth.AuthValidation
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+interface LoginComponent {
+  val state: StateFlow<LoginViewState>
+
+  fun onEmailChanged(email: String)
+
+  fun onPasswordChanged(password: String)
+
+  fun onLoginClicked()
+
+  fun onForgotPasswordClicked()
+
+  fun onBackClicked()
+}
+
+interface LoginComponentFactory {
+  fun create(
+      context: CContext,
+      navigation: StackNavigation<AuthConfig>,
+      onAuthenticated: () -> Unit,
+  ): LoginComponent
+}
+
+data class LoginViewState(
+    val email: String = "",
+    val password: String = "",
+    val isSubmitting: Boolean = false,
+    val fieldErrors: Map<String, String> = emptyMap(),
+    val generalError: String? = null,
+)
+
+class DefaultLoginComponent(
+    private val context: CContext,
+    private val navigation: StackNavigation<AuthConfig>,
+    private val gateway: AuthApi,
+    private val tokenStorage: TokenStorage,
+    private val profileRepository: ProfileRepository,
+    private val onAuthenticated: () -> Unit,
+) : LoginComponent {
+  private val scope = context.componentScope()
+  private val _state = MutableStateFlow(LoginViewState())
+  override val state: StateFlow<LoginViewState> = _state
+
+  override fun onEmailChanged(email: String) {
+    _state.update {
+      it.copy(email = email, fieldErrors = it.fieldErrors - "email", generalError = null)
+    }
+  }
+
+  override fun onPasswordChanged(password: String) {
+    _state.update {
+      it.copy(password = password, fieldErrors = it.fieldErrors - "password", generalError = null)
+    }
+  }
+
+  override fun onLoginClicked() {
+    val current = _state.value
+    val validation = AuthValidation.validateSignIn(current.email, current.password)
+    if (!validation.isValid) {
+      _state.update { it.copy(fieldErrors = validation.errors, isSubmitting = false) }
+      return
+    }
+
+    _state.update { it.copy(isSubmitting = true, fieldErrors = emptyMap(), generalError = null) }
+
+    scope.launch {
+      try {
+        val result = gateway.signIn(current.email, current.password)
+        tokenStorage.saveAccessToken(result.session.accessToken)
+        profileRepository.setProfile(
+            UserProfile(
+                id = result.session.userId,
+                name = result.session.name,
+                email = result.session.email,
+            )
+        )
+        onAuthenticated()
+      } catch (e: ClientError) {
+        _state.update {
+          it.copy(fieldErrors = e.fieldErrors, generalError = e.userMessage, isSubmitting = false)
+        }
+      } finally {
+        _state.update { it.copy(isSubmitting = false) }
+      }
+    }
+  }
+
+  override fun onForgotPasswordClicked() {
+    navigation.pushNew(AuthConfig.ResetPassword)
+  }
+
+  override fun onBackClicked() {
+    navigation.pop()
+  }
+}
+
+class DefaultLoginComponentFactory(
+    private val gateway: AuthApi,
+    private val tokenStorage: TokenStorage,
+    private val profileRepository: ProfileRepository,
+) : LoginComponentFactory {
+  override fun create(
+      context: CContext,
+      navigation: StackNavigation<AuthConfig>,
+      onAuthenticated: () -> Unit,
+  ): LoginComponent =
+      DefaultLoginComponent(
+          context,
+          navigation,
+          gateway,
+          tokenStorage,
+          profileRepository,
+          onAuthenticated,
+      )
+}
+
+class FakeLoginComponent(state: LoginViewState = LoginViewState()) : LoginComponent {
+  override val state: StateFlow<LoginViewState> = MutableStateFlow(state)
+
+  override fun onEmailChanged(email: String) {}
+
+  override fun onPasswordChanged(password: String) {}
+
+  override fun onLoginClicked() {}
+
+  override fun onForgotPasswordClicked() {}
+
+  override fun onBackClicked() {}
+}
+
+class FakeLoginComponentFactory : LoginComponentFactory {
+  override fun create(
+      context: CContext,
+      navigation: StackNavigation<AuthConfig>,
+      onAuthenticated: () -> Unit,
+  ): LoginComponent = FakeLoginComponent()
+}

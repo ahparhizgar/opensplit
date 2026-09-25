@@ -1,0 +1,10 @@
+package com.opensplit.integration.expense
+
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
+import org.koin.dsl.module
+
+fun expenseKoinModule() = module {
+  singleOf(::ExpenseRepositoryImpl).bind<ExpenseRepository>()
+  single { ExpenseService(get(), get()) }
+}

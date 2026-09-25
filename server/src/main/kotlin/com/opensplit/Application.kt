@@ -1,11 +1,11 @@
 package com.opensplit
 
 import com.opensplit.database.DatabaseInitializer
-import com.opensplit.features.auth.authModule
-import com.opensplit.features.expense.expenseModule
-import com.opensplit.features.group.groupModule
-import com.opensplit.features.health.healthModule
-import com.opensplit.features.sync.syncModule
+import com.opensplit.integration.auth.authModule
+import com.opensplit.integration.expense.expenseModule
+import com.opensplit.integration.group.groupModule
+import com.opensplit.integration.health.healthModule
+import com.opensplit.integration.sync.syncModule
 import com.opensplit.plugins.configureDependencies
 import com.opensplit.plugins.configureHTTP
 import com.opensplit.plugins.configureSecurity
