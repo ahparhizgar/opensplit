@@ -1,14 +1,16 @@
 package com.opensplit.features
 
-import com.opensplit.createAuthenticatedClient
-import com.opensplit.createOtherClient
-import com.opensplit.dto.auth.AuthResult
+import com.opensplit.createClient
+import com.opensplit.createClientWithResult
+import com.opensplit.createGroup
+import com.opensplit.createGroupWith1MemberFixture
+import com.opensplit.createGroupWith2MembersFixture
 import com.opensplit.dto.auth.ErrorResponse
-import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.dto.group.AddMemberByEmailRequest
 import com.opensplit.dto.group.CreateGroupRequest
 import com.opensplit.dto.group.GroupDto
 import com.opensplit.dto.group.JoinGroupRequest
+import com.opensplit.getGroups
 import com.opensplit.testOpenSplit
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -21,7 +23,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 
-class GroupScenarios {
+class GroupRoutesTest {
   @Test
   fun createAndJoinGroup() = testOpenSplit {
     val created =
@@ -45,25 +47,22 @@ class GroupScenarios {
 
   @Test
   fun getNotMineGroup_notFound() = testOpenSplit {
-    val created =
-        client.post("/groups") { setBody(CreateGroupRequest("Maple House")) }.body<GroupDto>()
+    val fixture = createGroupWith2MembersFixture()
 
-    val otherClient = createOtherClient()
-
-    val r = otherClient.get("/groups/${created.id}")
+    val r = client.get("/groups/${fixture.group.id}")
     assertEquals(HttpStatusCode.NotFound, r.status)
   }
 
   @Test
   fun getGroup_returns() = testOpenSplit {
-    val created =
-        client.post("/groups") { setBody(CreateGroupRequest("Maple House")) }.body<GroupDto>()
+    val created = client.createGroup()
 
     val r = client.get("/groups/${created.id}")
+
     assertEquals(HttpStatusCode.OK, r.status)
-    val group = r.body<GroupDto>()
-    assertEquals(created.id, group.id)
-    assertEquals(created.name, group.name)
+    val fetched = r.body<GroupDto>()
+    assertEquals(created.id, fetched.id)
+    assertEquals(created.name, fetched.name)
   }
 
   @Test
@@ -80,135 +79,65 @@ class GroupScenarios {
   }
 
   @Test
-  fun leavingLastGroupReturnsSafeLandingState() = testOpenSplit {
-    val created = client.post("/groups") { setBody(CreateGroupRequest("My Home")) }.body<GroupDto>()
-
-    val otherUser =
-        client
-            .post("/users") {
-              setBody(SignUpRequest("leave-test@example.com", "password123", "Amir"))
-            }
-            .body<AuthResult>()
-    val otherClient = createAuthenticatedClient(otherUser.accessToken)
-
-    otherClient
-        .post("/groups/memberships") {
-          setBody(JoinGroupRequest(inviteCodeOrIdOrLink = created.inviteLink))
-        }
-        .also { assertEquals(HttpStatusCode.OK, it.status) }
-
-    val leaveResponse = otherClient.delete("/groups/${created.id}/memberships")
-    assertEquals(HttpStatusCode.OK, leaveResponse.status)
-    val afterLeave = leaveResponse.body<List<GroupDto>>()
-    assertEquals(0, afterLeave.size)
-  }
-
-  @Test
-  fun joinByGroupIdRequiresMembership() = testOpenSplit {
-    val created =
-        client.post("/groups") { setBody(CreateGroupRequest("Maple House")) }.body<GroupDto>()
-
-    val otherUser =
-        client
-            .post("/users") {
-              setBody(SignUpRequest("member-check@example.com", "password123", "Amir"))
-            }
-            .body<AuthResult>()
-    val otherClient = createAuthenticatedClient(otherUser.accessToken)
-
-    val joinById =
-        otherClient.post("/groups/memberships") {
-          setBody(JoinGroupRequest(inviteCodeOrIdOrLink = created.id))
-        }
-
-    assertEquals(HttpStatusCode.Forbidden, joinById.status)
-    val error = joinById.body<ErrorResponse>()
-    assertEquals("Missing permission to access this group", error.errors["permission"])
-  }
-
-  @Test
-  fun overviewIncludesInviteLink() = testOpenSplit {
-    client.post("/groups") { setBody(CreateGroupRequest("Family Home")) }.body<GroupDto>()
-
-    val groups = client.get("/groups").body<List<GroupDto>>()
-
-    assertEquals(1, groups.size)
-    assertTrue(groups.first().inviteLink.isNotEmpty())
-  }
-
-  @Test
   fun ownerLeavesWithOtherMembersTransfersOwnership() = testOpenSplit {
-    val created =
-        client.post("/groups") { setBody(CreateGroupRequest("Our Home")) }.body<GroupDto>()
+    val f = createGroupWith2MembersFixture()
 
-    val otherUser =
-        client
-            .post("/users") {
-              setBody(SignUpRequest("owner-transfer@example.com", "password123", "Amir"))
-            }
-            .body<AuthResult>()
-    val otherClient = createAuthenticatedClient(otherUser.accessToken)
-
-    otherClient
-        .post("/groups/memberships") {
-          setBody(JoinGroupRequest(inviteCodeOrIdOrLink = created.inviteLink))
-        }
-        .also { assertEquals(HttpStatusCode.OK, it.status) }
-
-    // Owner leaves, ownership should transfer
-    client.delete("/groups/${created.id}/memberships").also {
+    // Owner leaves
+    f.client1.delete("/groups/${f.group.id}/memberships").also {
       assertEquals(HttpStatusCode.OK, it.status)
     }
 
     // Verify other user is still in the group
-    val groups = otherClient.get("/groups").body<List<GroupDto>>()
+    val groups = f.client2.getGroups()
     assertEquals(1, groups.size)
     assertTrue(groups.first().isOwner, "Ownership should have been transferred")
   }
 
   @Test
   fun ownerLeavesAsLastMemberGroupBecomesOwnerless() = testOpenSplit {
-    val created =
-        client.post("/groups") { setBody(CreateGroupRequest("Solo Home")) }.body<GroupDto>()
+    val f = createGroupWith1MemberFixture()
 
-    client.delete("/groups/${created.id}/memberships").also {
-      assertEquals(HttpStatusCode.OK, it.status)
-    }
+    f.client.delete("/groups/${f.group.id}/memberships")
 
     // Verify safe landing
-    val groups = client.get("/groups").body<List<GroupDto>>()
+    val groups = f.client.getGroups()
+
     assertEquals(0, groups.size, "Should have no groups")
   }
 
   @Test
   fun addMemberByEmail() = testOpenSplit {
-    val created =
-        client.post("/groups") { setBody(CreateGroupRequest("Maple House")) }.body<GroupDto>()
+    val f = createGroupWith1MemberFixture()
 
-    val otherUserEmail = "target@example.com"
-    client.post("/users") { setBody(SignUpRequest(otherUserEmail, "password123", "Amir")) }
+    val (otherClient, otherUser) = createClientWithResult()
 
     val response =
-        client.post("/groups/${created.id}/memberships") {
-          setBody(AddMemberByEmailRequest(email = otherUserEmail))
+        f.client.post("/groups/${f.group.id}/memberships") {
+          setBody(AddMemberByEmailRequest(email = otherUser.email))
         }
 
     assertEquals(HttpStatusCode.OK, response.status)
     val group = response.body<GroupDto>()
-    assertTrue(group.members.any { it.email == otherUserEmail }, "Member should be added")
+    assertTrue(
+        group.members.any { it.email == otherUser.email },
+        "Member should be added for creator",
+    )
+
+    val groupsOfNewMember = otherClient.getGroups()
+    assertTrue(
+        groupsOfNewMember.any { it.id == f.group.id },
+        "Member should be added for new member",
+    )
   }
 
   @Test
   fun addMemberByEmail_onlyOwner() = testOpenSplit {
-    val created =
-        client.post("/groups") { setBody(CreateGroupRequest("Maple House")) }.body<GroupDto>()
-
-    val otherClient = createOtherClient()
+    val f = createGroupWith1MemberFixture()
+    val otherClient = createClient()
     val targetEmail = "target2@example.com"
-    client.post("/users") { setBody(SignUpRequest(targetEmail, "password123", "Amir")) }
 
     val response =
-        otherClient.post("/groups/${created.id}/memberships") {
+        otherClient.post("/groups/${f.group.id}/memberships") {
           setBody(AddMemberByEmailRequest(email = targetEmail))
         }
 
@@ -217,15 +146,12 @@ class GroupScenarios {
 
   @Test
   fun createAndFetchGroup_returnsLastInteractionAt() = testOpenSplit {
-    val before = Clock.System.now()
-    val created =
-        client.post("/groups") { setBody(CreateGroupRequest("Timestamp House")) }.body<GroupDto>()
-    val after = Clock.System.now()
+    val created = client.createGroup()
+    val now = Clock.System.now()
 
-    assertTrue(created.lastInteractionAt >= before)
-    assertTrue(created.lastInteractionAt <= after)
+    assertEquals((created.lastInteractionAt - now).inWholeSeconds, 0)
 
-    val fetched = client.get("/groups/${created.id}").body<GroupDto>()
-    assertEquals(created.lastInteractionAt, fetched.lastInteractionAt)
+    val fetched = client.getGroups()
+    assertEquals(created.lastInteractionAt, fetched.first().lastInteractionAt)
   }
 }

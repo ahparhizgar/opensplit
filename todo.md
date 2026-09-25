@@ -1,6 +1,11 @@
-1. implement delete group feature
-2. migrate server tests to Kotest and put assertion messages there
-3. migrate UI tests to Kotest?
+1. migrate server tests to Kotest and put assertion messages there
+2. migrate UI tests to Kotest?
+3. Improve code coverage for client
+4. Implement delete group feature
+5. Implement settlement
+6. Add Currency model
+7. Fix text fields font size problem
+8. remove joining by id feature
 
 
 ### Done

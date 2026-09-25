@@ -1,13 +1,18 @@
 package com.opensplit.features
 
-import com.opensplit.createAuthenticatedClient
+import com.opensplit.createClientByToken
+import com.opensplit.createClientWithResult
+import com.opensplit.createGroup
+import com.opensplit.dto.auth.AuthResult
 import com.opensplit.dto.auth.ErrorResponse
+import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.dto.expense.CreateExpenseRequest
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.group.CreateGroupRequest
 import com.opensplit.dto.group.GroupDto
+import com.opensplit.dto.group.JoinGroupRequest
 import com.opensplit.testOpenSplit
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -25,7 +30,7 @@ import kotlinx.coroutines.delay
 class ExpenseRoutesTest {
   @Test
   fun createExpense_success() = testOpenSplit {
-    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
+    val group = client.createGroup()
 
     val response =
         client.post("/groups/${group.id}/expenses") {
@@ -57,25 +62,10 @@ class ExpenseRoutesTest {
 
   @Test
   fun createExpense_complexSplit() = testOpenSplit {
-    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
-
-    // Create another user
-    val signUpResult =
-        client
-            .post("/users") {
-              setBody(
-                  com.opensplit.dto.auth.SignUpRequest("other@example.com", "password123", "Other")
-              )
-            }
-            .body<com.opensplit.dto.auth.AuthResult>()
-
-    val otherUserId = signUpResult.userId
-    val otherUserClient = createAuthenticatedClient(signUpResult.accessToken)
-
+    val group = client.createGroup()
+    val (otherUserClient, userId) = createClientWithResult()
     // Join the group with the other user
-    otherUserClient.post("/groups/join") {
-      setBody(com.opensplit.dto.group.JoinGroupRequest(group.inviteLink))
-    }
+    otherUserClient.post("/groups/join") { setBody(JoinGroupRequest(group.inviteLink)) }
 
     val response =
         client.post("/groups/${group.id}/expenses") {
@@ -91,14 +81,14 @@ class ExpenseRoutesTest {
                               consumedShare = 60.0,
                           ),
                           ParticipantShareDto(
-                              userId = otherUserId,
+                              userId = userId.userId,
                               paidShare = 0.0,
                               consumedShare = 40.0,
                           ),
                       ),
                   splitMethod =
                       SplitMethod.Unequally(
-                          mapOf(group.members[0].userId to 60.0, otherUserId to 40.0)
+                          mapOf(group.members[0].userId to 60.0, userId.userId to 40.0)
                       ),
               )
           )
@@ -114,7 +104,7 @@ class ExpenseRoutesTest {
 
   @Test
   fun createExpense_invalidData() = testOpenSplit {
-    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
+    val group = client.createGroup()
 
     val response =
         client.post("/groups/${group.id}/expenses") {
@@ -136,25 +126,19 @@ class ExpenseRoutesTest {
 
   @Test
   fun updateExpense_successfullyUpdateTitleAndAmount() = testOpenSplit {
-    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
+    val group = client.createGroup()
 
     // Create another user
     val signUpResult =
         client
-            .post("/users") {
-              setBody(
-                  com.opensplit.dto.auth.SignUpRequest("other@example.com", "password123", "Other")
-              )
-            }
-            .body<com.opensplit.dto.auth.AuthResult>()
+            .post("/users") { setBody(SignUpRequest("other@example.com", "password123", "Other")) }
+            .body<AuthResult>()
 
     val otherUserId = signUpResult.userId
-    val otherUserClient = createAuthenticatedClient(signUpResult.accessToken)
+    val otherUserClient = createClientByToken(signUpResult.accessToken)
 
     // Join the group with the other user
-    otherUserClient.post("/groups/join") {
-      setBody(com.opensplit.dto.group.JoinGroupRequest(group.inviteLink))
-    }
+    otherUserClient.post("/groups/join") { setBody(JoinGroupRequest(group.inviteLink)) }
 
     // Create initial expense
     val createResponse =
@@ -217,25 +201,19 @@ class ExpenseRoutesTest {
 
   @Test
   fun updateExpense_changePayer() = testOpenSplit {
-    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
+    val group = client.createGroup()
 
     // Create another user
     val signUpResult =
         client
-            .post("/users") {
-              setBody(
-                  com.opensplit.dto.auth.SignUpRequest("other@example.com", "password123", "Other")
-              )
-            }
-            .body<com.opensplit.dto.auth.AuthResult>()
+            .post("/users") { setBody(SignUpRequest("other@example.com", "password123", "Other")) }
+            .body<AuthResult>()
 
     val otherUserId = signUpResult.userId
-    val otherUserClient = createAuthenticatedClient(signUpResult.accessToken)
+    val otherUserClient = createClientByToken(signUpResult.accessToken)
 
     // Join the group
-    otherUserClient.post("/groups/join") {
-      setBody(com.opensplit.dto.group.JoinGroupRequest(group.inviteLink))
-    }
+    otherUserClient.post("/groups/join") { setBody(JoinGroupRequest(group.inviteLink)) }
 
     // Create initial expense with User A as payer
     val createResponse =
@@ -297,25 +275,19 @@ class ExpenseRoutesTest {
 
   @Test
   fun updateExpense_changeSplitMethodFromEqualToUnequal() = testOpenSplit {
-    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
+    val group = client.createGroup()
 
     // Create another user
     val signUpResult =
         client
-            .post("/users") {
-              setBody(
-                  com.opensplit.dto.auth.SignUpRequest("other@example.com", "password123", "Other")
-              )
-            }
-            .body<com.opensplit.dto.auth.AuthResult>()
+            .post("/users") { setBody(SignUpRequest("other@example.com", "password123", "Other")) }
+            .body<AuthResult>()
 
     val otherUserId = signUpResult.userId
-    val otherUserClient = createAuthenticatedClient(signUpResult.accessToken)
+    val otherUserClient = createClientByToken(signUpResult.accessToken)
 
     // Join the group
-    otherUserClient.post("/groups/join") {
-      setBody(com.opensplit.dto.group.JoinGroupRequest(group.inviteLink))
-    }
+    otherUserClient.post("/groups/join") { setBody(JoinGroupRequest(group.inviteLink)) }
 
     // Create initial expense with Equal split
     val createResponse =
@@ -380,7 +352,7 @@ class ExpenseRoutesTest {
 
   @Test
   fun updateExpense_nonExistentExpense() = testOpenSplit {
-    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
+    val group = client.createGroup()
 
     val response =
         client.put("/groups/${group.id}/expenses/non-existent-id") {
@@ -406,7 +378,7 @@ class ExpenseRoutesTest {
 
   @Test
   fun updateExpense_notAMember() = testOpenSplit {
-    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
+    val group = client.createGroup()
 
     // Create expense
     val createResponse =
@@ -434,16 +406,16 @@ class ExpenseRoutesTest {
         client
             .post("/users") {
               setBody(
-                  com.opensplit.dto.auth.SignUpRequest(
+                  SignUpRequest(
                       "outsider@example.com",
                       "password123",
                       "Outsider",
                   )
               )
             }
-            .body<com.opensplit.dto.auth.AuthResult>()
+            .body<AuthResult>()
 
-    val outsiderClient = createAuthenticatedClient(signUpResult.accessToken)
+    val outsiderClient = createClientByToken(signUpResult.accessToken)
 
     // Try to update the expense
     val response =

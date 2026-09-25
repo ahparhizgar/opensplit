@@ -1,6 +1,11 @@
 package com.opensplit
 
-import com.opensplit.database.*
+import com.opensplit.database.ChangeLog
+import com.opensplit.database.ExpenseParticipants
+import com.opensplit.database.Expenses
+import com.opensplit.database.Groups
+import com.opensplit.database.Memberships
+import com.opensplit.database.Users
 import com.opensplit.dto.auth.AuthResult
 import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.features.auth.AuthService
@@ -41,11 +46,12 @@ fun testOpenSplit(block: suspend ApplicationTestBuilder.() -> Unit) = testApplic
     token = auth.accessToken
   }
   startApplication()
-  client = createTestClient(token)
+  client = createClientByToken(token)
   block()
 }
 
-fun ApplicationTestBuilder.createAuthenticatedClient(token: String): HttpClient = createClient {
+@Deprecated("use createClient instead")
+fun ApplicationTestBuilder.createClientByToken(token: String): HttpClient = createClient {
   install(ContentNegotiation) { json() }
 
   install(DefaultRequest) { contentType(ContentType.Application.Json) }
@@ -58,15 +64,18 @@ fun ApplicationTestBuilder.createAuthenticatedClient(token: String): HttpClient 
   }
 }
 
-private fun ApplicationTestBuilder.createTestClient(token: String): HttpClient =
-    createAuthenticatedClient(token)
+suspend fun ApplicationTestBuilder.createClient(): HttpClient {
+  return createClientWithResult().first
+}
 
-suspend fun ApplicationTestBuilder.createOtherClient(): HttpClient {
+suspend fun ApplicationTestBuilder.createClientWithResult(
+    name: String = "Other"
+): Pair<HttpClient, AuthResult> {
   val otherUser =
       client
           .post("/users") {
-            setBody(SignUpRequest("other@example.com", "password123", "Other User"))
+            setBody(SignUpRequest("${name.lowercase()}@example.com", "password123", name))
           }
           .body<AuthResult>()
-  return createAuthenticatedClient(otherUser.accessToken)
+  return Pair(createClientByToken(otherUser.accessToken), otherUser)
 }

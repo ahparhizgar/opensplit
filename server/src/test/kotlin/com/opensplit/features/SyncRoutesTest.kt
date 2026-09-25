@@ -1,14 +1,13 @@
 package com.opensplit.features
 
-import com.opensplit.createAuthenticatedClient
+import com.opensplit.createClientByToken
+import com.opensplit.createGroup
 import com.opensplit.dto.auth.AuthResult
 import com.opensplit.dto.auth.SignUpRequest
 import com.opensplit.dto.expense.CreateExpenseRequest
 import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SplitMethod
-import com.opensplit.dto.group.CreateGroupRequest
-import com.opensplit.dto.group.GroupDto
 import com.opensplit.dto.group.JoinGroupRequest
 import com.opensplit.dto.sync.SyncResponse
 import com.opensplit.testOpenSplit
@@ -28,7 +27,7 @@ class SyncRoutesTest {
   @Test
   fun syncExpenses_twoUsers_createUpdateDeleteFlow() = testOpenSplit {
     // 1. User A creates group
-    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
+    val group = client.createGroup()
     val userAId = group.members[0].userId
 
     // 2. User B signs up and joins group
@@ -37,7 +36,7 @@ class SyncRoutesTest {
             .post("/users") { setBody(SignUpRequest("userB@example.com", "password123", "User B")) }
             .body<AuthResult>()
 
-    val userBClient = createAuthenticatedClient(userBAuth.accessToken)
+    val userBClient = createClientByToken(userBAuth.accessToken)
     val joinRes =
         userBClient.post("/groups/memberships") { setBody(JoinGroupRequest(group.inviteLink)) }
     assertEquals(HttpStatusCode.OK, joinRes.status)
@@ -132,7 +131,7 @@ class SyncRoutesTest {
   @Test
   fun syncExpenses_groupIsolation() = testOpenSplit {
     // 1. User A creates group & expense
-    val group = client.post("/groups") { setBody(CreateGroupRequest("Home")) }.body<GroupDto>()
+    val group = client.createGroup()
     val userAId = group.members[0].userId
 
     client.post("/groups/${group.id}/expenses") {
@@ -155,7 +154,7 @@ class SyncRoutesTest {
             }
             .body<AuthResult>()
 
-    val userCClient = createAuthenticatedClient(userCAuth.accessToken)
+    val userCClient = createClientByToken(userCAuth.accessToken)
     val syncResponse = userCClient.get("/sync?sinceVersion=0").body<SyncResponse>()
 
     // User C should NOT see User A's group expenses
