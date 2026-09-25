@@ -9,7 +9,6 @@ import com.opensplit.dto.expense.ParticipantShareDto
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.dto.group.GroupDto
 import com.opensplit.dto.group.GroupMemberDto
-import kotlin.time.Instant
 import kotlinx.serialization.json.Json
 
 fun GroupDto.toEntity() =
@@ -18,7 +17,7 @@ fun GroupDto.toEntity() =
         name = name,
         inviteLink = inviteLink,
         isOwner = isOwner,
-        lastInteractionAtEpochMillis = lastInteractionAt.toEpochMilliseconds(),
+        lastInteractionAtEpochMillis = lastInteractionAt,
     )
 
 fun GroupEntity.toDto(members: List<GroupMemberDto>) =
@@ -28,7 +27,7 @@ fun GroupEntity.toDto(members: List<GroupMemberDto>) =
         members = members,
         inviteLink = inviteLink,
         isOwner = isOwner,
-        lastInteractionAt = Instant.fromEpochMilliseconds(lastInteractionAtEpochMillis),
+        lastInteractionAt = lastInteractionAtEpochMillis,
     )
 
 fun GroupWithMembers.toDto() = group.toDto(members.map { it.toDto() })
@@ -42,7 +41,7 @@ fun GroupWithMembers.toDomain(): Group {
       isOwner = group.isOwner,
       inviteLink = group.inviteLink,
       balance = memberList.find { it.isCurrentUser }?.balance ?: 0.0,
-      lastInteractionAt = Instant.fromEpochMilliseconds(group.lastInteractionAtEpochMillis),
+      lastInteractionAt = group.lastInteractionAtEpochMillis,
   )
 }
 
@@ -106,7 +105,7 @@ fun ExpenseDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED) =
         title = title,
         amount = amount,
         creator = creator,
-        createdAtEpochMillis = createdAt.toEpochMilliseconds(),
+        createdAtEpochMillis = createdAt,
         splitMethodJson = Json.encodeToString(splitMethod),
         syncStatus = syncStatus,
     )
@@ -118,7 +117,7 @@ fun ExpenseEntity.toDto(participants: List<ParticipantShareDto>) =
         title = title,
         amount = amount,
         creator = creator,
-        createdAt = Instant.fromEpochMilliseconds(createdAtEpochMillis),
+        createdAt = createdAtEpochMillis,
         shares = participants,
         splitMethod = Json.decodeFromString(splitMethodJson),
         syncStatus = syncStatus,
@@ -131,7 +130,7 @@ fun ExpenseEntity.toDomain(participants: List<ParticipantShare>) =
         title = title,
         amount = amount,
         creator = creator,
-        createdAt = Instant.fromEpochMilliseconds(createdAtEpochMillis),
+        createdAt = createdAtEpochMillis,
         participants = participants,
         splitMethod = Json.decodeFromString(splitMethodJson),
         syncStatus = syncStatus,

@@ -149,7 +149,7 @@ class GroupFlowComponentTest : BehaviorSpec() {
                     name = it.name,
                     inviteLink = it.inviteLink,
                     isOwner = it.isOwner,
-                    lastInteractionAtEpochMillis = 0L,
+                    lastInteractionAtEpochMillis = Instant.DISTANT_PAST,
                 )
               },
               emptyList(),

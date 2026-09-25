@@ -5,6 +5,7 @@ import androidx.room3.Entity
 import androidx.room3.PrimaryKey
 import androidx.room3.Relation
 import com.opensplit.dto.expense.SyncStatus
+import kotlin.time.Instant
 
 @Entity(tableName = "groups")
 data class GroupEntity(
@@ -12,7 +13,7 @@ data class GroupEntity(
     val name: String,
     val inviteLink: String,
     val isOwner: Boolean,
-    val lastInteractionAtEpochMillis: Long = 0L,
+    val lastInteractionAtEpochMillis: Instant = Instant.DISTANT_PAST,
 )
 
 @Entity(tableName = "group_members", primaryKeys = ["groupId", "userId"])
@@ -38,7 +39,7 @@ data class ExpenseEntity(
     val title: String,
     val amount: Double,
     val creator: String,
-    val createdAtEpochMillis: Long,
+    val createdAtEpochMillis: Instant,
     val splitMethodJson: String,
     val syncStatus: SyncStatus,
 )
@@ -58,7 +59,7 @@ data class SyncQueueEntity(
     val entityType: String,
     val entityId: String,
     val metadata: String? = null,
-    val createdAt: Long,
+    val createdAt: Instant,
 )
 
 @Entity(tableName = "sync_metadata")

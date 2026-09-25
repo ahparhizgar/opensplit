@@ -67,7 +67,7 @@ class ExpenseRepository(
             title = title,
             amount = amount,
             creator = creator,
-            createdAtEpochMillis = now.toEpochMilliseconds(),
+            createdAtEpochMillis = now,
             splitMethodJson = Json.encodeToString(splitMethod),
             syncStatus = SyncStatus.PENDING,
         )
@@ -79,7 +79,7 @@ class ExpenseRepository(
             operation = OperationType.CREATE,
             entityType = "EXPENSE",
             entityId = expenseId,
-            createdAt = now.toEpochMilliseconds(),
+            createdAt = now,
         )
 
     database.useWriterConnection { connection ->
@@ -91,7 +91,7 @@ class ExpenseRepository(
           val delta = participant.paidShare - participant.consumedShare
           groupDao.updateMemberBalance(groupId, participant.userId, delta)
         }
-        groupDao.updateLastInteraction(groupId, now.toEpochMilliseconds())
+        groupDao.updateLastInteraction(groupId, now)
 
         syncQueueDao.enqueue(syncEntry)
       }
@@ -112,14 +112,15 @@ class ExpenseRepository(
 
         expenseDao.deleteExpense(expenseId)
         expenseDao.deleteParticipants(expenseId)
-        groupDao.updateLastInteraction(groupId, Clock.System.now().toEpochMilliseconds())
+        val now = Clock.System.now()
+        groupDao.updateLastInteraction(groupId, now)
         syncQueueDao.enqueue(
             SyncQueueEntity(
                 operation = OperationType.DELETE,
                 entityType = "EXPENSE",
                 entityId = expenseId,
                 metadata = groupId,
-                createdAt = Clock.System.now().toEpochMilliseconds(),
+                createdAt = now,
             )
         )
       }
@@ -148,8 +149,7 @@ class ExpenseRepository(
             title = title,
             amount = amount,
             creator = creator,
-            createdAtEpochMillis =
-                expenseDao.getExpense(expenseId)?.createdAtEpochMillis ?: now.toEpochMilliseconds(),
+            createdAtEpochMillis = expenseDao.getExpense(expenseId)?.createdAtEpochMillis ?: now,
             splitMethodJson = Json.encodeToString(splitMethod),
             syncStatus = SyncStatus.PENDING,
         )
@@ -172,14 +172,14 @@ class ExpenseRepository(
           val delta = participant.paidShare - participant.consumedShare
           groupDao.updateMemberBalance(groupId, participant.userId, delta)
         }
-        groupDao.updateLastInteraction(groupId, now.toEpochMilliseconds())
+        groupDao.updateLastInteraction(groupId, now)
 
         val syncEntry =
             SyncQueueEntity(
                 operation = OperationType.UPDATE,
                 entityType = "EXPENSE",
                 entityId = expenseId,
-                createdAt = now.toEpochMilliseconds(),
+                createdAt = now,
             )
 
         syncQueueDao.enqueue(syncEntry)

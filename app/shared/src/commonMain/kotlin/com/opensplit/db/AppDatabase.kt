@@ -1,5 +1,6 @@
 package com.opensplit.db
 
+import androidx.room3.ColumnTypeConverters
 import androidx.room3.ConstructedBy
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
@@ -22,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
         ],
     version = 4,
 )
+@ColumnTypeConverters(InstantConverter::class)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
   abstract fun groupDao(): GroupDao
