@@ -55,7 +55,12 @@ jobs:
           fi
 
       - name: Run unit tests and coverage
-        run: ./gradlew jvmTest test koverXmlReport
+        run: |
+          GRADLE_ARGS=""
+          if [[ "${DEBUG_LOGGING}" == "true" ]]; then
+            GRADLE_ARGS="--info"
+          fi
+          ./gradlew jvmTest test koverXmlReport $GRADLE_ARGS
 
       - name: Append Coverage to GitHub Summary
         run: |
