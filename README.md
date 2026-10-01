@@ -6,7 +6,7 @@
 
 # OpenSplit
 
-**share expenses with your roommate, travel companions, etc...**
+**Share expenses with your roommate, travel companions, etc...**
 
 # ToC
 
@@ -20,29 +20,29 @@ Shared code are DTOs and verification logic.
 
 ```mermaid
 graph BT
-    %% Core module
-    subgraph CoreModule [Core Layer]
+%% Core module
+    subgraph CoreModule [Core Module]
         core[core]
     end
 
-    %% Server module
-    subgraph ServerModule [Server Layer]
+%% Server module
+    subgraph ServerModule [Server Module]
         server[server]
     end
 
-    %% Client module and submodules
-    subgraph client [client]
+%% Client module and submodules
+    subgraph client [Client Module]
+        direction BT
         shared[shared]
         androidApp[androidApp]
         DesktopApp[DesktopApp]
         iosApp[iosApp]
     end
 
-    %% Dependencies flowing bottom to top
+%% Dependencies flowing bottom to top
     server --> core
     client --> core
-
-    %% Internal client relationships
+%% Internal client relationships
     androidApp -.-> shared
     DesktopApp -.-> shared
     iosApp -.-> shared
@@ -66,6 +66,42 @@ This project uses **Kover** to measure and report code coverage across the proje
 - **Module-specific Reports**:
     - **Server**: `gradle :server:koverHtmlReport`
     - **Client**: `gradle :app:shared:koverHtmlReport`
+
+## Error Handling
+
+This project uses [Katch](https://github.com/ahparhizgar/katch/) a library form the same author;
+which wraps http and network errors into a hierarchical exception model.
+
+```text
+ApiCallError (base class)
+├─ InvalidDataError
+├─ NetworkError           // Connection issues, timeouts
+└─ HttpError              // HTTP status code errors
+    ├─ ServerError        // 5xx errors
+    └─ ClientError        // 4xx errors
+        ├─ BadRequest     // 400
+        ├─ Unauthorized   // 401
+        :
+        └─ OtherClientError // Other 4xx codes
+```
+
+These exceptions are automatically handled using a `CoroutineExceptionHandler` in the client, and a `MessageShower` is used to display a snack-bar message to the user.
+
+```kotlin
+interface MessageShower {
+  suspend fun showSnackbarForResult(message: SnackbarMessage): SnackbarResult
+
+  suspend fun showSnackbar(message: SnackbarMessage)
+}
+```
+
+So launching a network request is as simple as:
+```kotlin
+scope.launch {
+  val result = apiCall()
+  // Network errors are handled automatically
+}
+```
 
 ## Offline-First Architecture
 
