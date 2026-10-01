@@ -135,7 +135,7 @@ public class PreviewScreenshotTest(
           DelegatingPreview(
               delegate = originalPreview,
               newPreviewInfo = newPreviewInfo,
-              newMethodName = "${originalPreview.methodName}_${device.sizeName}",
+              newMethodName = originalPreview.methodName,
           )
       return DesktopPreviewTestParameter(newPreview, param.manualClockOptions)
     }
