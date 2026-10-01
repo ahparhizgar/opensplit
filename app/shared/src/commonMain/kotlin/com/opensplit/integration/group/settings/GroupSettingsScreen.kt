@@ -274,7 +274,7 @@ private fun MemberItem(member: Member, modifier: Modifier = Modifier) {
   }
 }
 
-@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Preview
 @Composable
 private fun GroupSettingsScreenPreview() {
   OpenSplitTheme { GroupSettingsScreen(FakeGroupSettingsComponent()) }

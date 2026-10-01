@@ -1,3 +1,4 @@
+import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -12,6 +13,7 @@ plugins {
   alias(libs.plugins.ktfmt)
   alias(libs.plugins.androidx.room)
   alias(libs.plugins.kover)
+  alias(libs.plugins.roborazzi)
 }
 
 kover {
@@ -26,6 +28,15 @@ kover {
 }
 
 room3 { schemaDirectory("$projectDir/schemas") }
+
+@OptIn(ExperimentalRoborazziApi::class)
+roborazzi {
+  outputDir.set(rootProject.file(".screenshots"))
+  generateComposePreviewDesktopTests {
+    enable = false
+    roborazzi.generateComposePreviewDesktopTests.packages.add("com.opensplit")
+  }
+}
 
 kotlin {
   listOf(
@@ -117,6 +128,11 @@ kotlin {
       implementation(libs.ktor.serverNetty)
       implementation(libs.ktor.serverTestHost)
       implementation(libs.kotest.junit)
+      implementation(libs.junit)
+      implementation(libs.junit.vintage.engine)
+      implementation(libs.roborazzi.compose.desktop)
+      implementation(libs.roborazzi.compose.desktopPreviewScannerSupport)
+      implementation(libs.composablePreviewScanner)
     }
     wasmJsMain.dependencies {
       implementation(libs.androidx.datastore.core.okio)

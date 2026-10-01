@@ -15,6 +15,7 @@ plugins {
   alias(libs.plugins.ktfmt)
   alias(libs.plugins.androidx.room) apply false
   alias(libs.plugins.kover)
+  alias(libs.plugins.roborazzi) apply false
 }
 
 dependencies {
