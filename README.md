@@ -105,10 +105,19 @@ scope.launch {
 
 ## Offline-First Architecture
 
-This project demonstrates a robust **Offline-First** synchronization.
+This project implements a local-first, bidirectional sync approach. The UI binds directly to the local database, while mutations are queued in an outbox and downstream updates are fetched via versioned delta sync.
 
-- **Local-Source-of-Truth**: The UI observes Room database `Flows` directly. All user actions (
-  creating expenses, joining groups) are written to local storage and a **Sync Outbox** immediately,
+```mermaid
+flowchart LR
+    UI[UI / User Actions] -->|Write & Observe| DB[(Local Room DB)]
+    DB -->|Enqueue Op| Queue[Sync Outbox Queue]
+    Queue -->|Process FIFO| SyncMgr[SyncManager]
+    SyncMgr -->|1. Upstream mutations| Server[Ktor Server]
+    Server -->|2. Downstream delta sync| SyncMgr
+    SyncMgr -->|Reconcile & Mark SYNCED| DB
+```
+- **Local-Source-of-Truth**: The UI observes Room database `Flows` directly. User actions (
+  e.g. creating/editting expenses) are written to local storage and a **Sync Outbox** immediately,
   providing zero-latency feedback.
 - **Hybrid Sync Strategy**:
     - **Delta Sync (Expenses)**: Uses a shared global version sequence on the backend. Clients pull
@@ -116,7 +125,7 @@ This project demonstrates a robust **Offline-First** synchronization.
     - **Full-Refresh (Groups)**: Semi-static metadata is refetched on app launch and navigation to
       ensure consistency, while keeping the local cache for offline navigation.
 - **Background Orchestration**: A `SyncManager` handles non-blocking background polling, outbox
-  processing, and conflict-free application of server deltas, ensuring the app remains fully
+  processing, and application of server deltas, ensuring the app remains 
   functional even with intermittent connectivity.
 
 ## 📸 Screenshot Testing
