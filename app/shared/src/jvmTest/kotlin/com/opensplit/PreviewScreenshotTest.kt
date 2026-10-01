@@ -1,5 +1,8 @@
 package com.opensplit
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.github.takahirom.roborazzi.AnnotationFilter
@@ -21,6 +24,36 @@ enum class ScreenDevice(val sizeName: String, val size: DpSize) {
   DESKTOP("desktop", DpSize(1280.dp, 800.dp)),
 }
 
+val localSystemThemeReflect: ProvidableCompositionLocal<Any>? by lazy {
+  try {
+    val clazz = Class.forName("androidx.compose.ui.SystemThemeKt")
+    val method = clazz.getDeclaredMethod("getLocalSystemTheme")
+    method.isAccessible = true
+    @Suppress("UNCHECKED_CAST")
+    method.invoke(null) as ProvidableCompositionLocal<Any>
+  } catch (e: Exception) {
+    null
+  }
+}
+
+val systemThemeLightReflect: Any? by lazy {
+  try {
+    val clazz = Class.forName("androidx.compose.ui.SystemTheme")
+    clazz.enumConstants.first { it.toString() == "Light" }
+  } catch (e: Exception) {
+    null
+  }
+}
+
+val systemThemeDarkReflect: Any? by lazy {
+  try {
+    val clazz = Class.forName("androidx.compose.ui.SystemTheme")
+    clazz.enumConstants.first { it.toString() == "Dark" }
+  } catch (e: Exception) {
+    null
+  }
+}
+
 class DelegatingPreview(
     private val delegate: ComposablePreview<AndroidPreviewInfo>,
     private val newPreviewInfo: AndroidPreviewInfo,
@@ -31,6 +64,20 @@ class DelegatingPreview(
 
   override val methodName: String
     get() = newMethodName
+
+  @Composable
+  override fun invoke() {
+    val isDark = (newPreviewInfo.uiMode and 0x30) == 0x20
+
+    val localSystemTheme = localSystemThemeReflect
+    val themeValue = if (isDark) systemThemeDarkReflect else systemThemeLightReflect
+
+    if (localSystemTheme != null && themeValue != null) {
+      CompositionLocalProvider(localSystemTheme provides themeValue) { delegate.invoke() }
+    } else {
+      delegate.invoke()
+    }
+  }
 }
 
 @RunWith(Parameterized::class)
@@ -88,7 +135,7 @@ public class PreviewScreenshotTest(
           DelegatingPreview(
               delegate = originalPreview,
               newPreviewInfo = newPreviewInfo,
-              newMethodName = originalPreview.methodName,
+              newMethodName = "${originalPreview.methodName}_${device.sizeName}",
           )
       return DesktopPreviewTestParameter(newPreview, param.manualClockOptions)
     }
