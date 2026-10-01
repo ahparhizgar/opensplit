@@ -22,6 +22,10 @@ It's a good practice to keep screen functions small by extracting private sectio
 Pass the whole decompose component to extracted private composables. don't split states and callbacks in them.
 But for public components which there is no specific component, pass states and callbacks instead of decompose component.
 Always use Value class for states.
+Use the concept of flows. flows are separate navigations from the main root navigation. e.g. when
+you want to creat a group of users, you create a flow component for that because creating a group
+involve multiple screens and components. So when there is a related set of components, create a 
+flow component for them. In this way, removing the whole flow form the root navigations is so easy.
 
 # Using kotlin
 Always use Clock.System.now() for time, don't use System.currentTimeMillis() or Instant.now().
@@ -87,5 +91,5 @@ Project important niche points
 
 Run verification gate after finishing a task:
 ```bash
-./gradlew jvmTest test ktfmtFormat --offline
+./gradlew jvmTest test ktfmtFormat --offline --continue 2>&1 | grep -E "e: |FAILED"
 ```

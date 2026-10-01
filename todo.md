@@ -4,6 +4,8 @@
 4. Add Currency model
 5. Fix text fields font size problem
 6. remove joining by id feature
+7. add screenshot test (paparazzi)
+8. show sync status on expense items in expense list
 
 
 ### Done

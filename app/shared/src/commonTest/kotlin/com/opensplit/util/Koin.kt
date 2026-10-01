@@ -9,7 +9,7 @@ import com.opensplit.fake.FakeExpenseApi
 import com.opensplit.fake.FakeGroupApi
 import com.opensplit.fake.FakeSyncApi
 import com.opensplit.integration.auth.AuthApi
-import com.opensplit.integration.auth.NoOpTokenStorage
+import com.opensplit.integration.auth.FakeTokenStorage
 import com.opensplit.integration.auth.TokenStorage
 import com.opensplit.integration.expense.ExpenseApi
 import com.opensplit.integration.group.GroupApi
@@ -59,7 +59,7 @@ fun integrationTestModule() = module {
     )
   }
   single { FakeAuthApi() }.bind<AuthApi>()
-  single { NoOpTokenStorage() }.bind<TokenStorage>()
+  single { FakeTokenStorage() }.bind<TokenStorage>()
   single { InMemoryProfileRepository() }.bind<ProfileRepository>()
   single { FakeGroupApi() }.bind<GroupApi>()
   single { FakeExpenseApi() }.bind<ExpenseApi>()
