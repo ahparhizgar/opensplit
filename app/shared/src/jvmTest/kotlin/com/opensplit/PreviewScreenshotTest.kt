@@ -35,7 +35,7 @@ class DelegatingPreview(
 
     val localSystemTheme = localSystemThemeReflect
     val themeValue = if (isDark) systemThemeDarkReflect else systemThemeLightReflect
-      isSystemInDarkTheme()
+    isSystemInDarkTheme()
     if (localSystemTheme != null && themeValue != null) {
       CompositionLocalProvider(localSystemTheme provides themeValue) { delegate.invoke() }
     } else {
@@ -57,8 +57,7 @@ class PreviewScreenshotTest(
       tester.options().testLifecycleOptions
           as DesktopComposePreviewTester.Options.JUnit4TestLifecycleOptions
 
-  @get:Rule
-  val rule: TestRule = testLifecycleOptions.testRuleFactory()
+  @get:Rule val rule: TestRule = testLifecycleOptions.testRuleFactory()
 
   @Test
   fun test() {
@@ -108,34 +107,33 @@ class PreviewScreenshotTest(
   }
 }
 
-
 // Reflection stuff to address bug of Roborazzi
 val localSystemThemeReflect: ProvidableCompositionLocal<Any>? by lazy {
-    try {
-        val clazz = Class.forName("androidx.compose.ui.SystemThemeKt")
-        val method = clazz.getDeclaredMethod("getLocalSystemTheme")
-        method.isAccessible = true
-        @Suppress("UNCHECKED_CAST")
-        method.invoke(null) as ProvidableCompositionLocal<Any>
-    } catch (e: Exception) {
-        null
-    }
+  try {
+    val clazz = Class.forName("androidx.compose.ui.SystemThemeKt")
+    val method = clazz.getDeclaredMethod("getLocalSystemTheme")
+    method.isAccessible = true
+    @Suppress("UNCHECKED_CAST")
+    method.invoke(null) as ProvidableCompositionLocal<Any>
+  } catch (e: Exception) {
+    null
+  }
 }
 
 val systemThemeLightReflect: Any? by lazy {
-    try {
-        val clazz = Class.forName("androidx.compose.ui.SystemTheme")
-        clazz.enumConstants.first { it.toString() == "Light" }
-    } catch (e: Exception) {
-        null
-    }
+  try {
+    val clazz = Class.forName("org.jetbrains.skiko.SystemTheme")
+    clazz.enumConstants.first { it.toString() == "LIGHT" || it.toString() == "Light" }
+  } catch (e: Exception) {
+    null
+  }
 }
 
 val systemThemeDarkReflect: Any? by lazy {
-    try {
-        val clazz = Class.forName("androidx.compose.ui.SystemTheme")
-        clazz.enumConstants.first { it.toString() == "Dark" }
-    } catch (e: Exception) {
-        null
-    }
+  try {
+    val clazz = Class.forName("org.jetbrains.skiko.SystemTheme")
+    clazz.enumConstants.first { it.toString() == "DARK" || it.toString() == "Dark" }
+  } catch (e: Exception) {
+    null
+  }
 }

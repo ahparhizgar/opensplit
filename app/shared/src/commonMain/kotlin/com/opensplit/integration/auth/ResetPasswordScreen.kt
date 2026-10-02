@@ -27,7 +27,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -100,10 +99,6 @@ fun ResetPasswordScreen(component: ResetPasswordComponent, modifier: Modifier = 
           onClick = component::onResetClicked,
           modifier = Modifier.fillMaxWidth().height(56.dp),
           shape = RoundedCornerShape(8.dp),
-          colors =
-              ButtonDefaults.buttonColors(
-                  containerColor = Color(0xFF66CDAA)
-              ), // Minty green as in screenshot
       ) {
         Text("Reset password", style = MaterialTheme.typography.titleMedium)
       }
