@@ -34,3 +34,10 @@ This project demonstrates a robust **Offline-First** synchronization.
     - **Delta Sync (Expenses)**: Uses a shared global version sequence on the backend. Clients pull only incremental changes since their last `sync_version`, minimizing payload size.
     - **Full-Refresh (Groups)**: Semi-static metadata is refetched on app launch and navigation to ensure consistency, while keeping the local cache for offline navigation.
 - **Background Orchestration**: A `SyncManager` handles non-blocking background polling, outbox processing, and conflict-free application of server deltas, ensuring the app remains fully functional even with intermittent connectivity.
+
+## 📸 Screenshot Testing
+
+This project uses **Roborazzi** to automatically test the UI.
+
+- **One Annotation Does It All**: Just tag the screens with `@ScreenPreview` to automatically test Mobile Dark, and Desktop Light modes. For smaller parts of the UI, use `@ComponentPreview` to test Light and Dark modes.
+- **Automatic Discovery**: There is no need to write manual test files for previews! Roborazzi scans the codebase and tests them automatically. To skip a specific preview, simply add `@ExcludeScreenshotTest`.
