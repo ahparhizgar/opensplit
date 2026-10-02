@@ -36,11 +36,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -230,7 +230,7 @@ private fun LogoutButton(
   }
 }
 
-@PreviewScreenSizes
+@ScreenPreview
 @Composable
 private fun ProfileScreenPreview() {
   OpenSplitTheme {

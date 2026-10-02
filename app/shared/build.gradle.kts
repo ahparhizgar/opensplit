@@ -130,6 +130,7 @@ kotlin {
       implementation(libs.kotest.junit)
       implementation(libs.junit)
       implementation(libs.junit.vintage.engine)
+      implementation(libs.roborazzi.core)
       implementation(libs.roborazzi.compose.desktop)
       implementation(libs.roborazzi.compose.desktopPreviewScannerSupport)
       implementation(libs.composablePreviewScanner)

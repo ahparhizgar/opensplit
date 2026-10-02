@@ -35,12 +35,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.opensplit.domain.FakeExpenseFactory
 import com.opensplit.domain.FakeGroupFactory
 import com.opensplit.integration.expense.ExpenseItem
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 import com.opensplit.ui.components.AdaptiveTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -172,7 +172,7 @@ fun GroupDetailsScreen(
   }
 }
 
-@Preview
+@ScreenPreview
 @Composable
 fun GroupDetailsScreenLoadingPreview() {
   OpenSplitTheme {
@@ -182,7 +182,7 @@ fun GroupDetailsScreenLoadingPreview() {
   }
 }
 
-@Preview
+@ScreenPreview
 @Composable
 fun GroupDetailsScreenPreview() {
   OpenSplitTheme {
@@ -198,7 +198,7 @@ fun GroupDetailsScreenPreview() {
   }
 }
 
-@Preview
+@ScreenPreview
 @Composable
 fun GroupDetailsScreenWithMemberPreview() {
   OpenSplitTheme {

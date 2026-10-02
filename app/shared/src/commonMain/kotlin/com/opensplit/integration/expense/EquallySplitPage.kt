@@ -16,11 +16,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 
 @Composable
 fun EquallySplitPage(component: EquallySplitComponent, onDone: () -> Unit = {}) {
@@ -62,7 +62,7 @@ fun EquallySplitPage(component: EquallySplitComponent, onDone: () -> Unit = {}) 
   }
 }
 
-@Preview
+@ScreenPreview
 @Composable
 private fun EquallySplitPreview() {
   OpenSplitTheme {

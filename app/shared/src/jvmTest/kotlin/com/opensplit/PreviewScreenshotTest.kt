@@ -1,10 +1,9 @@
 package com.opensplit
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
 import com.github.takahirom.roborazzi.AnnotationFilter
 import com.github.takahirom.roborazzi.DesktopComposePreviewTester
 import com.github.takahirom.roborazzi.DesktopPreviewTestParameter
@@ -18,41 +17,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import sergio.sastre.composable.preview.scanner.android.AndroidPreviewInfo
 import sergio.sastre.composable.preview.scanner.core.preview.ComposablePreview
-
-enum class ScreenDevice(val sizeName: String, val size: DpSize) {
-  MOBILE("mobile", DpSize(390.dp, 844.dp)),
-  DESKTOP("desktop", DpSize(1280.dp, 800.dp)),
-}
-
-val localSystemThemeReflect: ProvidableCompositionLocal<Any>? by lazy {
-  try {
-    val clazz = Class.forName("androidx.compose.ui.SystemThemeKt")
-    val method = clazz.getDeclaredMethod("getLocalSystemTheme")
-    method.isAccessible = true
-    @Suppress("UNCHECKED_CAST")
-    method.invoke(null) as ProvidableCompositionLocal<Any>
-  } catch (e: Exception) {
-    null
-  }
-}
-
-val systemThemeLightReflect: Any? by lazy {
-  try {
-    val clazz = Class.forName("androidx.compose.ui.SystemTheme")
-    clazz.enumConstants.first { it.toString() == "Light" }
-  } catch (e: Exception) {
-    null
-  }
-}
-
-val systemThemeDarkReflect: Any? by lazy {
-  try {
-    val clazz = Class.forName("androidx.compose.ui.SystemTheme")
-    clazz.enumConstants.first { it.toString() == "Dark" }
-  } catch (e: Exception) {
-    null
-  }
-}
 
 class DelegatingPreview(
     private val delegate: ComposablePreview<AndroidPreviewInfo>,
@@ -71,7 +35,7 @@ class DelegatingPreview(
 
     val localSystemTheme = localSystemThemeReflect
     val themeValue = if (isDark) systemThemeDarkReflect else systemThemeLightReflect
-
+      isSystemInDarkTheme()
     if (localSystemTheme != null && themeValue != null) {
       CompositionLocalProvider(localSystemTheme provides themeValue) { delegate.invoke() }
     } else {
@@ -82,7 +46,7 @@ class DelegatingPreview(
 
 @RunWith(Parameterized::class)
 @OptIn(InternalRoborazziApi::class, ExperimentalRoborazziApi::class)
-public class PreviewScreenshotTest(
+class PreviewScreenshotTest(
     private val testParameter: DesktopPreviewTestParameter,
 ) {
   private val tester =
@@ -93,15 +57,16 @@ public class PreviewScreenshotTest(
       tester.options().testLifecycleOptions
           as DesktopComposePreviewTester.Options.JUnit4TestLifecycleOptions
 
-  @get:Rule public val rule: TestRule = testLifecycleOptions.testRuleFactory()
+  @get:Rule
+  val rule: TestRule = testLifecycleOptions.testRuleFactory()
 
   @Test
-  public fun test() {
+  fun test() {
     tester.test(testParameter)
   }
 
-  public companion object {
-    public val testParameters: List<DesktopPreviewTestParameter> by lazy {
+  companion object {
+    val testParameters: List<DesktopPreviewTestParameter> by lazy {
       setupDefaultOptions()
       val tester =
           getDesktopComposePreviewTester(
@@ -112,35 +77,20 @@ public class PreviewScreenshotTest(
 
     @JvmStatic
     @Parameterized.Parameters(name = "{0}")
-    public fun values(): List<DesktopPreviewTestParameter> {
-      return testParameters.flatMap { param ->
-        listOf(
-            createDeviceParam(param, ScreenDevice.MOBILE),
-            createDeviceParam(param, ScreenDevice.DESKTOP),
-        )
+    fun values(): List<DesktopPreviewTestParameter> {
+      return testParameters.map { param ->
+        val originalPreview = param.preview
+        val newPreview =
+            DelegatingPreview(
+                delegate = originalPreview,
+                newPreviewInfo = originalPreview.previewInfo,
+                newMethodName = originalPreview.methodName,
+            )
+        DesktopPreviewTestParameter(newPreview, param.manualClockOptions)
       }
     }
 
-    private fun createDeviceParam(
-        param: DesktopPreviewTestParameter,
-        device: ScreenDevice,
-    ): DesktopPreviewTestParameter {
-      val originalPreview = param.preview
-      val newPreviewInfo =
-          originalPreview.previewInfo.copy(
-              widthDp = device.size.width.value.toInt(),
-              heightDp = device.size.height.value.toInt(),
-          )
-      val newPreview =
-          DelegatingPreview(
-              delegate = originalPreview,
-              newPreviewInfo = newPreviewInfo,
-              newMethodName = originalPreview.methodName,
-          )
-      return DesktopPreviewTestParameter(newPreview, param.manualClockOptions)
-    }
-
-    public fun setupDefaultOptions() {
+    fun setupDefaultOptions() {
       DesktopComposePreviewTester.defaultOptionsFromPlugin =
           DesktopComposePreviewTester.Options(
               scanOptions =
@@ -156,4 +106,36 @@ public class PreviewScreenshotTest(
           )
     }
   }
+}
+
+
+// Reflection stuff to address bug of Roborazzi
+val localSystemThemeReflect: ProvidableCompositionLocal<Any>? by lazy {
+    try {
+        val clazz = Class.forName("androidx.compose.ui.SystemThemeKt")
+        val method = clazz.getDeclaredMethod("getLocalSystemTheme")
+        method.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        method.invoke(null) as ProvidableCompositionLocal<Any>
+    } catch (e: Exception) {
+        null
+    }
+}
+
+val systemThemeLightReflect: Any? by lazy {
+    try {
+        val clazz = Class.forName("androidx.compose.ui.SystemTheme")
+        clazz.enumConstants.first { it.toString() == "Light" }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+val systemThemeDarkReflect: Any? by lazy {
+    try {
+        val clazz = Class.forName("androidx.compose.ui.SystemTheme")
+        clazz.enumConstants.first { it.toString() == "Dark" }
+    } catch (e: Exception) {
+        null
+    }
 }

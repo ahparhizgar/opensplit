@@ -21,10 +21,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.dto.expense.SplitType
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,7 +87,7 @@ val transparentTextFieldColors
           unfocusedIndicatorColor = Color.Transparent,
       )
 
-@Preview
+@ScreenPreview
 @Composable
 private fun MoreSplitOptionsPreview() {
   OpenSplitTheme { MoreSplitOptionsScreen(FakeMoreSplitOptionsComponent()) }

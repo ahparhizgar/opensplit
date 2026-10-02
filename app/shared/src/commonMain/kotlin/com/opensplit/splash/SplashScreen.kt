@@ -10,10 +10,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.opensplit.root.TopLevelDestinationConfig
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 
 @Composable
 fun SplashScreen(modifier: Modifier = Modifier) {
@@ -29,7 +29,7 @@ fun SplashScreen(modifier: Modifier = Modifier) {
 
 data object SplashDestination : TopLevelDestinationConfig
 
-@Preview
+@ScreenPreview
 @Composable
 fun SplashScreenPreview() {
   OpenSplitTheme { SplashScreen() }

@@ -12,7 +12,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.fade
@@ -47,6 +46,7 @@ import com.opensplit.root.RootComponent
 import com.opensplit.splash.SplashDestination
 import com.opensplit.splash.SplashScreen
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 import com.opensplit.usermessage.CustomSnackbar
 
 @OptIn(ExperimentalDecomposeApi::class, ExperimentalMaterial3AdaptiveApi::class)
@@ -165,7 +165,7 @@ fun App(root: RootComponent, modifier: Modifier = Modifier) {
   }
 }
 
-@Preview
+@ScreenPreview
 @Composable
 private fun Preview() {
   App(FakeRootComponent())

@@ -45,9 +45,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -155,7 +155,7 @@ fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
 }
 
 @Composable
-@Preview
+@ScreenPreview
 fun LoginScreenPreview() {
   OpenSplitTheme {
     Surface {

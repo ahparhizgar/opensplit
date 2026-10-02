@@ -32,10 +32,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 import kotlin.math.abs
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -125,7 +125,7 @@ fun PaidAmountsScreen(
   }
 }
 
-@Preview
+@ScreenPreview
 @Composable
 private fun PaidAmountsPreview() {
   OpenSplitTheme {

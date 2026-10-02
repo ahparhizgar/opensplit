@@ -47,7 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
@@ -55,6 +54,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.opensplit.domain.FakeGroupFactory
 import com.opensplit.domain.Group
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 import com.opensplit.ui.colorSchemeExtended
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -404,7 +404,7 @@ private fun GroupLeaveConfirmDialog(
   )
 }
 
-@Preview
+@ScreenPreview
 @Composable
 private fun MyGroupsListPreview() {
   OpenSplitTheme {
@@ -414,7 +414,7 @@ private fun MyGroupsListPreview() {
   }
 }
 
-@Preview
+@ScreenPreview
 @Composable
 private fun MyGroupsListExtendedPreview() {
   OpenSplitTheme {
@@ -427,7 +427,7 @@ private fun MyGroupsListExtendedPreview() {
   }
 }
 
-@Preview
+@ScreenPreview
 @Composable
 private fun MyGroupsListWithRecentSettledPreview() {
   val now = Clock.System.now()

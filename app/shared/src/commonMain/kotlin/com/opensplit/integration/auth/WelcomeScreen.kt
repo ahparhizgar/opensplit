@@ -23,9 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 
 @Composable
 fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
@@ -108,7 +108,7 @@ fun WelcomeScreen(component: WelcomeComponent, modifier: Modifier = Modifier) {
 }
 
 @Composable
-@Preview
+@ScreenPreview
 fun WelcomeScreenPreview() {
   OpenSplitTheme { Surface { WelcomeScreen(FakeWelcomeComponent()) } }
 }

@@ -14,11 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.opensplit.domain.Expense
 import com.opensplit.domain.Member
 import com.opensplit.domain.ParticipantShare
+import com.opensplit.ui.ComponentPreview
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.colorSchemeExtended
 import com.opensplit.util.formatAmount
@@ -148,7 +148,7 @@ fun ExpenseItem(
   }
 }
 
-@Preview
+@ComponentPreview
 @Composable
 fun ExpenseItemPreview() {
   val members =

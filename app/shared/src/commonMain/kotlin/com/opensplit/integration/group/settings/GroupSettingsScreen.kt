@@ -45,11 +45,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.AndroidUiModes.UI_MODE_NIGHT_YES
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.opensplit.domain.Member
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 import com.opensplit.ui.colorSchemeExtended
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -274,7 +273,7 @@ private fun MemberItem(member: Member, modifier: Modifier = Modifier) {
   }
 }
 
-@Preview
+@ScreenPreview
 @Composable
 private fun GroupSettingsScreenPreview() {
   OpenSplitTheme { GroupSettingsScreen(FakeGroupSettingsComponent()) }

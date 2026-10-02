@@ -15,10 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 import com.opensplit.ui.colorSchemeExtended
 import com.opensplit.util.formatAmount
 
@@ -145,7 +145,7 @@ fun QuickSplitScreen(component: QuickSplitComponent, modifier: Modifier = Modifi
   }
 }
 
-@Preview
+@ScreenPreview
 @Composable
 private fun QuickSplitPreview() {
   OpenSplitTheme { QuickSplitScreen(FakeQuickSplitComponent()) }

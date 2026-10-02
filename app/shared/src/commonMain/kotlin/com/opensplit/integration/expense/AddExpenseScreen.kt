@@ -48,13 +48,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.ui.OpenSplitTheme
+import com.opensplit.ui.ScreenPreview
 import com.opensplit.util.formatAmount
 
 @Composable
@@ -318,13 +318,13 @@ val previewUiState =
         payAmounts = PayAmountsUiState.OnePerson(previewParticipants[0].userId, "20"),
     )
 
-@Preview
+@ScreenPreview
 @Composable
 private fun MainExpenseFormPreview() {
   OpenSplitTheme { AddExpenseScreen(FakeAddExpenseComponent(previewUiState)) }
 }
 
-@Preview
+@ScreenPreview
 @Composable
 private fun MainExpenseForm2Preview() {
   OpenSplitTheme {
