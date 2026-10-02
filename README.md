@@ -4,16 +4,16 @@
 
 ![](pictures/banner.jpeg)
 
-# OpenSplit
+# 💸 OpenSplit
 
 **Share expenses with your roommate, travel companions, etc...**
 
-# ToC
+# 📖 ToC
 
 * [Test Coverage](#test-coverage)
 * [Offline-First Architecture](#offline-first-architecture)
 
-## Modules
+## 📦 Modules
 
 Core contains shared code used by both server and client.  
 Shared code are DTOs and verification logic.
@@ -48,7 +48,7 @@ graph BT
     iosApp -.-> shared
 ```
 
-## Build and test
+## 🛠️ Build and test
 
 To run two independent instances of the jvm app run:
 
@@ -57,7 +57,7 @@ To run two independent instances of the jvm app run:
 ./gradlew --offline runB
 ```
 
-## Test Coverage
+## 📊 Test Coverage
 
 This project uses **Kover** to measure and report code coverage across the project.
 
@@ -67,7 +67,7 @@ This project uses **Kover** to measure and report code coverage across the proje
     - **Server**: `gradle :server:koverHtmlReport`
     - **Client**: `gradle :app:shared:koverHtmlReport`
 
-## Error Handling
+## ⚠️ Error Handling
 
 This project uses [Katch](https://github.com/ahparhizgar/katch/) a library form the same author;
 which wraps http and network errors into a hierarchical exception model.
@@ -103,7 +103,7 @@ scope.launch {
 }
 ```
 
-## Offline-First Architecture
+## 📴 Offline-First Architecture
 
 This project implements a local-first, bidirectional sync approach. The UI binds directly to the local database, while mutations are queued in an outbox and downstream updates are fetched via versioned delta sync.
 
