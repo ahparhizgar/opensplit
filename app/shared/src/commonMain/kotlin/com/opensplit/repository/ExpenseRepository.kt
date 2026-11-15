@@ -12,13 +12,16 @@ import com.opensplit.db.SyncQueueEntity
 import com.opensplit.db.toDomain
 import com.opensplit.db.toEntity
 import com.opensplit.domain.Expense
+import com.opensplit.domain.GroupSettlement
 import com.opensplit.domain.ParticipantShare
+import com.opensplit.domain.SettlementCalculator
 import com.opensplit.dto.expense.SplitMethod
 import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.sync.SyncManager
 import com.opensplit.util.randomId
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 
@@ -36,6 +39,24 @@ class ExpenseRepository(
         // TODO should we optimize this 1+n query?
         val participants = expenseDao.getParticipants(entity.id).map { it.toDomain() }
         entity.toDomain(participants)
+      }
+    }
+  }
+
+  /**
+   * Settlement for a group, derived purely from its members and expenses. Balances are
+   * calculated from the expenses themselves (not the stored member balances), so this stays
+   * correct offline and needs no server or sync changes.
+   */
+  fun getSettlement(groupId: String): Flow<GroupSettlement> {
+    return combine(groupDao.observeGroupWithMembers(groupId), getExpenses(groupId)) {
+        groupWithMembers,
+        expenses ->
+      val group = groupWithMembers?.toDomain()
+      if (group != null) {
+        SettlementCalculator.forGroup(group, expenses)
+      } else {
+        SettlementCalculator.forExpenses(groupId, expenses)
       }
     }
   }
