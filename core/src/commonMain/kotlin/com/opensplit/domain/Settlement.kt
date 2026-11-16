@@ -67,8 +67,9 @@ object SettlementCalculator {
   }
 
   /** Net balances already stored on the group's [members]. */
-  fun balancesFromMembers(members: List<Member>): List<ParticipantBalance> =
-      members.map { ParticipantBalance(it.userId, it.balance) }
+  fun balancesFromMembers(members: List<Member>): List<ParticipantBalance> = members.map {
+    ParticipantBalance(it.userId, it.balance)
+  }
 
   /**
    * Settlement for a [group] based on its [expenses]. Every group member appears in the result,
