@@ -38,6 +38,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.opensplit.domain.FakeExpenseFactory
 import com.opensplit.domain.FakeGroupFactory
+import com.opensplit.domain.FakeGroupSettlementFactory
 import com.opensplit.integration.expense.ExpenseItem
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.ScreenPreview
@@ -155,6 +156,15 @@ fun GroupDetailsScreen(
             }
           } else {
             LazyColumn(modifier.fillMaxWidth()) {
+              val settlement = uiState.settlement
+              if (settlement != null && uiState.expenses.isNotEmpty()) {
+                item {
+                  SettlementSection(
+                      settlement = settlement,
+                      members = group.members,
+                  )
+                }
+              }
               items(uiState.expenses) { expense ->
                 ExpenseItem(
                     expense = expense,
@@ -192,6 +202,24 @@ fun GroupDetailsScreenPreview() {
                 uiState =
                     GroupDetailsComponent.UiState(
                         group = FakeGroupFactory.create(members = emptyList())
+                    )
+            ),
+    )
+  }
+}
+
+@ScreenPreview
+@Composable
+fun GroupDetailsScreenWithSettlementPreview() {
+  OpenSplitTheme {
+    GroupDetailsScreen(
+        component =
+            FakeGroupDetailsComponent(
+                uiState =
+                    GroupDetailsComponent.UiState(
+                        group = FakeGroupFactory.create(),
+                        expenses = FakeExpenseFactory.createList(),
+                        settlement = FakeGroupSettlementFactory.create(),
                     )
             ),
     )

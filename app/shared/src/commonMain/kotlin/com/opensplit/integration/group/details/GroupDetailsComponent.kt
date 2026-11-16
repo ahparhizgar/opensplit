@@ -6,6 +6,7 @@ import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
 import com.opensplit.domain.Expense
 import com.opensplit.domain.Group
+import com.opensplit.domain.GroupSettlement
 import com.opensplit.integration.expense.AddExpenseFlowComponent
 import com.opensplit.integration.expense.ExpenseDetailsComponent
 import com.opensplit.integration.group.settings.GroupSettingsComponent
@@ -37,6 +38,7 @@ interface GroupDetailsComponent {
   data class UiState(
       val group: Group? = null,
       val expenses: List<Expense> = emptyList(),
+      val settlement: GroupSettlement? = null,
       val error: String? = null,
   )
 }
@@ -74,6 +76,11 @@ class DefaultGroupDetailsComponent(
     componentScope().launch {
       expenseRepository.getExpenses(groupId).collect { expenses ->
         _uiState.update { it.copy(expenses = expenses) }
+      }
+    }
+    componentScope().launch {
+      expenseRepository.getSettlement(groupId).collect { settlement ->
+        _uiState.update { it.copy(settlement = settlement) }
       }
     }
   }
