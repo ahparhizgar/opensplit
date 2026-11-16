@@ -24,8 +24,8 @@ import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.util.formatAmount
 
 /**
- * Simplified settle-up transfers for a group: who pays whom and how much, derived from the
- * group's expenses. Shown at the top of the group details screen.
+ * Simplified settle-up transfers for a group: who pays whom and how much, derived from the group's
+ * expenses. Shown at the top of the group details screen.
  */
 @Composable
 fun SettlementSection(

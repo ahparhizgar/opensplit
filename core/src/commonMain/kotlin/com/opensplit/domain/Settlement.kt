@@ -7,9 +7,9 @@ import kotlinx.serialization.Serializable
 /**
  * Net balance of a single participant in a group.
  *
- * Positive means the participant paid more than they consumed and should get money back,
- * negative means they still owe money. This mirrors the `balance` already stored per member
- * (see `Member.balance`), which is accumulated as `paidShare - consumedShare` per expense.
+ * Positive means the participant paid more than they consumed and should get money back, negative
+ * means they still owe money. This mirrors the `balance` already stored per member (see
+ * `Member.balance`), which is accumulated as `paidShare - consumedShare` per expense.
  */
 @Serializable
 data class ParticipantBalance(
@@ -29,8 +29,8 @@ data class SettlementTransfer(
 )
 
 /**
- * The full settlement state of a group: every participant's net balance plus the simplified
- * list of transfers that zeroes all balances.
+ * The full settlement state of a group: every participant's net balance plus the simplified list of
+ * transfers that zeroes all balances.
  */
 @Serializable
 data class GroupSettlement(
@@ -46,8 +46,8 @@ data class GroupSettlement(
  * Computes group balances and simplified settle-up transfers.
  *
  * Balances are derived from the same per-expense shares the rest of the app already uses
- * (`ParticipantShare.paidShare - ParticipantShare.consumedShare`), so this needs no schema or
- * sync changes: it is a pure calculation over existing [Expense] / [Member] data.
+ * (`ParticipantShare.paidShare - ParticipantShare.consumedShare`), so this needs no schema or sync
+ * changes: it is a pure calculation over existing [Expense] / [Member] data.
  */
 object SettlementCalculator {
 
@@ -71,9 +71,9 @@ object SettlementCalculator {
       members.map { ParticipantBalance(it.userId, it.balance) }
 
   /**
-   * Settlement for a [group] based on its [expenses]. Every group member appears in the
-   * result, even with a zero balance, and participants who are no longer members are kept
-   * (sorted by userId, after the members) so their debt is not silently dropped.
+   * Settlement for a [group] based on its [expenses]. Every group member appears in the result,
+   * even with a zero balance, and participants who are no longer members are kept (sorted by
+   * userId, after the members) so their debt is not silently dropped.
    */
   fun forGroup(group: Group, expenses: List<Expense>): GroupSettlement {
     val expenseBalances = balancesFromExpenses(expenses).associate { it.userId to it.balance }
@@ -102,9 +102,9 @@ object SettlementCalculator {
   }
 
   /**
-   * Simplified transfers that zero all [balances]: the largest debtor pays the largest
-   * creditor first (greedy), which needs at most `participants - 1` transfers. Ordering is
-   * deterministic: by amount, then by userId. Duplicate userIds are aggregated first.
+   * Simplified transfers that zero all [balances]: the largest debtor pays the largest creditor
+   * first (greedy), which needs at most `participants - 1` transfers. Ordering is deterministic: by
+   * amount, then by userId. Duplicate userIds are aggregated first.
    */
   fun settleUp(balances: List<ParticipantBalance>): List<SettlementTransfer> {
     val aggregated =

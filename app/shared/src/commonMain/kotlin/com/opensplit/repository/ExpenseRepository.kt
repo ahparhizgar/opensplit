@@ -44,9 +44,9 @@ class ExpenseRepository(
   }
 
   /**
-   * Settlement for a group, derived purely from its members and expenses. Balances are
-   * calculated from the expenses themselves (not the stored member balances), so this stays
-   * correct offline and needs no server or sync changes.
+   * Settlement for a group, derived purely from its members and expenses. Balances are calculated
+   * from the expenses themselves (not the stored member balances), so this stays correct offline
+   * and needs no server or sync changes.
    */
   fun getSettlement(groupId: String): Flow<GroupSettlement> {
     return combine(groupDao.observeGroupWithMembers(groupId), getExpenses(groupId)) {
