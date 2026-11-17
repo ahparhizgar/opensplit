@@ -189,8 +189,7 @@ fun Application.configureGroupRoutes() {
                       HttpStatusCode.Forbidden,
                       ErrorResponse(generalError = "Only the group owner can delete the group"),
                   )
-              is DeleteGroupResult.Success ->
-                  call.respond(HttpStatusCode.OK, result.groups)
+              is DeleteGroupResult.Success -> call.respond(HttpStatusCode.OK, result.groups)
             }
           }
         }

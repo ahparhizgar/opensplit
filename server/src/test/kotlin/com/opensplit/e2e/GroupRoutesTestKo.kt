@@ -133,9 +133,7 @@ class GroupRoutesTestKo : KtorBehaviorSpec() {
 
       When("a non-owner attempts to delete the group") {
         val fixture by testValue { createGroupWith2MembersFixture() }
-        val deleteResponse by testValue {
-          fixture.client2.delete("/groups/${fixture.group.id}")
-        }
+        val deleteResponse by testValue { fixture.client2.delete("/groups/${fixture.group.id}") }
         val groupsAfterAttempt by testValue {
           deleteResponse // trigger delete first
           fixture.client1.getGroups()
