@@ -82,7 +82,9 @@ interface ExpenseDao {
 
   @Query("DELETE FROM expenses WHERE id = :id") suspend fun deleteExpense(id: String)
 
-  @Query("DELETE FROM participants WHERE expenseId IN (SELECT id FROM expenses WHERE groupId = :groupId)")
+  @Query(
+      "DELETE FROM participants WHERE expenseId IN (SELECT id FROM expenses WHERE groupId = :groupId)"
+  )
   suspend fun deleteParticipantsByGroup(groupId: String)
 
   @Query("DELETE FROM expenses WHERE groupId = :groupId")
