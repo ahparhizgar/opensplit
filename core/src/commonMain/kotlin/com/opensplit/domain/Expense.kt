@@ -68,7 +68,6 @@ object FakeMemberFactory {
       isOwner: Boolean = false,
       isCurrentUser: Boolean = false,
       balance: Double = 0.0,
-      balanceCurrency: String = "IRR",
   ) =
       Member(
           userId = userId,

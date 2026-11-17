@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.value.MutableValue
+import com.opensplit.domain.Currency
 import com.opensplit.domain.FakeGroupFactory
 import com.opensplit.domain.Group
 import com.opensplit.ui.OpenSplitTheme
@@ -197,7 +198,7 @@ fun MyGroupsListScreen(
 @Composable
 private fun BalanceSummaryRow(
     balance: Double,
-    currency: String,
+    currency: Currency,
     modifier: Modifier = Modifier,
 ) {
   Row(
@@ -220,7 +221,7 @@ private fun BalanceSummaryRow(
       if (balance != 0.0) {
         val displayBalance = if (balance < 0) -balance else balance
         Text(
-            text = "$currency$displayBalance",
+            text = currency.format(displayBalance),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = color,
@@ -340,8 +341,8 @@ private fun GroupCard(
         )
         val balanceText =
             when {
-              group.balance > 0 -> "you are owed IRR${group.balance}"
-              group.balance < 0 -> "you owe IRR${-group.balance}"
+              group.balance > 0 -> "you are owed ${Currency.default.format(group.balance)}"
+              group.balance < 0 -> "you owe ${Currency.default.format(-group.balance)}"
               else -> "settled up"
             }
         val balanceColor =

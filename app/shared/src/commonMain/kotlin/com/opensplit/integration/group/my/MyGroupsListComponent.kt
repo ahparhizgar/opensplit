@@ -7,6 +7,7 @@ import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.opensplit.component.CContext
 import com.opensplit.component.componentScope
+import com.opensplit.domain.Currency
 import com.opensplit.domain.FakeGroupFactory
 import com.opensplit.domain.Group
 import com.opensplit.integration.group.createjoin.GroupSelectionComponent
@@ -42,7 +43,7 @@ interface MyGroupsListComponentFactory {
 data class MyGroupsUiState(
     val groups: List<Group> = emptyList(),
     val overallBalance: Double = 0.0,
-    val overallCurrency: String = "IRR",
+    val overallCurrency: Currency = Currency.default,
 )
 
 class DefaultMyGroupsListComponent(
@@ -68,7 +69,7 @@ class DefaultMyGroupsListComponent(
       it.copy(
           groups = groups,
           overallBalance = groups.sumOf { h -> h.balance },
-          overallCurrency = "IRR",
+          overallCurrency = Currency.default,
       )
     }
   }
