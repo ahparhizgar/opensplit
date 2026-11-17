@@ -72,6 +72,17 @@ class GroupRepository(
     }
   }
 
+  suspend fun deleteGroup(groupId: String) {
+    api.deleteGroup(groupId)
+    database.useWriterConnection { connection ->
+      connection.immediateTransaction {
+        database.expenseDao().deleteParticipantsByGroup(groupId)
+        database.expenseDao().deleteExpensesByGroup(groupId)
+        dao.deleteGroup(groupId)
+      }
+    }
+  }
+
   suspend fun createGroup(name: String): Group {
     val result = api.createGroup(name)
     database.useWriterConnection { connection ->

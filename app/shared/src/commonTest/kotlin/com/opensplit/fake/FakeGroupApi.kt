@@ -77,4 +77,9 @@ class FakeGroupApi : GroupApi, FakeService {
     groups = groups.filterNot { it.id == groupId }
     groups
   }
+
+  override suspend fun deleteGroup(groupId: String): List<GroupDto> = fakeApiCall {
+    groups = groups.filterNot { it.id == groupId }
+    groups
+  }
 }

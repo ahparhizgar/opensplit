@@ -169,6 +169,30 @@ fun Application.configureGroupRoutes() {
               call.respond<GroupDto>(HttpStatusCode.OK, group)
             }
           }
+
+          delete {
+            val groupId = call.parameters["id"]
+            if (groupId.isNullOrBlank()) {
+              call.respond(HttpStatusCode.BadRequest)
+              return@delete
+            }
+
+            val user = call.user()
+            when (val result = groupService.deleteGroup(user, groupId)) {
+              DeleteGroupResult.GroupNotFound ->
+                  call.respond(
+                      HttpStatusCode.NotFound,
+                      ErrorResponse(generalError = "Group not found"),
+                  )
+              DeleteGroupResult.Forbidden ->
+                  call.respond(
+                      HttpStatusCode.Forbidden,
+                      ErrorResponse(generalError = "Only the group owner can delete the group"),
+                  )
+              is DeleteGroupResult.Success ->
+                  call.respond(HttpStatusCode.OK, result.groups)
+            }
+          }
         }
       }
     }

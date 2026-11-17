@@ -1,5 +1,7 @@
 package com.opensplit.integration.group
 
+import com.opensplit.database.ExpenseParticipants
+import com.opensplit.database.Expenses
 import com.opensplit.database.Groups
 import com.opensplit.database.Memberships
 import com.opensplit.database.Users
@@ -177,6 +179,29 @@ class GroupRepositoryImpl(
       Memberships.deleteWhere {
         (Memberships.groupId eq groupId) and (Memberships.userId eq userId)
       }
+    }
+  }
+
+  override fun deleteGroup(groupId: String) {
+    transaction(database) {
+      val expenseIds =
+          Expenses.selectAll().where { Expenses.groupId eq groupId }.map { it[Expenses.id] }
+      expenseIds.forEach { expenseId ->
+        syncRepository.recordChange(SyncEntityType.EXPENSE, expenseId, SyncOperation.DELETE)
+      }
+
+      val membershipIds =
+          Memberships.selectAll()
+              .where { Memberships.groupId eq groupId }
+              .map { it[Memberships.id] }
+      membershipIds.forEach { membershipId ->
+        syncRepository.recordChange(SyncEntityType.MEMBERSHIP, membershipId, SyncOperation.DELETE)
+      }
+
+      ExpenseParticipants.deleteWhere { ExpenseParticipants.expenseId inList expenseIds }
+      Expenses.deleteWhere { Expenses.groupId eq groupId }
+      Memberships.deleteWhere { Memberships.groupId eq groupId }
+      Groups.deleteWhere { Groups.id eq groupId }
     }
   }
 

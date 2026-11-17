@@ -24,6 +24,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -43,9 +46,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.opensplit.domain.FakeGroupFactory
 import com.opensplit.domain.Member
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.ScreenPreview
@@ -136,18 +141,30 @@ fun GroupSettingsScreen(
               )
             }
 
-            item {
-              SettingsActionItem(
-                  modifier = Modifier.padding(horizontal = 16.dp),
-                  icon = Icons.Default.Delete,
-                  text = "Delete group",
-                  textColor = MaterialTheme.colorScheme.error,
-                  onClick = component::onDeleteGroupClicked,
-              )
+            if (group.isOwner) {
+              item {
+                SettingsActionItem(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    icon = Icons.Default.Delete,
+                    text = "Delete group",
+                    textColor = MaterialTheme.colorScheme.error,
+                    onClick = component::onDeleteGroupClicked,
+                )
+              }
             }
           }
         }
       }
+    }
+  }
+
+  if (uiState.showDeleteConfirmation) {
+    uiState.group?.let { group ->
+      GroupDeleteConfirmDialog(
+          groupName = group.name,
+          onConfirm = component::onConfirmDeleteGroup,
+          onDismiss = component::onDismissDeleteDialog,
+      )
     }
   }
 }
@@ -225,6 +242,40 @@ private fun SettingsActionItem(
 }
 
 @Composable
+private fun GroupDeleteConfirmDialog(
+    groupName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+  AlertDialog(
+      onDismissRequest = onDismiss,
+      title = { Text("Delete $groupName?") },
+      text = {
+        Text(
+            "This permanently deletes the group and all of its expenses for everyone. This can't be undone."
+        )
+      },
+      confirmButton = {
+        Button(
+            onClick = onConfirm,
+            modifier = Modifier.testTag("group-delete-confirm"),
+        ) {
+          Text("Delete group")
+        }
+      },
+      dismissButton = {
+        TextButton(
+            onClick = onDismiss,
+            modifier = Modifier.testTag("group-delete-cancel"),
+        ) {
+          Text("Cancel")
+        }
+      },
+      modifier = Modifier.testTag("group-delete-dialog"),
+  )
+}
+
+@Composable
 private fun MemberItem(member: Member, modifier: Modifier = Modifier) {
   Row(
       modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -276,5 +327,14 @@ private fun MemberItem(member: Member, modifier: Modifier = Modifier) {
 @ScreenPreview
 @Composable
 private fun GroupSettingsScreenPreview() {
-  OpenSplitTheme { GroupSettingsScreen(FakeGroupSettingsComponent()) }
+  OpenSplitTheme {
+    GroupSettingsScreen(
+        FakeGroupSettingsComponent(
+            uiState =
+                GroupSettingsComponent.UiState(
+                    group = FakeGroupFactory.create(id = "h1", isOwner = true),
+                ),
+        )
+    )
+  }
 }

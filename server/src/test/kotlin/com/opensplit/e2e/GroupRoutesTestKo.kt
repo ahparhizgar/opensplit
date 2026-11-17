@@ -1,10 +1,12 @@
 package com.opensplit.e2e
 
 import com.opensplit.dto.auth.ErrorResponse
+import com.opensplit.dto.expense.ExpenseDto
 import com.opensplit.dto.group.AddMemberByEmailRequest
 import com.opensplit.dto.group.CreateGroupRequest
 import com.opensplit.dto.group.GroupDto
 import com.opensplit.dto.group.JoinGroupRequest
+import com.opensplit.fixture.createExpenseWith2MembersFixture
 import com.opensplit.fixture.createGroup
 import com.opensplit.fixture.createGroupWith1MemberFixture
 import com.opensplit.fixture.createGroupWith2MembersFixture
@@ -108,6 +110,45 @@ class GroupRoutesTestKo : KtorBehaviorSpec() {
           leaveResponse.status shouldBe HttpStatusCode.OK
           groupsAfterLeave.shouldBeEmpty()
         }
+      }
+
+      When("group owner deletes the group") {
+        val fixture by testValue { createExpenseWith2MembersFixture() }
+        val deleteResponse by testValue { fixture.client1.delete("/groups/${fixture.group.id}") }
+        val ownerGroups by testValue {
+          deleteResponse // trigger delete first
+          fixture.client1.getGroups()
+        }
+        val memberGroups by testValue { fixture.client2.getGroups() }
+        val expensesAfterDelete by testValue {
+          fixture.client1.get("/groups/${fixture.group.id}/expenses").body<List<ExpenseDto>>()
+        }
+        Then("group and its expenses are removed for every member") {
+          deleteResponse.status shouldBe HttpStatusCode.OK
+          ownerGroups.shouldBeEmpty()
+          memberGroups.shouldBeEmpty()
+          expensesAfterDelete.shouldBeEmpty()
+        }
+      }
+
+      When("a non-owner attempts to delete the group") {
+        val fixture by testValue { createGroupWith2MembersFixture() }
+        val deleteResponse by testValue {
+          fixture.client2.delete("/groups/${fixture.group.id}")
+        }
+        val groupsAfterAttempt by testValue {
+          deleteResponse // trigger delete first
+          fixture.client1.getGroups()
+        }
+        Then("it returns 403 Forbidden and the group still exists") {
+          deleteResponse.status shouldBe HttpStatusCode.Forbidden
+          groupsAfterAttempt shouldHaveSize 1
+        }
+      }
+
+      When("deleting a non-existent group") {
+        val response by testValue { client.delete("/groups/123456789") }
+        Then("it returns 404 Not Found") { response.status shouldBe HttpStatusCode.NotFound }
       }
 
       When("owner adds a member by email") {

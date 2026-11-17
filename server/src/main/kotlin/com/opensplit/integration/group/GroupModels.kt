@@ -40,3 +40,11 @@ sealed interface AddMemberByEmailResult {
 
   data class UserNotFound(val email: String) : AddMemberByEmailResult
 }
+
+sealed interface DeleteGroupResult {
+  data class Success(val groups: List<GroupDto>) : DeleteGroupResult
+
+  data object GroupNotFound : DeleteGroupResult
+
+  data object Forbidden : DeleteGroupResult
+}

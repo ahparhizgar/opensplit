@@ -26,12 +26,17 @@ interface GroupSettingsComponent {
 
   fun onDeleteGroupClicked()
 
+  fun onConfirmDeleteGroup()
+
+  fun onDismissDeleteDialog()
+
   @Serializable data class Config(val groupId: String) : TopLevelDestinationConfig
 
   data class UiState(
       val group: Group? = null,
       val isLoading: Boolean = false,
       val error: String? = null,
+      val showDeleteConfirmation: Boolean = false,
   )
 }
 
@@ -82,7 +87,25 @@ class DefaultGroupSettingsComponent(
   }
 
   override fun onDeleteGroupClicked() {
-    // TODO: Implement delete group
+    _uiState.update { it.copy(showDeleteConfirmation = true) }
+  }
+
+  override fun onConfirmDeleteGroup() {
+    componentScope().launch {
+      try {
+        groupRepository.deleteGroup(groupId)
+        _uiState.update { it.copy(showDeleteConfirmation = false) }
+        navigation.pop()
+      } catch (e: Exception) {
+        _uiState.update {
+          it.copy(showDeleteConfirmation = false, error = "Failed to delete group: ${e.message}")
+        }
+      }
+    }
+  }
+
+  override fun onDismissDeleteDialog() {
+    _uiState.update { it.copy(showDeleteConfirmation = false) }
   }
 
   private fun loadSettings() =
@@ -122,4 +145,8 @@ class FakeGroupSettingsComponent(
   override fun onLeaveGroupClicked() {}
 
   override fun onDeleteGroupClicked() {}
+
+  override fun onConfirmDeleteGroup() {}
+
+  override fun onDismissDeleteDialog() {}
 }

@@ -24,6 +24,8 @@ interface GroupApi {
 
   suspend fun leaveGroup(groupId: String): List<GroupDto>
 
+  suspend fun deleteGroup(groupId: String): List<GroupDto>
+
   suspend fun getGroup(id: String): GroupDto
 }
 
@@ -69,6 +71,18 @@ class KtorGroupApi(
   override suspend fun leaveGroup(groupId: String): List<GroupDto> {
     val response = client.delete("groups/$groupId/memberships")
     if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
+    return response.body<List<GroupDto>>()
+  }
+
+  override suspend fun deleteGroup(groupId: String): List<GroupDto> {
+    val response = client.delete("groups/$groupId")
+    if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
+    if (response.status == HttpStatusCode.Forbidden) {
+      throw IllegalStateException("Only the group owner can delete the group")
+    }
+    if (response.status == HttpStatusCode.NotFound) {
+      throw IllegalStateException("Group not found")
+    }
     return response.body<List<GroupDto>>()
   }
 

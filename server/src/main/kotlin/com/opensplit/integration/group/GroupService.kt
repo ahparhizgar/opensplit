@@ -80,6 +80,16 @@ class GroupService(private val groupRepository: GroupRepository) {
     return loadGroups(user)
   }
 
+  fun deleteGroup(user: UserPrincipal, groupId: String): DeleteGroupResult {
+    val group = groupRepository.findGroupById(groupId) ?: return DeleteGroupResult.GroupNotFound
+    if (group.ownerId != user.userId) {
+      return DeleteGroupResult.Forbidden
+    }
+
+    groupRepository.deleteGroup(groupId)
+    return DeleteGroupResult.Success(loadGroups(user))
+  }
+
   fun getGroup(user: UserPrincipal, groupId: String): GroupDto? =
       groupRepository.loadGroupDetail(groupId, user.userId)?.toDto(user.userId)
 

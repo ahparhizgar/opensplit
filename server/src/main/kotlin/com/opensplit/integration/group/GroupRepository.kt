@@ -18,4 +18,6 @@ interface GroupRepository {
   fun loadGroupDetail(groupId: String, currentUserId: String): GroupDetailRecord?
 
   fun leaveGroup(groupId: String, userId: String)
+
+  fun deleteGroup(groupId: String)
 }
