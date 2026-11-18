@@ -30,9 +30,7 @@ class DomainPropertiesTest : BehaviorSpec() {
 
     Given("a group") {
       When("its balance is exactly zero") {
-        Then("it is settled") {
-          FakeGroupFactory.create(balance = 0.0).isSettled shouldBe true
-        }
+        Then("it is settled") { FakeGroupFactory.create(balance = 0.0).isSettled shouldBe true }
       }
 
       When("its balance is non-zero, even by a fraction") {
@@ -70,9 +68,7 @@ class DomainPropertiesTest : BehaviorSpec() {
       }
 
       When("at least one transfer is still outstanding") {
-        Then("it is not settled") {
-          FakeGroupSettlementFactory.create().isSettled shouldBe false
-        }
+        Then("it is not settled") { FakeGroupSettlementFactory.create().isSettled shouldBe false }
       }
     }
 
