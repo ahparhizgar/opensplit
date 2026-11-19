@@ -6,18 +6,24 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.opensplit.domain.Expense
 import com.opensplit.domain.Member
 import com.opensplit.domain.ParticipantShare
+import com.opensplit.dto.expense.SyncStatus
 import com.opensplit.ui.ComponentPreview
 import com.opensplit.ui.OpenSplitTheme
 import com.opensplit.ui.colorSchemeExtended
@@ -144,6 +150,25 @@ fun ExpenseItem(
           fontWeight = FontWeight.Bold,
           color = statusColor,
       )
+      if (expense.syncStatus == SyncStatus.PENDING) {
+        Row(
+            modifier = Modifier.testTag("expense-sync-pending"),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Icon(
+              imageVector = Icons.Default.CloudOff,
+              contentDescription = null,
+              modifier = Modifier.size(12.dp),
+              tint = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+          Spacer(Modifier.width(4.dp))
+          Text(
+              text = "Pending sync",
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+        }
+      }
     }
   }
 }
@@ -167,7 +192,35 @@ fun ExpenseItemPreview() {
           participants =
               listOf(ParticipantShare("user-1", 30.0, 15.0), ParticipantShare("user-2", 0.0, 15.0)),
           splitMethod = com.opensplit.dto.expense.SplitMethod.Equally(listOf("user-1", "user-2")),
-          syncStatus = com.opensplit.dto.expense.SyncStatus.SYNCED,
+          syncStatus = SyncStatus.SYNCED,
+      )
+  OpenSplitTheme {
+    Surface {
+      ExpenseItem(expense = expense, members = members, currentUserId = "user-1", onClick = {})
+    }
+  }
+}
+
+@ComponentPreview
+@Composable
+fun ExpenseItemPendingSyncPreview() {
+  val members =
+      listOf(
+          Member("user-1", "You", "you@example.com", isCurrentUser = true),
+          Member("user-2", "Ali B.", "ali@example.com"),
+      )
+  val expense =
+      Expense(
+          id = "1",
+          groupId = "h1",
+          title = "Pizza",
+          amount = 30.0,
+          creator = "user-1",
+          createdAt = Instant.fromEpochMilliseconds(1716672000000L), // May 26, 2024
+          participants =
+              listOf(ParticipantShare("user-1", 30.0, 15.0), ParticipantShare("user-2", 0.0, 15.0)),
+          splitMethod = com.opensplit.dto.expense.SplitMethod.Equally(listOf("user-1", "user-2")),
+          syncStatus = SyncStatus.PENDING,
       )
   OpenSplitTheme {
     Surface {
