@@ -49,7 +49,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.opensplit.domain.FakeMemberFactory
 import com.opensplit.dto.expense.SplitMethod
@@ -105,6 +104,7 @@ private fun MainExpenseForm(
         )
 
     // Amount
+    val fieldTextStyle = MaterialTheme.typography.headlineSmall
     Row(
         modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
         verticalAlignment = Alignment.CenterVertically,
@@ -115,13 +115,13 @@ private fun MainExpenseForm(
         OutlinedTextField(
             value = uiState.payAmounts.amount,
             onValueChange = component::onAmountChanged,
-            placeholder = { Text("0.00", fontSize = 24.sp) },
+            placeholder = { Text("0.00", style = fieldTextStyle) },
             modifier = Modifier.fillMaxWidth().testTag("expense-amount"),
             keyboardOptions =
                 KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
             isError = uiState.fieldErrors.containsKey("amount"),
             supportingText = uiState.fieldErrors["amount"]?.let { { Text(it) } },
-            textStyle = MaterialTheme.typography.headlineSmall,
+            textStyle = fieldTextStyle,
             colors = textFieldColors,
             singleLine = true,
         )
@@ -147,12 +147,12 @@ private fun MainExpenseForm(
       OutlinedTextField(
           value = uiState.title,
           onValueChange = component::onTitleChanged,
-          placeholder = { Text("Enter a description", fontSize = 18.sp) },
+          placeholder = { Text("Enter a description", style = fieldTextStyle) },
           modifier = Modifier.fillMaxWidth().testTag("expense-description"),
           isError = uiState.fieldErrors.containsKey("title"),
           singleLine = true,
           supportingText = uiState.fieldErrors["title"]?.let { { Text(it) } },
-          textStyle = MaterialTheme.typography.headlineSmall,
+          textStyle = fieldTextStyle,
           colors = textFieldColors,
           keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
           keyboardActions = KeyboardActions(onDone = { component.onSaveClicked() }),
