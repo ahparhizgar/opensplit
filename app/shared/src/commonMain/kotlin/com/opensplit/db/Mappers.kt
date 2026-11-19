@@ -76,6 +76,7 @@ fun MemberEntity.toDto() =
         email = email,
         isOwner = isOwner,
         isCurrentUser = isCurrentUser,
+        balance = balance,
     )
 
 fun MemberEntity.toDomain() =
