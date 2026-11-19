@@ -15,8 +15,8 @@ import io.ktor.server.testing.ClientProvider
 suspend fun HttpClient.createGroup(name: String = "Home"): GroupDto =
     post("/groups") { setBody(CreateGroupRequest(name)) }.body<GroupDto>()
 
-suspend fun HttpClient.joinGroup(inviteCodeOrIdOrLink: String) =
-    post("/groups/memberships") { setBody(JoinGroupRequest(inviteCodeOrIdOrLink)) }
+suspend fun HttpClient.joinGroup(inviteCodeOrLink: String) =
+    post("/groups/memberships") { setBody(JoinGroupRequest(inviteCodeOrLink)) }
 
 suspend fun HttpClient.getGroup(groupId: String) = get("/groups/$groupId").body<GroupDto>()
 

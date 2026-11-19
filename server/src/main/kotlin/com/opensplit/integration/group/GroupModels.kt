@@ -27,8 +27,6 @@ sealed interface JoinGroupResult {
   data class Success(val group: GroupDto) : JoinGroupResult
 
   data object InvalidInviteCode : JoinGroupResult
-
-  data object MissingPermission : JoinGroupResult
 }
 
 sealed interface AddMemberByEmailResult {

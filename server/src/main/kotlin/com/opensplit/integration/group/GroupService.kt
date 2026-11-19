@@ -30,21 +30,11 @@ class GroupService(private val groupRepository: GroupRepository) {
     )
   }
 
-  fun joinGroup(user: UserPrincipal, inviteCodeOrIdOrLink: String): JoinGroupResult {
-    val inviteCode = inviteCodeOrIdOrLink.removePrefix("https://opensplit.com/join/")
-    val groupByInvite = groupRepository.findGroupByInviteCode(inviteCode)
-    val group = groupByInvite ?: groupRepository.findGroupById(inviteCodeOrIdOrLink)
-    if (group == null) {
-      return JoinGroupResult.InvalidInviteCode
-    }
-
-    if (
-        groupByInvite == null &&
-            group.ownerId != user.userId &&
-            !groupRepository.hasMembership(group.id, user.userId)
-    ) {
-      return JoinGroupResult.MissingPermission
-    }
+  fun joinGroup(user: UserPrincipal, inviteCodeOrLink: String): JoinGroupResult {
+    val inviteCode = inviteCodeOrLink.removePrefix("https://opensplit.com/join/")
+    val group =
+        groupRepository.findGroupByInviteCode(inviteCode)
+            ?: return JoinGroupResult.InvalidInviteCode
 
     groupRepository.ensureMembership(group.id, user.userId)
     val detail =

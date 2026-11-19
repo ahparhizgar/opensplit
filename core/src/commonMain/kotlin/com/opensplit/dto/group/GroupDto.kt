@@ -10,7 +10,7 @@ data class CreateGroupRequest(
 
 @Serializable
 data class JoinGroupRequest(
-    val inviteCodeOrIdOrLink: String,
+    val inviteCodeOrLink: String,
 )
 
 @Serializable

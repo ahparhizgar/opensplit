@@ -53,7 +53,7 @@ fun Application.configureGroupRoutes() {
           post {
             val user = call.user()
             val request = call.receive<JoinGroupRequest>()
-            val validation = GroupValidation.validateJoinGroup(request.inviteCodeOrIdOrLink)
+            val validation = GroupValidation.validateJoinGroup(request.inviteCodeOrLink)
             if (!validation.isValid) {
               call.respond(
                   HttpStatusCode.BadRequest,
@@ -62,21 +62,13 @@ fun Application.configureGroupRoutes() {
               return@post
             }
 
-            when (val result = groupService.joinGroup(user, request.inviteCodeOrIdOrLink)) {
+            when (val result = groupService.joinGroup(user, request.inviteCodeOrLink)) {
               JoinGroupResult.InvalidInviteCode ->
                   call.respond(
                       HttpStatusCode.NotFound,
                       ErrorResponse(
                           generalError = "Invalid invite code",
                           errors = mapOf("inviteCode" to "Invalid invite code."),
-                      ),
-                  )
-              JoinGroupResult.MissingPermission ->
-                  call.respond(
-                      HttpStatusCode.Forbidden,
-                      ErrorResponse(
-                          generalError = "Missing permission to access this group",
-                          errors = mapOf("permission" to "Missing permission to access this group"),
                       ),
                   )
               is JoinGroupResult.Success -> call.respond<GroupDto>(HttpStatusCode.OK, result.group)

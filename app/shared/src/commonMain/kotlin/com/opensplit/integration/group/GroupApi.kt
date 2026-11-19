@@ -47,7 +47,7 @@ class KtorGroupApi(
   override suspend fun joinGroup(inviteCode: String): GroupDto {
     val response =
         client.post("groups/memberships") {
-          setBody(JoinGroupRequest(inviteCodeOrIdOrLink = inviteCode))
+          setBody(JoinGroupRequest(inviteCodeOrLink = inviteCode))
         }
     if (response.status == HttpStatusCode.Unauthorized) handleUnauthorized()
     return response.body<GroupDto>()

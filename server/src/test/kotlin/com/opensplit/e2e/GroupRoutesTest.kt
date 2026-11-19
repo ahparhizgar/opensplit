@@ -34,7 +34,7 @@ class GroupRoutesTest {
 
     client
         .post("/groups/memberships") {
-          setBody(JoinGroupRequest(inviteCodeOrIdOrLink = created.inviteLink))
+          setBody(JoinGroupRequest(inviteCodeOrLink = created.inviteLink))
         }
         .also { assertEquals(HttpStatusCode.OK, it.status) }
   }
@@ -69,7 +69,22 @@ class GroupRoutesTest {
   fun joinReturnsClearErrorForInvalidInviteCode() = testOpenSplit {
     val response =
         client.post("/groups/memberships") {
-          setBody(JoinGroupRequest(inviteCodeOrIdOrLink = "not-a-real-code"))
+          setBody(JoinGroupRequest(inviteCodeOrLink = "not-a-real-code"))
+        }
+
+    assertEquals(HttpStatusCode.NotFound, response.status)
+    val error = response.body<ErrorResponse>()
+    assertEquals("Invalid invite code", error.generalError)
+    assertEquals("Invalid invite code.", error.errors["inviteCode"])
+  }
+
+  @Test
+  fun joinByGroupId_returnsNotFound() = testOpenSplit {
+    val created = client.createGroup()
+
+    val response =
+        client.post("/groups/memberships") {
+          setBody(JoinGroupRequest(inviteCodeOrLink = created.id))
         }
 
     assertEquals(HttpStatusCode.NotFound, response.status)

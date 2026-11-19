@@ -36,7 +36,7 @@ class GroupRoutesTestKo : KtorBehaviorSpec() {
         }
         val joinResponse by testValue {
           client.post("/groups/memberships") {
-            setBody(JoinGroupRequest(inviteCodeOrIdOrLink = createdGroup.inviteLink))
+            setBody(JoinGroupRequest(inviteCodeOrLink = createdGroup.inviteLink))
           }
         }
         Then("returns 200 OK for join request") {
@@ -70,7 +70,22 @@ class GroupRoutesTestKo : KtorBehaviorSpec() {
       When("attempting to join with an invalid invite code") {
         val response by testValue {
           client.post("/groups/memberships") {
-            setBody(JoinGroupRequest(inviteCodeOrIdOrLink = "not-a-real-code"))
+            setBody(JoinGroupRequest(inviteCodeOrLink = "not-a-real-code"))
+          }
+        }
+        Then("returns 404 Not Found with clear error message") {
+          response.status shouldBe HttpStatusCode.NotFound
+          val error = response.body<ErrorResponse>()
+          error.generalError shouldBe "Invalid invite code"
+          error.errors["inviteCode"] shouldBe "Invalid invite code."
+        }
+      }
+
+      When("attempting to join with a raw group id") {
+        val created by testValue { client.createGroup() }
+        val response by testValue {
+          client.post("/groups/memberships") {
+            setBody(JoinGroupRequest(inviteCodeOrLink = created.id))
           }
         }
         Then("returns 404 Not Found with clear error message") {
