@@ -87,20 +87,21 @@ operator fun UiString.plus(other: UiString): UiString {
   if (this is UiString.EmptyString) return other
   if (other is UiString.EmptyString) return this
 
-  val merged = buildList {
-    if (this@plus is UiString.Concat) {
-      addAll(this@plus.parts)
-    } else {
-      add(this@plus)
-    }
+  val merged =
+      buildList {
+            if (this@plus is UiString.Concat) {
+              addAll(this@plus.parts)
+            } else {
+              add(this@plus)
+            }
 
-    if (other is UiString.Concat) {
-      addAll(other.parts)
-    } else {
-      add(other)
-    }
-  }
-      .filterNot { it is UiString.EmptyString }
+            if (other is UiString.Concat) {
+              addAll(other.parts)
+            } else {
+              add(other)
+            }
+          }
+          .filterNot { it is UiString.EmptyString }
 
   return when (merged.size) {
     0 -> UiString.EmptyString
@@ -110,5 +111,3 @@ operator fun UiString.plus(other: UiString): UiString {
 }
 
 operator fun UiString.plus(text: String): UiString = this + UiString(text)
-
-operator fun String.plus(ui: UiString): UiString = UiString(this) + ui
